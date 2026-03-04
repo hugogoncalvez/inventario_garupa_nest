@@ -3,32 +3,23 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  // Habilitar CORS de forma ultra-robusta
+  // Configuración de CORS simplificada y explícita
   const frontendUrl = process.env.FRONTEND_URL;
-  console.log('--- CONFIGURACIÓN DE PRODUCCIÓN ---');
-  console.log('FRONTEND_URL configurada:', frontendUrl);
-  console.log('PORT configurado:', process.env.PORT);
+  console.log('REINICIANDO SERVIDOR - CONFIGURACIÓN:', { frontendUrl, nodeEnv: process.env.NODE_ENV });
 
   app.enableCors({
-    origin: (origin, callback) => {
-      const allowedOrigins = [
-        'http://localhost:3000',
-        'https://inventario-garupa-nest.vercel.app',
-        frontendUrl,
-      ].filter(Boolean);
-
-      if (!origin || allowedOrigins.includes(origin) || frontendUrl === '*') {
-        callback(null, true);
-      } else {
-        console.warn(`Origen no permitido por CORS: ${origin}`);
-        callback(null, false);
-      }
-    },
+    origin: [
+      'https://inventario-garupa-nest.vercel.app',
+      'http://localhost:3000',
+      frontendUrl,
+    ].filter(Boolean),
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
+    allowedHeaders: 'Content-Type,Authorization,X-Requested-With',
   });
+
   const port = process.env.PORT ?? 8000;
   await app.listen(port);
-  console.log(`Servidor escuchando en puerto ${port}`);
+  console.log(`Servidor activo en puerto ${port}`);
 }
 bootstrap();
