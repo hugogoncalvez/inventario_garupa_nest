@@ -59,7 +59,7 @@ const LogIn = () => {
                     setIsServerAwake(true);
                 } catch (error) {
                     console.error("Error despertando al servidor:", error);
-                    // Si falla pero el error es de otro tipo (ej: CORS), igual asumimos que está "ahí"
+                    // Si falla por CORS o red, igual permitimos intentar el login
                     setIsServerAwake(true);
                 } finally {
                     setIsCheckingServer(false);
@@ -116,19 +116,19 @@ const LogIn = () => {
                 }
             })
             .catch((error) => {
-                // Capturamos el error 401 que devuelve NestJS
-                if (error.response.data.message === 'Usuario no existe') {
-                    console.log("Error login:", error.response.data.message);
-                    // alert(error.response.data.message); // Mostramos al usuario
-                    setIsEmail(true)
-                    setTextErrEmail(error.response.data.message)
-                } else if (error.response.data.message === 'Password incorrecto') {
-                    console.log("Error login:", error.response.data.message);
-                    // alert(error.response.data.message); // Mostramos al usuario
-                    setPassNoOk(true)
-                    setTextErrPass(error.response.data.message)
+                // Capturamos el error 401 que devuelve NestJS si existe respuesta
+                if (error.response && error.response.data) {
+                    if (error.response.data.message === 'Usuario no existe') {
+                        setIsEmail(true)
+                        setTextErrEmail(error.response.data.message)
+                    } else if (error.response.data.message === 'Password incorrecto') {
+                        setPassNoOk(true)
+                        setTextErrPass(error.response.data.message)
+                    }
                 } else {
-                    console.log("Error de red o inesperado:", error.message);
+                    console.error("Error de red o CORS:", error.message);
+                    setIsEmail(true);
+                    setTextErrEmail("Error de conexión con el servidor. Verifique CORS.");
                 }
             });
     };
