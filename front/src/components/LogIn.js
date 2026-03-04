@@ -12,6 +12,8 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
 import ShowMsg from './dialogs/ShowMsg'
 
 
@@ -42,8 +44,32 @@ const LogIn = () => {
     const [textErrPass, setTextErrPass] = useState('La contraña debe tener 6 caracteres como mínimo')
     const [textErrEmail, setTextErrEmail] = useState('')
     const [loginNoOk, setLoginNoOk] = useState(false)
+    const [isServerAwake, setIsServerAwake] = useState(true); // Por defecto asuminos true para no molestar en local
+    const [isCheckingServer, setIsCheckingServer] = useState(false);
 
     const navigate = useNavigate();
+
+    // Efecto para despertar al servidor (Render Cold Start)
+    React.useEffect(() => {
+        const wakeUpServer = async () => {
+            // Solo intentamos despertar si BASE_URI no es localhost de forma simple o siempre para estar seguros
+            if (!BASE_URI.includes('localhost')) {
+                setIsServerAwake(false);
+                setIsCheckingServer(true);
+                try {
+                    await axios.get(BASE_URI, { timeout: 60000 }); // Esperamos hasta 60s
+                    setIsServerAwake(true);
+                } catch (error) {
+                    console.error("Error despertando al servidor:", error);
+                    // Si falla pero el error es de otro tipo (ej: CORS), igual asumimos que está "ahí"
+                    setIsServerAwake(true);
+                } finally {
+                    setIsCheckingServer(false);
+                }
+            }
+        };
+        wakeUpServer();
+    }, []);
 
     const validate = (data) => {
         let respuesta = {}
@@ -130,6 +156,17 @@ const LogIn = () => {
                     <Typography component="h1" variant="h5">
                         Ingresar
                     </Typography>
+
+                    {!isServerAwake && (
+                        <Alert
+                            severity="info"
+                            sx={{ mt: 2, width: '100%', alignItems: 'center' }}
+                            icon={isCheckingServer ? <CircularProgress size={20} /> : undefined}
+                        >
+                            Despertando servidor... (esto puede tardar hasta 50 segundos en el primer acceso)
+                        </Alert>
+                    )}
+
                     <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
                         <TextField
                             margin="normal"
