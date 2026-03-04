@@ -124,7 +124,7 @@ export class TintasController {
                     cartucho_id: Number(cartucho_id),
                     cantidad: 0, // Campo requerido segun schema (linea 117)
                     usuario_id: Number(usuario_id),
-                    tipo_movimiento: 'AJUSTE DE INVENTARIO', // Corregido segun compilador TypeScript y @map en schema.prisma
+                    tipo_movimiento: 'AJUSTE_DE_INVENTARIO', // Usar la llave del Enum para TypeScript
                     fecha: new Date(),
                     createdAt: new Date(),
                     updatedAt: new Date(),
@@ -181,7 +181,7 @@ export class TintasController {
                         impresora_id: Number(item.impresora_id),
                         cantidad: Number(item.cantidad),
                         usuario_id: Number(usuario_id),
-                        tipo_movimiento: 'ENTREGA A ÁREA', // Segun enum @map
+                        tipo_movimiento: 'ENTREGA_A__REA', // Usar la llave del Enum para TypeScript
                         fecha: new Date(),
                         createdAt: new Date(),
                         updatedAt: new Date(),
