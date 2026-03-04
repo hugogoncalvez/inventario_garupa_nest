@@ -43,7 +43,6 @@ const LogIn = () => {
     const [isEmail, setIsEmail] = useState(false)
     const [textErrPass, setTextErrPass] = useState('La contraña debe tener 6 caracteres como mínimo')
     const [textErrEmail, setTextErrEmail] = useState('')
-    const [loginNoOk, setLoginNoOk] = useState(false)
     const [isServerAwake, setIsServerAwake] = useState(true); // Por defecto asuminos true para no molestar en local
     const [isCheckingServer, setIsCheckingServer] = useState(false);
 
@@ -140,7 +139,6 @@ const LogIn = () => {
     return (
         <ThemeProvider theme={theme}>
             <Container component="main" maxWidth="xs">
-                {loginNoOk && <ShowMsg msg='Se ha producido un error.' ruta='#' error={true} titulo='Login' color='red' msgErr={'La contraseña ingresada no es correcta'} />}
                 <CssBaseline />
                 <Box
                     sx={{

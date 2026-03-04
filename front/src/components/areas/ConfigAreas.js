@@ -70,7 +70,7 @@ export const ConfigAreas = () => {
     const getAreas = useCallback(async () => {
         const res = await axios.get(`${URI}/areas`);
         setAreas(res.data);
-    }, [setAreas, URI]); // setAreas es estable, URI es constante
+    }, [setAreas]); // setAreas es estable, URI es constante
 
     useEffect(() => {
         getAreas();

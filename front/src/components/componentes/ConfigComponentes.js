@@ -67,7 +67,7 @@ export const ConfigComponentes = () => {
     const getTipos = useCallback(async () => {
         const res = await axios.get(`${URI}/tipos`);
         setTipos(res.data);
-    }, [setTipos, URI]);
+    }, [setTipos]);
 
     useEffect(() => {
         getTipos()
