@@ -23,6 +23,9 @@ importers:
       '@prisma/client':
         specifier: ^7.2.0
         version: 7.2.0(prisma@7.2.0(@types/react@19.2.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(typescript@5.9.3)
+      mariadb:
+        specifier: ^3.5.1
+        version: 3.5.1(@types/geojson@7946.0.16)(@types/node@22.19.5)
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2
@@ -2385,6 +2388,18 @@ packages:
   mariadb@3.4.5:
     resolution: {integrity: sha512-gThTYkhIS5rRqkVr+Y0cIdzr+GRqJ9sA2Q34e0yzmyhMCwyApf3OKAC1jnF23aSlIOqJuyaUFUcj7O1qZslmmQ==}
     engines: {node: '>= 14'}
+
+  mariadb@3.5.1:
+    resolution: {integrity: sha512-ObKf/e7jU8pmwa5wTs1UwhLMrQYRBDwXPndej2Dv/rvbqsokJYlymubsNtpakVfjI+hd0bG3U6tiuVunDYoLtA==}
+    engines: {node: '>= 18'}
+    peerDependencies:
+      '@types/geojson': '>=7946.0.0'
+      '@types/node': '>=18'
+    peerDependenciesMeta:
+      '@types/geojson':
+        optional: true
+      '@types/node':
+        optional: true
 
   math-intrinsics@1.1.0:
     resolution: {integrity: sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g==}
@@ -5997,6 +6012,15 @@ snapshots:
       denque: 2.1.0
       iconv-lite: 0.6.3
       lru-cache: 10.4.3
+
+  mariadb@3.5.1(@types/geojson@7946.0.16)(@types/node@22.19.5):
+    dependencies:
+      denque: 2.1.0
+      iconv-lite: 0.7.2
+      lru-cache: 10.4.3
+    optionalDependencies:
+      '@types/geojson': 7946.0.16
+      '@types/node': 22.19.5
 
   math-intrinsics@1.1.0: {}
 
