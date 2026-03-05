@@ -20,7 +20,14 @@ export class PrismaService
     }
 
     async onModuleInit() {
-        await this.$connect();
+        console.log('CONECTANDO A BASE DE DATOS CLEVER CLOUD...');
+        try {
+            await this.$connect();
+            console.log('¡CONEXIÓN EXITOSA CON LA BASE DE DATOS!');
+        } catch (error) {
+            console.error('ERROR AL CONECTAR A LA BASE DE DATOS:', error);
+            throw error;
+        }
     }
 }
 
