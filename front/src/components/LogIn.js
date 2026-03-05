@@ -103,16 +103,14 @@ const LogIn = () => {
             .then((res) => {
                 console.log(res.data)
 
-                if (res.statusText === 'Created' && res.status === 201) {
-
+                if (res.status === 201 || res.status === 200) {
+                    setIsEmail(false);
+                    setPassNoOk(false);
                     setAuth(res.data);
-
-                    navigate('/inventario')
-
+                    navigate('/inventario');
                 } else {
-
-                    setIsEmail(true)
-                    setTextErrEmail(res.data.msgError)
+                    setIsEmail(true);
+                    setTextErrEmail(res.data.msgError || 'Error desconocido');
                 }
             })
             .catch((error) => {
