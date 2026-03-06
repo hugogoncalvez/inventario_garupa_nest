@@ -1,6 +1,7 @@
+import api, { URI } from '../../config.js';
 import React, { useState, useEffect } from 'react';
-import { URI } from '../../config';
-import axios from 'axios';
+
+
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -51,10 +52,10 @@ export default function ModalRegistrarRecarga({ open, onClose, onRecargaExitosa 
     const fetchData = async () => {
         try {
             const [insumosGranelRes, cartuchosRes, areasRes, impresorasRes] = await Promise.all([
-                axios.get(`${URI}/insumos-granel`),
-                axios.get(`${URI}/tintas/cartuchos?includeInsumoGranel=true`),
-                axios.get(`${URI}/areas`),
-                axios.get(`${URI}/tintas/impresoras`)
+                api.get(`${URI}/insumos-granel`),
+                api.get(`${URI}/tintas/cartuchos?includeInsumoGranel=true`),
+                api.get(`${URI}/areas`),
+                api.get(`${URI}/tintas/impresoras`)
             ]);
             setInsumosGranel(insumosGranelRes.data);
             setCartuchosRecargables(cartuchosRes.data.filter(c => c.es_recargable));
@@ -96,7 +97,7 @@ export default function ModalRegistrarRecarga({ open, onClose, onRecargaExitosa 
         }
 
         try {
-            await axios.post(`${URI}/tintas/movimientos/recarga`, {
+            await api.post(`${URI}/tintas/movimientos/recarga`, {
                 insumo_granel_id: selectedInsumoGranelId,
                 unidad_cartucho_id: selectedCartuchoId,
                 impresora_id: selectedImpresoraId,

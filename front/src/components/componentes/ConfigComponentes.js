@@ -1,6 +1,7 @@
+import api, { URI } from '../../config.js';
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
-import axios from 'axios';
-import { URI } from '../../config';
+
+
 import Typography from '@mui/material/Typography';
 import ConfirDialog from '../dialogs/ShowConfirm'
 
@@ -65,7 +66,7 @@ export const ConfigComponentes = () => {
     }));
 
     const getTipos = useCallback(async () => {
-        const res = await axios.get(`${URI}/tipos`);
+        const res = await api.get(`${URI}/tipos`);
         setTipos(res.data);
     }, [setTipos]);
 
@@ -124,11 +125,11 @@ export const ConfigComponentes = () => {
 
         if (validate(data)) {
             if (isUpdate) {
-                await axios.put(`${URI}/tipos/${id}`, {
+                await api.put(`${URI}/tipos/${id}`, {
                     tipo: data.tipo,
                 });
             } else {
-                await axios.post(`${URI}/tipos/create`, {
+                await api.post(`${URI}/tipos/create`, {
                     tipo: data.tipo,
                 });
             }
@@ -139,7 +140,7 @@ export const ConfigComponentes = () => {
     }
 
     const deletetipos = async () => {
-        await axios.delete(`${URI}/tipos/${id}`)
+        await api.delete(`${URI}/tipos/${id}`)
         getTipos();
     }
 

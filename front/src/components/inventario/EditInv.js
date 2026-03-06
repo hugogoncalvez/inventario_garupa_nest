@@ -1,5 +1,6 @@
-import axios from "axios";
-import { URI } from '../../config';
+import api, { URI } from '../../config.js';
+
+
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -23,18 +24,18 @@ const EditInv = () => {
     const [areas, setAreas] = useState([])
 
     const getComponentes = async () => {
-        const res = await axios.get(`${URI}/tipos`);
+        const res = await api.get(`${URI}/tipos`);
 
         setComponentes(res.data);
     }
     const getEstado = async () => {
-        const res = await axios.get(`${URI}/estado`);
+        const res = await api.get(`${URI}/estado`);
 
         setEstados(res.data);
     }
 
     const getAreas = async () => {
-        const res = await axios.get(`${URI}/areas`);
+        const res = await api.get(`${URI}/areas`);
 
         setAreas(res.data);
     }
@@ -71,7 +72,7 @@ const EditInv = () => {
     }, []);
 
     const getInvById = async () => {
-        const res = await axios.get(`${URI}/inventario/${id}`);
+        const res = await api.get(`${URI}/inventario/${id}`);
 
         setNumInventario(res.data.num_inventario)
         setdescripcion(res.data.descripcion)
@@ -142,7 +143,7 @@ const EditInv = () => {
 
 
 
-        validado && await axios.put(`${URI}/inventario/${id}`, {
+        validado && await api.put(`${URI}/inventario/${id}`, {
 
             num_inventario: numInventario,
             num_pc: numPc,

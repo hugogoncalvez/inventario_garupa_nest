@@ -1,6 +1,7 @@
+import api, { URI } from '../../config.js';
 import React, { useState, useEffect } from 'react';
-import { URI } from '../../config';
-import axios from 'axios';
+
+
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -199,7 +200,7 @@ export const ReportesTinta = () => {
             const desdeDate = new Date(desdeYear, desdeMonth - 1, desdeDay);
             desdeDate.setHours(0, 0, 0, 0);
 
-            const res = await axios.get(`${URI}/reportes/consumo-por-area`, {
+            const res = await api.get(`${URI}/reportes/consumo-por-area`, {
                 params: {
                     desde: desdeDate.toISOString(),
                     hasta: hastaDate.toISOString()

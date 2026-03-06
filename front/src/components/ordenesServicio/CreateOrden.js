@@ -1,5 +1,6 @@
-import axios from "axios";
-import { URI } from '../../config';
+import api, { URI } from '../../config.js';
+
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -24,7 +25,7 @@ const CreateOrden = () => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        await axios.post(`${URI}/ordenes`, {
+        await api.post(`${URI}/ordenes`, {
             id_equipo: id_equipo,
             problema_reportado: problema_reportado,
             tecnico_asignado: tecnico_asignado,

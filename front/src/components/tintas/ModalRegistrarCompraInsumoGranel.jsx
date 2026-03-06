@@ -1,5 +1,6 @@
+import api, { URI } from '../../config.js';
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -11,7 +12,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import useAuth from '../../hooks/useAuth';
 
-import { URI } from '../../config';
+
 
 export default function ModalRegistrarCompraInsumoGranel({ open, onClose, onCompraExitosa }) {
     const { auth } = useAuth();
@@ -32,7 +33,7 @@ export default function ModalRegistrarCompraInsumoGranel({ open, onClose, onComp
 
     const fetchInsumosGranel = async () => {
         try {
-            const res = await axios.get(`${URI}/insumos-granel`);
+            const res = await api.get(`${URI}/insumos-granel`);
             setInsumosGranel(res.data);
         } catch (err) {
             console.error("Error fetching insumos a granel for purchase modal:", err);
@@ -47,7 +48,7 @@ export default function ModalRegistrarCompraInsumoGranel({ open, onClose, onComp
         }
 
         try {
-            await axios.post(`${URI}/insumos-granel/movimientos/compra`, {
+            await api.post(`${URI}/insumos-granel/movimientos/compra`, {
                 insumo_granel_id: selectedInsumoGranelId,
                 cantidad: parseFloat(cantidad),
                 usuario_id: auth.id

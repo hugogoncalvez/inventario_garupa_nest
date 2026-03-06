@@ -1,5 +1,6 @@
-import axios from "axios";
-import { URI } from '../../config';
+import api, { URI } from '../../config.js';
+
+
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -27,7 +28,7 @@ const EditOrden = () => {
 
     useEffect(() => {
         const getOrdenById = async () => {
-            const res = await axios.get(`${URI}/ordenes/${id}`);
+            const res = await api.get(`${URI}/ordenes/${id}`);
             setIdEquipo(res.data.id_equipo);
             setProblemaReportado(res.data.problema_reportado);
             setTrabajoRealizado(res.data.trabajo_realizado);
@@ -40,7 +41,7 @@ const EditOrden = () => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        await axios.put(`${URI}/ordenes/${id}`, {
+        await api.put(`${URI}/ordenes/${id}`, {
             id_equipo: id_equipo,
             problema_reportado: problema_reportado,
             trabajo_realizado: trabajo_realizado,

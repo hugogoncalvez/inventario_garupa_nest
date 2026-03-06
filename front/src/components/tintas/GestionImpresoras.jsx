@@ -1,6 +1,7 @@
+import api, { URI } from '../../config.js';
 import React, { useState, useEffect, useMemo } from 'react';
-import axios from 'axios';
-import { URI } from '../../config';
+
+
 import Typography from '@mui/material/Typography';
 import ConfirmDialog from '../dialogs/ShowConfirm'; // Asegúrate de que el nombre sea correcto
 import Table from '@mui/material/Table';
@@ -136,7 +137,7 @@ export const GestionImpresoras = () => {
 
     const getImpresoras = async () => {
         try {
-            const res = await axios.get(`${URI}/tintas/impresoras`);
+            const res = await api.get(`${URI}/tintas/impresoras`);
             setImpresoras(res.data);
         } catch (error) {
             console.error("Error al obtener las impresoras:", error);
@@ -145,7 +146,7 @@ export const GestionImpresoras = () => {
 
     const getAreas = async () => {
         try {
-            const res = await axios.get(`${URI}/areas`);
+            const res = await api.get(`${URI}/areas`);
             setAreas(res.data);
         } catch (error) {
             console.error("Error al obtener las áreas:", error);
@@ -216,9 +217,9 @@ export const GestionImpresoras = () => {
         try {
             const printerData = { modelo: modelo.trim(), marca: marca.trim(), area_id: areaId };
             if (isUpdate) {
-                await axios.put(`${URI}/tintas/impresoras/${id}`, printerData);
+                await api.put(`${URI}/tintas/impresoras/${id}`, printerData);
             } else {
-                await axios.post(`${URI}/tintas/impresoras`, printerData);
+                await api.post(`${URI}/tintas/impresoras`, printerData);
             }
             setIsUpdate(false);
             getImpresoras(); // Recargar la lista
@@ -234,7 +235,7 @@ export const GestionImpresoras = () => {
 
     const deleteImpresora = async () => {
         try {
-            await axios.delete(`${URI}/tintas/impresoras/${id}`);
+            await api.delete(`${URI}/tintas/impresoras/${id}`);
             getImpresoras();
         } catch (error) {
             console.error("Error al eliminar la impresora:", error);

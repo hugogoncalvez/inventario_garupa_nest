@@ -1,6 +1,7 @@
+import api, { URI } from '../../config.js';
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { URI } from '../../config';
+
+
 import Typography from '@mui/material/Typography';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -136,7 +137,7 @@ export const GestionInsumosGranel = () => {
 
     const getInsumosGranel = async () => {
         try {
-            const res = await axios.get(`${URI}/insumos-granel`);
+            const res = await api.get(`${URI}/insumos-granel`);
             setInsumosGranel(res.data);
         } catch (err) {
             console.error("Error al obtener insumos a granel:", err);
@@ -171,9 +172,9 @@ export const GestionInsumosGranel = () => {
                 stock_minimo: parseFloat(stockMinimo)
             };
             if (isUpdate) {
-                await axios.put(`${URI}/insumos-granel/${id}`, data);
+                await api.put(`${URI}/insumos-granel/${id}`, data);
             } else {
-                await axios.post(`${URI}/insumos-granel`, data);
+                await api.post(`${URI}/insumos-granel`, data);
             }
             clearForm();
             getInsumosGranel();
@@ -202,7 +203,7 @@ export const GestionInsumosGranel = () => {
         setOpenConfirm(false);
         if (confirm && idToDelete) {
             try {
-                await axios.delete(`${URI}/insumos-granel/${idToDelete}`, { data: { usuario_id: auth.id } });
+                await api.delete(`${URI}/insumos-granel/${idToDelete}`, { data: { usuario_id: auth.id } });
                 getInsumosGranel();
             } catch (err) {
                 console.error("Error al eliminar insumo a granel:", err.response ? err.response.data : err);
@@ -242,7 +243,7 @@ export const GestionInsumosGranel = () => {
 
         if (nuevaCantidad !== undefined && nuevaCantidad !== null) { // Check if user didn't cancel
             try {
-                await axios.post(`${URI}/insumos-granel/movimientos/ajuste`, {
+                await api.post(`${URI}/insumos-granel/movimientos/ajuste`, {
                     insumo_granel_id: insumo.id,
                     nueva_cantidad: parseFloat(nuevaCantidad),
                     usuario_id: auth.id // Use auth.id

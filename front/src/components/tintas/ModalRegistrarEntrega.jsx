@@ -1,6 +1,7 @@
+import api, { URI } from '../../config.js';
 import React, { useState, useEffect } from 'react';
-import { URI } from '../../config';
-import axios from 'axios';
+
+
 import {
     Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, MenuItem,
     Typography, Grid, IconButton, Table, TableBody, TableCell, TableContainer,
@@ -36,9 +37,9 @@ export default function ModalRegistrarEntrega({ open, onClose, onEntregaExitosa 
             const fetchData = async () => {
                 try {
                     const [areasRes, impresorasRes, insumosRes] = await Promise.all([
-                        axios.get(`${URI}/areas`),
-                        axios.get(`${URI}/tintas/impresoras`),
-                        axios.get(`${URI}/tintas/cartuchos`)
+                        api.get(`${URI}/areas`),
+                        api.get(`${URI}/tintas/impresoras`),
+                        api.get(`${URI}/tintas/cartuchos`)
                     ]);
                     setAreas(areasRes.data);
                     setImpresoras(impresorasRes.data);
@@ -126,7 +127,7 @@ export default function ModalRegistrarEntrega({ open, onClose, onEntregaExitosa 
                 }))
             };
 
-            await axios.post(`${URI}/tintas/movimientos/entrega`, payload);
+            await api.post(`${URI}/tintas/movimientos/entrega`, payload);
 
             const area = areas.find(a => a.id === selectedAreaId);
             const itemsParaPdf = listaEntregas.map(item => ({

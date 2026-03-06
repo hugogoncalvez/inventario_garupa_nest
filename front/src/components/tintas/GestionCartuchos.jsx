@@ -1,5 +1,6 @@
-import axios from 'axios';
-import { URI } from '../../config';
+import api, { URI } from '../../config.js';
+
+
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from 'react';
 import { styled } from '@mui/material/styles';
@@ -125,7 +126,7 @@ const GestionCartuchos = () => {
     // Obtener datos de la API
     const getCartuchos = async () => {
         try {
-            const res = await axios.get(`${URI}/tintas/cartuchos`, { params: { includeInsumoGranel: 'true' } });
+            const res = await api.get(`${URI}/tintas/cartuchos`, { params: { includeInsumoGranel: 'true' } });
             setCartuchos(res.data);
         } catch (error) {
             console.error("Error al obtener los cartuchos:", error);
@@ -135,7 +136,7 @@ const GestionCartuchos = () => {
     // Eliminar un cartucho
     const deleteCartucho = async (id) => {
         try {
-            await axios.delete(`${URI}/tintas/cartuchos/${id}`, { data: { usuario_id: auth.id } });
+            await api.delete(`${URI}/tintas/cartuchos/${id}`, { data: { usuario_id: auth.id } });
             getCartuchos(); // Refrescar lista
         } catch (error) {
             console.error("Error al eliminar el cartucho:", error);
@@ -191,7 +192,7 @@ const GestionCartuchos = () => {
 
         if (nuevaCantidad !== undefined && nuevaCantidad !== null) {
             try {
-                await axios.post(`${URI}/tintas/movimientos/ajuste`, {
+                await api.post(`${URI}/tintas/movimientos/ajuste`, {
                     cartucho_id: cartucho.id,
                     nueva_cantidad: parseInt(nuevaCantidad),
                     usuario_id: auth.id

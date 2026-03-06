@@ -1,5 +1,6 @@
-import axios from 'axios';
-import { URI } from '../../config';
+import api, { URI } from '../../config.js';
+
+
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo } from 'react';
 import { styled } from '@mui/material/styles';
@@ -161,7 +162,7 @@ const ShowInventario = () => {
     }, [])
 
     const getInventario = async () => {
-        const res = await axios.get(`${URI}/inventario/`);
+        const res = await api.get(`${URI}/inventario/`);
         setInventario(res.data);
 
         let initialMarcados = []; // Initialize marcados
@@ -171,15 +172,15 @@ const ShowInventario = () => {
         setMarcados(initialMarcados);
     };
     const getComponentes = async () => {
-        const res = await axios.get(`${URI}/tipos`);
+        const res = await api.get(`${URI}/tipos`);
         setComponentes(res.data);
     }
     const getEstado = async () => {
-        const res = await axios.get(`${URI}/estado`);
+        const res = await api.get(`${URI}/estado`);
         setEstados(res.data);
     }
     const getAreas = async () => {
-        const res = await axios.get(`${URI}/areas`);
+        const res = await api.get(`${URI}/areas`);
         setAreas(res.data);
     }
 
@@ -249,7 +250,7 @@ const ShowInventario = () => {
     };
 
     const deleteInv = async () => {
-        await axios.delete(`${URI}/inventario/${id}`)
+        await api.delete(`${URI}/inventario/${id}`)
         getInventario();
     }
 

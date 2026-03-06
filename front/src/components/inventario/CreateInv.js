@@ -1,5 +1,6 @@
-import axios from "axios";
-import { URI } from '../../config';
+import api, { URI } from '../../config.js';
+
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -35,23 +36,23 @@ const CreateInv = () => {
     }, [])
 
     const getNextInvNumber = async () => {
-        const res = await axios.get(`${URI}/inventario/next`);
+        const res = await api.get(`${URI}/inventario/next`);
         setNumInventario(res.data.nextInvNumber);
     };
 
     const getComponentes = async () => {
-        const res = await axios.get(`${URI}/tipos`);
+        const res = await api.get(`${URI}/tipos`);
 
         setComponentes(res.data);
     }
     const getEstado = async () => {
-        const res = await axios.get(`${URI}/estado`);
+        const res = await api.get(`${URI}/estado`);
 
         setEstados(res.data);
     }
 
     const getAreas = async () => {
-        const res = await axios.get(`${URI}/areas`);
+        const res = await api.get(`${URI}/areas`);
 
         setAreas(res.data);
     }
@@ -130,7 +131,7 @@ const CreateInv = () => {
 
         let validado = validate(data)
 
-        validado && await axios.post(`${URI}/inventario/create`, {
+        validado && await api.post(`${URI}/inventario/create`, {
             num_inventario: numInventario.trim(),
             num_pc: data.get('numPC').trim(),
             tipo: data.tipo,

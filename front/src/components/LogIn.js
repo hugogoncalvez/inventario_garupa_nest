@@ -1,5 +1,5 @@
+import api, { URI as BASE_URI } from '../config.js';
 import React, { useState } from 'react';
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import Avatar from '@mui/material/Avatar';
@@ -15,8 +15,6 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 
-
-import { URI as BASE_URI } from '../config';
 const URI = `${BASE_URI}/auth/login`;
 
 const theme = createTheme();
@@ -42,32 +40,8 @@ const LogIn = () => {
     const [isEmail, setIsEmail] = useState(false)
     const [textErrPass, setTextErrPass] = useState('La contraña debe tener 6 caracteres como mínimo')
     const [textErrEmail, setTextErrEmail] = useState('')
-    const [isServerAwake, setIsServerAwake] = useState(true); // Por defecto asuminos true para no molestar en local
-    const [isCheckingServer, setIsCheckingServer] = useState(false);
 
     const navigate = useNavigate();
-
-    // Efecto para despertar al servidor (Render Cold Start)
-    React.useEffect(() => {
-        const wakeUpServer = async () => {
-            // Solo intentamos despertar si BASE_URI no es localhost de forma simple o siempre para estar seguros
-            if (!BASE_URI.includes('localhost')) {
-                setIsServerAwake(false);
-                setIsCheckingServer(true);
-                try {
-                    await axios.get(BASE_URI, { timeout: 60000 }); // Esperamos hasta 60s
-                    setIsServerAwake(true);
-                } catch (error) {
-                    console.error("Error despertando al servidor:", error);
-                    // Si falla por CORS o red, igual permitimos intentar el login
-                    setIsServerAwake(true);
-                } finally {
-                    setIsCheckingServer(false);
-                }
-            }
-        };
-        wakeUpServer();
-    }, []);
 
     const validate = (data) => {
         let respuesta = {}
@@ -96,7 +70,7 @@ const LogIn = () => {
         let password = data.get('password').trim();
 
 
-        validado && axios.post(URI, {
+        validado && api.post(URI, {
             usuario,
             password
         })

@@ -1,6 +1,7 @@
+import api, { URI } from '../../config.js';
 import React, { useState, useEffect } from 'react';
-import { URI } from '../../config';
-import axios from 'axios';
+
+
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -33,7 +34,7 @@ export default function ModalRegistrarCompra({ open, onClose, onCompraExitosa })
 
     const fetchInsumos = async () => {
         try {
-            const res = await axios.get(`${URI}/tintas/cartuchos`);
+            const res = await api.get(`${URI}/tintas/cartuchos`);
             setInsumos(res.data);
         } catch (err) {
             console.error("Error fetching insumos for purchase modal:", err);
@@ -48,7 +49,7 @@ export default function ModalRegistrarCompra({ open, onClose, onCompraExitosa })
         }
 
         try {
-            await axios.post(`${URI}/tintas/movimientos/compra`, {
+            await api.post(`${URI}/tintas/movimientos/compra`, {
                 cartucho_id: selectedInsumoId,
                 cantidad: parseInt(cantidad),
                 usuario_id: auth.id // Asegúrate de que 'auth.id' contenga el ID del usuario logueado

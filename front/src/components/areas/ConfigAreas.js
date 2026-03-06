@@ -1,6 +1,7 @@
+import api, { URI } from '../../config.js';
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
-import axios from 'axios';
-import { URI } from '../../config';
+
+
 import Typography from '@mui/material/Typography';
 import ConfirDialog from '../dialogs/ShowConfirm'
 
@@ -68,7 +69,7 @@ export const ConfigAreas = () => {
     }));
 
     const getAreas = useCallback(async () => {
-        const res = await axios.get(`${URI}/areas`);
+        const res = await api.get(`${URI}/areas`);
         setAreas(res.data);
     }, [setAreas]); // setAreas es estable, URI es constante
 
@@ -143,12 +144,12 @@ export const ConfigAreas = () => {
 
         if (validado) {
             if (isUpdate) {
-                await axios.put(`${URI}/areas/${id}`, {
+                await api.put(`${URI}/areas/${id}`, {
                     area: data.descrip,
                     responsable: data.resp,
                 });
             } else {
-                await axios.post(`${URI}/areas/create`, {
+                await api.post(`${URI}/areas/create`, {
                     area: data.descrip,
                     responsable: data.resp,
                 });
@@ -161,7 +162,7 @@ export const ConfigAreas = () => {
     }
 
     const deleteAreas = async () => {
-        await axios.delete(`${URI}/areas/${id}`)
+        await api.delete(`${URI}/areas/${id}`)
         getAreas();
     }
 

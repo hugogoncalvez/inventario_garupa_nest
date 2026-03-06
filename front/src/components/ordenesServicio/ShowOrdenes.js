@@ -1,5 +1,6 @@
-import axios from 'axios';
-import { URI } from '../../config';
+import api, { URI } from '../../config.js';
+
+
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo } from 'react';
 import { styled } from '@mui/material/styles';
@@ -140,7 +141,7 @@ const ShowOrdenes = () => {
     }, []);
 
     const getOrdenes = async () => {
-        const res = await axios.get(`${URI}/ordenes`);
+        const res = await api.get(`${URI}/ordenes`);
         if (Array.isArray(res.data)) {
             setOrdenes(res.data);
         } else {
@@ -150,7 +151,7 @@ const ShowOrdenes = () => {
     };
 
     const getEstados = async () => {
-        const res = await axios.get(`${URI}/estado`);
+        const res = await api.get(`${URI}/estado`);
         setEstados(res.data);
     }
 
@@ -212,7 +213,7 @@ const ShowOrdenes = () => {
     };
 
     const deleteOrden = async () => {
-        await axios.delete(`${URI}/ordenes/${id}`);
+        await api.delete(`${URI}/ordenes/${id}`);
         getOrdenes();
     };
 

@@ -1,6 +1,7 @@
+import api, { URI } from '../../config.js';
 import React, { useState, useEffect, useCallback } from 'react';
-import { URI } from '../../config';
-import axios from 'axios';
+
+
 import { useNavigate, useParams } from "react-router-dom";
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
@@ -27,7 +28,7 @@ export const EditCartucho = () => {
 
     const fetchInsumosGranel = useCallback(async () => {
         try {
-            const res = await axios.get(`${URI}/insumos-granel`);
+            const res = await api.get(`${URI}/insumos-granel`);
             setInsumosGranel(res.data);
         } catch (err) {
             console.error("Error al obtener insumos a granel:", err);
@@ -37,7 +38,7 @@ export const EditCartucho = () => {
 
     const getCartuchoById = useCallback(async () => {
         try {
-            const res = await axios.get(`${URI}/tintas/cartuchos/${id}`);
+            const res = await api.get(`${URI}/tintas/cartuchos/${id}`);
             setCartuchoData({
                 modelo: res.data.modelo,
                 sku: res.data.sku || '',
@@ -86,7 +87,7 @@ export const EditCartucho = () => {
         }
 
         try {
-            await axios.put(`${URI}/tintas/cartuchos/${id}`, {
+            await api.put(`${URI}/tintas/cartuchos/${id}`, {
                 modelo: cartuchoData.modelo.trim(),
                 sku: cartuchoData.sku.trim(),
                 color: cartuchoData.color.trim(),

@@ -1,5 +1,6 @@
+import api, { URI } from '../config.js';
 import React, { useState } from 'react';
-import axios from "axios";
+
 
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
@@ -63,7 +64,7 @@ export const SignUp = () => {
 
         let validado = validate(data)
 
-        validado && axios.post(URI, {
+        validado && api.post(URI, {
             nombre: data.get('nombre').trim(),
             apellido: data.get('apellido').trim(),
             usuario: data.get('email').trim(),

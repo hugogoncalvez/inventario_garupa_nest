@@ -1,6 +1,7 @@
+import api, { URI } from '../../config.js';
 import React, { useState, useEffect } from 'react';
-import { URI } from '../../config';
-import axios from 'axios';
+
+
 import { useNavigate } from "react-router-dom";
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
@@ -25,7 +26,7 @@ export const CreateCartucho = () => {
     useEffect(() => {
         const fetchInsumosGranel = async () => {
             try {
-                const res = await axios.get(`${URI}/insumos-granel`);
+                const res = await api.get(`${URI}/insumos-granel`);
                 setInsumosGranel(res.data);
             } catch (err) {
                 console.error("Error al obtener insumos a granel:", err);
@@ -56,7 +57,7 @@ export const CreateCartucho = () => {
         }
 
         try {
-            await axios.post(`${URI}/tintas/cartuchos`, {
+            await api.post(`${URI}/tintas/cartuchos`, {
                 modelo: cartuchoData.modelo.trim(),
                 sku: cartuchoData.sku.trim(),
                 color: cartuchoData.color.trim(),
