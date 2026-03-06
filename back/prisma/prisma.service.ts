@@ -35,6 +35,18 @@ export class PrismaService
         try {
             await this.$connect();
             console.log('¡CONEXIÓN EXITOSA CON LA BASE DE DATOS!');
+
+            // Heartbeat: Ejecuta una consulta simple cada 30 minutos
+            // para evitar que Aiven o Render cierren la conexión por inactividad.
+            setInterval(async () => {
+                try {
+                    await this.$queryRawUnsafe('SELECT 1');
+                    console.log('DB Heartbeat: Conexión activa ✅');
+                } catch (err) {
+                    console.error('DB Heartbeat Falló:', err.message);
+                }
+            }, 1000 * 60 * 60); // 1 hora
+
         } catch (error) {
             console.error('ERROR AL CONECTAR A LA BASE DE DATOS:', error);
             throw error;
