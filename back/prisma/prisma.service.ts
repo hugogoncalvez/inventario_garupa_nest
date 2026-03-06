@@ -14,7 +14,11 @@ export class PrismaService
             user: process.env.DATABASE_USER,
             password: process.env.DATABASE_PASSWORD,
             database: process.env.DATABASE_NAME,
-            connectionLimit: 10,
+            connectionLimit: 3,
+            allowPublicKeyRetrieval: true,
+            connectTimeout: 20000,
+            acquireTimeout: 20000,
+            idleTimeout: 60000,
         });
         super({ adapter });
     }
