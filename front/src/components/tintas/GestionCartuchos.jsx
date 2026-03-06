@@ -36,11 +36,13 @@ import Select from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import ClearAllIcon from '@mui/icons-material/ClearAll'; // Importar el nuevo icono
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 
 import ModalRegistrarEntrega from './ModalRegistrarEntrega';
 import ModalRegistrarCompra from './ModalRegistrarCompra';
 import ModalRegistrarRecarga from './ModalRegistrarRecarga';
 import useAuth from '../../hooks/useAuth';
+import ReporteInventarioInsumos from '../../pdf/ReporteInventarioInsumos';
 
 // Estilos de la tabla
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -225,6 +227,7 @@ const GestionCartuchos = () => {
                         <Button variant="contained" onClick={() => setOpenCompraModal(true)} startIcon={<ShoppingCartIcon />}>Compra</Button>
                         <Button variant="contained" onClick={() => setOpenEntregaModal(true)} startIcon={<SendIcon />}>Entrega</Button>
                         <Button variant="contained" onClick={() => setOpenRecargaModal(true)} startIcon={<RecyclingIcon />}>Recarga</Button>
+                        <Button variant="contained" onClick={() => ReporteInventarioInsumos(filteredCartuchos)} color="error" startIcon={<PictureAsPdfIcon />}>PDF</Button>
                     </Box>
                 </Grid>
 
