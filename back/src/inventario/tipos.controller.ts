@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Controller('tipos')
@@ -8,6 +8,28 @@ export class TiposController {
     @Get()
     findAll() {
         return this.prisma.tipos.findMany();
+    }
+
+    @Post('create')
+    create(@Body() data: any) {
+        return this.prisma.tipos.create({
+            data,
+        });
+    }
+
+    @Put(':id')
+    update(@Param('id') id: string, @Body() data: any) {
+        return this.prisma.tipos.update({
+            where: { id: Number(id) },
+            data,
+        });
+    }
+
+    @Delete(':id')
+    remove(@Param('id') id: string) {
+        return this.prisma.tipos.delete({
+            where: { id: Number(id) },
+        });
     }
 }
 

@@ -17,7 +17,7 @@ export class InventarioController {
         });
     }
 
-    @Post()
+    @Post('create')
     create(@Body() data: any) {
         return this.prisma.inventarios.create({
             data,
