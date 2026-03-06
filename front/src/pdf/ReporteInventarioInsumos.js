@@ -14,14 +14,7 @@ const ReporteInventarioInsumos = (cartuchos) => {
                     [
                         { ...muniLogo },
                         {
-                            text: 'Reporte de Insumos (Tintas/Toner/Drum)',
-                            fontSize: 16,
-                            bold: true,
-                            alignment: 'center',
-                            margin: [0, 30, 0, 0]
-                        },
-                        {
-                            text: '(Tintas/Toner/Drum)',
+                            text: 'Reporte de Insumos\n(Tintas/Toner/Drum)',
                             fontSize: 16,
                             bold: true,
                             alignment: 'center',
