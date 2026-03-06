@@ -10,6 +10,20 @@ export class InventarioController {
         return this.prisma.inventarios.findMany();
     }
 
+    @Get('next')
+    async getNextInvNumber() {
+        const lastItem = await this.prisma.inventarios.findFirst({
+            orderBy: { id: 'desc' },
+            select: { num_inventario: true }
+        });
+
+        if (!lastItem || !lastItem.num_inventario) return { nextInvNumber: '1' };
+
+        // Intenta incrementar el último número si es numérico
+        const lastNum = parseInt(lastItem.num_inventario);
+        return { nextInvNumber: isNaN(lastNum) ? lastItem.num_inventario + '_1' : (lastNum + 1).toString() };
+    }
+
     @Get(':id')
     findOne(@Param('id') id: string) {
         return this.prisma.inventarios.findUnique({
