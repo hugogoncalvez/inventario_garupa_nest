@@ -227,7 +227,7 @@ const GestionCartuchos = () => {
                         <Button variant="contained" onClick={() => setOpenCompraModal(true)} startIcon={<ShoppingCartIcon />}>Compra</Button>
                         <Button variant="contained" onClick={() => setOpenEntregaModal(true)} startIcon={<SendIcon />}>Entrega</Button>
                         <Button variant="contained" onClick={() => setOpenRecargaModal(true)} startIcon={<RecyclingIcon />}>Recarga</Button>
-                        <Button variant="contained" onClick={() => ReporteInventarioInsumos(filteredCartuchos)} color="error" startIcon={<PictureAsPdfIcon />}>PDF</Button>
+                        <Button variant="contained" onClick={() => ReporteInventarioInsumos(filteredCartuchos)} color="error" startIcon={<PictureAsPdfIcon />}>Reporte PDF</Button>
                     </Box>
                 </Grid>
 

@@ -13,12 +13,19 @@ const ReporteInventarioInsumos = (cartuchos) => {
                 body: [
                     [
                         { ...muniLogo },
-                        { 
-                            text: 'Inventario de Insumos (Tintas/Toner/Drum)', 
-                            fontSize: 16, 
-                            bold: true, 
-                            alignment: 'center', 
-                            margin: [0, 30, 0, 0] 
+                        {
+                            text: 'Reporte de Insumos (Tintas/Toner/Drum)',
+                            fontSize: 16,
+                            bold: true,
+                            alignment: 'center',
+                            margin: [0, 30, 0, 0]
+                        },
+                        {
+                            text: '(Tintas/Toner/Drum)',
+                            fontSize: 16,
+                            bold: true,
+                            alignment: 'center',
+                            margin: [0, 30, 0, 0]
                         },
                         { ...infoLogo }
                     ]
@@ -28,9 +35,9 @@ const ReporteInventarioInsumos = (cartuchos) => {
             layout: 'noBorders'
         },
         footer: function (currentPage, pageCount) {
-            return { 
-                text: `Página ${currentPage.toString()} de ${pageCount} - Generado el ${fechaActual}`, 
-                alignment: 'center', 
+            return {
+                text: `Página ${currentPage.toString()} de ${pageCount} - Generado el ${fechaActual}`,
+                alignment: 'center',
                 margin: [0, 20, 0, 0],
                 fontSize: 10
             };
@@ -61,9 +68,9 @@ const ReporteInventarioInsumos = (cartuchos) => {
                             { text: c.color || '-', fontSize: 10, alignment: 'center' },
                             { text: c.tipo, fontSize: 10, alignment: 'center' },
                             { text: c.es_recargable ? 'Sí' : 'No', fontSize: 10, alignment: 'center' },
-                            { 
-                                text: c.stock_unidades.toString(), 
-                                fontSize: 10, 
+                            {
+                                text: c.stock_unidades.toString(),
+                                fontSize: 10,
                                 alignment: 'center',
                                 bold: c.stock_unidades <= c.stock_minimo_unidades,
                                 color: c.stock_unidades <= c.stock_minimo_unidades ? 'red' : 'black'
