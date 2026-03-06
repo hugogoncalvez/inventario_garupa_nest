@@ -126,15 +126,6 @@ const LogIn = () => {
                         Ingresar
                     </Typography>
 
-                    {!isServerAwake && (
-                        <Alert
-                            severity="info"
-                            sx={{ mt: 2, width: '100%', alignItems: 'center' }}
-                            icon={isCheckingServer ? <CircularProgress size={20} /> : undefined}
-                        >
-                            Despertando servidor... (esto puede tardar hasta 50 segundos en el primer acceso)
-                        </Alert>
-                    )}
 
                     <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
                         <TextField

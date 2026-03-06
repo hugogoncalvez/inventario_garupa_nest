@@ -1,4 +1,4 @@
-import api, { URI } from '../config.js';
+import api, { URI as BASE_URI } from '../config.js';
 import React, { useState } from 'react';
 
 
@@ -19,8 +19,9 @@ import Alerta from './dialogs/ShowAlert'
 
 
 
-import { URI as BASE_URI } from '../config';
+
 const URI = `${BASE_URI}/register`;
+
 
 const theme = createTheme();
 
