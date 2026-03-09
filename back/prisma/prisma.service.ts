@@ -8,16 +8,17 @@ export class PrismaService
     
     private heartbeatInterval: NodeJS.Timeout;
 
-    // Eliminamos el constructor para que Prisma 7 use la configuración por defecto
-    // que toma automáticamente de la variable de entorno DATABASE_URL.
+    constructor() {
+        super();
+    }
 
     async onModuleInit() {
-        console.log('CONECTANDO A BASE DE DATOS (Prisma 7)...');
+        console.log('CONECTANDO A BASE DE DATOS (Prisma 5)...');
         try {
             await this.$connect();
             console.log('¡CONEXIÓN EXITOSA CON LA BASE DE DATOS!');
 
-            // Heartbeat cada 30 min para evitar desconexiones por inactividad
+            // Heartbeat cada 30 min
             this.heartbeatInterval = setInterval(async () => {
                 try {
                     await this.$queryRawUnsafe('SELECT 1');
