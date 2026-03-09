@@ -30,17 +30,33 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  console.log('🚀 Iniciando aplicación...');
+  console.log('*** INICIANDO BOOTSTRAP DEL SERVIDOR ***');
 
-  const app = await NestFactory.create(AppModule);
+  try {
+    const app = await NestFactory.create(AppModule);
 
-  console.log('📦 Aplicación Nest creada');
+    app.enableShutdownHooks();
 
-  const port = process.env.PORT || 8000;
+    app.enableCors({
+      origin: true,
+      credentials: true,
+      methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+      allowedHeaders: '*',
+    });
 
-  await app.listen(port);
+    const port = process.env.PORT || 8000;
 
-  console.log(`✅ Servidor escuchando en el puerto ${port}`);
+    console.log(`Intentando escuchar en puerto: ${port}`);
+
+    await app.listen(port, '0.0.0.0');
+
+    console.log(`✅ Servidor escuchando en puerto ${port}`);
+
+  } catch (error) {
+    console.error('*** ERROR CRÍTICO EN EL ARRANQUE ***');
+    console.error(error);
+    process.exit(1);
+  }
 }
 
 bootstrap();
