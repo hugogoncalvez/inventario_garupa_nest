@@ -8,11 +8,8 @@ export class PrismaService
     
     private heartbeatInterval: NodeJS.Timeout;
 
-    constructor() {
-        // En Prisma 7, si ya tienes DATABASE_URL en el entorno, 
-        // no hace falta pasar nada al constructor.
-        super();
-    }
+    // Eliminamos el constructor para que Prisma 7 use la configuración por defecto
+    // que toma automáticamente de la variable de entorno DATABASE_URL.
 
     async onModuleInit() {
         console.log('CONECTANDO A BASE DE DATOS (Prisma 7)...');
@@ -20,7 +17,7 @@ export class PrismaService
             await this.$connect();
             console.log('¡CONEXIÓN EXITOSA CON LA BASE DE DATOS!');
 
-            // Heartbeat cada 30 min para mantener la conexión viva en Clever Cloud
+            // Heartbeat cada 30 min para evitar desconexiones por inactividad
             this.heartbeatInterval = setInterval(async () => {
                 try {
                     await this.$queryRawUnsafe('SELECT 1');
