@@ -5,6 +5,7 @@ async function bootstrap() {
   console.log('*** INICIANDO BOOTSTRAP DEL SERVIDOR ***');
   try {
     const app = await NestFactory.create(AppModule);
+    app.enableShutdownHooks();
 
     app.enableCors({
       origin: true,
