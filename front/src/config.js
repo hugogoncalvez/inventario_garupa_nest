@@ -10,11 +10,15 @@ export const URI = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 const api = axios.create({ baseURL: URI });
 
 let isWakingUp = false;
+let wakeUpTimer = null;
 
 function showWakeUpBanner() {
+    if (isWakingUp) return;
+    isWakingUp = true;
+    
     Swal.fire({
-        title: 'El servidor está despertando...',
-        html: 'La instancia gratuita de Render se "duerme" tras 15 min de inactividad.<br><b>Por favor, espera unos segundos (hasta 60s).</b>',
+        title: 'Despertando el servidor...',
+        html: 'La instancia gratuita de Render se "duerme" por inactividad.<br><b>Estamos reconectando (puede tardar 30-60 seg).</b>',
         allowOutsideClick: false,
         allowEscapeKey: false,
         showConfirmButton: false,
@@ -23,62 +27,66 @@ function showWakeUpBanner() {
         },
         background: '#fff',
         color: '#1976d2',
-        backdrop: `
-            rgba(25, 118, 210, 0.4)
-            left top
-            no-repeat
-        `
+        backdrop: 'rgba(25, 118, 210, 0.4)'
     });
 }
 
 function hideWakeUpBanner() {
-    Swal.close();
-}
-
-async function waitForServer(timeoutMs = 90000) {
-    const start = Date.now();
-    while (Date.now() - start < timeoutMs) {
-        try {
-            await axios.get(URI, { timeout: 10000 });
-            return true; // servidor despierto
-        } catch {
-            await new Promise(r => setTimeout(r, 5000));
-        }
+    if (isWakingUp) {
+        Swal.close();
+        isWakingUp = false;
     }
-    return false; // timeout
 }
 
-// Interceptor de respuesta: detecta fallo de red y reintenta automáticamente
+// Interceptor de PETICIÓN: Detecta si la respuesta tarda mucho
+api.interceptors.request.use(config => {
+    // Si ya estamos en proceso de despertar, no hacemos nada nuevo
+    if (isWakingUp) return config;
+
+    // Ponemos un temporizador: si en 3 segundos no hay respuesta, mostramos el cartel
+    // Esto es proactivo: avisa ANTES de que la petición falle por timeout
+    wakeUpTimer = setTimeout(() => {
+        showWakeUpBanner();
+    }, 3000); 
+
+    return config;
+}, error => Promise.reject(error));
+
+// Interceptor de RESPUESTA: Limpia el temporizador y cierra el cartel
 api.interceptors.response.use(
-    response => response,
+    response => {
+        // Si la respuesta llega rápido, cancelamos el aviso
+        clearTimeout(wakeUpTimer);
+        hideWakeUpBanner();
+        return response;
+    },
     async error => {
+        clearTimeout(wakeUpTimer);
         const originalRequest = error.config;
 
-        // Solo actúa si es un error de red (sin respuesta del servidor)
-        // y si no es un reintento ya en curso
-        const isNetworkError = !error.response;
-        const isRetry = originalRequest._wakeRetry;
-
-        if (isNetworkError && !isRetry) {
+        // Si es un error de red o timeout
+        const isNetworkError = !error.response || error.code === 'ECONNABORTED';
+        
+        if (isNetworkError && !originalRequest._wakeRetry) {
             originalRequest._wakeRetry = true;
+            showWakeUpBanner();
 
-            if (!isWakingUp) {
-                isWakingUp = true;
-                showWakeUpBanner();
-                const serverUp = await waitForServer();
-                hideWakeUpBanner();
-                isWakingUp = false;
-
-                if (!serverUp) {
-                    return Promise.reject(new Error('El servidor no respondió después de 90 segundos.'));
+            // Reintentar hasta que el servidor responda
+            const start = Date.now();
+            const timeoutMs = 90000;
+            
+            while (Date.now() - start < timeoutMs) {
+                try {
+                    await axios.get(URI, { timeout: 5000 });
+                    hideWakeUpBanner();
+                    return api(originalRequest); // Reintentar la original
+                } catch (e) {
+                    await new Promise(r => setTimeout(r, 3000));
                 }
-            } else {
-                // Otro request llegó mientras el wake-up ya estaba en curso: esperar
-                await new Promise(r => setTimeout(r, 15000));
             }
-
-            // Reintentar la petición original
-            return api(originalRequest);
+            
+            hideWakeUpBanner();
+            Swal.fire('Error', 'El servidor no pudo despertar a tiempo.', 'error');
         }
 
         return Promise.reject(error);
