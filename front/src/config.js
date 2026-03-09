@@ -1,4 +1,5 @@
 import axios from 'axios';
+import Swal from 'sweetalert2';
 
 export const URI = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
@@ -9,33 +10,29 @@ export const URI = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 const api = axios.create({ baseURL: URI });
 
 let isWakingUp = false;
-let wakeUpOverlay = null;
 
 function showWakeUpBanner() {
-    if (wakeUpOverlay) return;
-    wakeUpOverlay = document.createElement('div');
-    wakeUpOverlay.id = 'render-wakeup-banner';
-    wakeUpOverlay.innerHTML = `
-        <div style="
-            position: fixed; top: 0; left: 0; width: 100%; z-index: 99999;
-            background: linear-gradient(90deg, #1976d2, #42a5f5);
-            color: white; text-align: center; padding: 12px 16px;
-            font-family: sans-serif; font-size: 14px; font-weight: 500;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-        ">
-            <span style="font-size:20px">⏳</span>
-            Reconectando con el servidor (puede tardar hasta 60 seg)...
-        </div>
-    `;
-    document.body.prepend(wakeUpOverlay);
+    Swal.fire({
+        title: 'El servidor está despertando...',
+        html: 'La instancia gratuita de Render se "duerme" tras 15 min de inactividad.<br><b>Por favor, espera unos segundos (hasta 60s).</b>',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        didOpen: () => {
+            Swal.showLoading();
+        },
+        background: '#fff',
+        color: '#1976d2',
+        backdrop: `
+            rgba(25, 118, 210, 0.4)
+            left top
+            no-repeat
+        `
+    });
 }
 
 function hideWakeUpBanner() {
-    if (wakeUpOverlay) {
-        wakeUpOverlay.remove();
-        wakeUpOverlay = null;
-    }
+    Swal.close();
 }
 
 async function waitForServer(timeoutMs = 90000) {
