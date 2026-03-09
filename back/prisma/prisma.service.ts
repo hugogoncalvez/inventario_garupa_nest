@@ -15,7 +15,7 @@ export class PrismaService
     constructor() {
         // Cargar certificado SSL de Aiven si existe (ca.pem está en back/ca.pem)
         // Si vuelves a Clever Cloud y no necesitas SSL, esto se puede ignorar o comentar
-        let sslConfig = null;
+        let sslConfig: any = undefined;
         try {
             const caPath = path.join(__dirname, '../../ca.pem');
             if (fs.existsSync(caPath)) {
