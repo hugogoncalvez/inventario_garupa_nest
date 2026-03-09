@@ -12,12 +12,6 @@ export class PrismaService
         console.log('✅ BASE DE DATOS CONECTADA');
     }
 
-    async enableShutdownHooks(app: any) {
-        (this as any).$on('beforeExit', async () => {
-            await app.close();
-        });
-    }
-
     async onModuleDestroy() {
         console.log('--- LIBERANDO CONEXIÓN ---');
         await this.$disconnect();

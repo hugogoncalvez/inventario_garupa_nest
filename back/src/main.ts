@@ -28,7 +28,6 @@
 // bootstrap();
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { PrismaService } from '../prisma/prisma.service';
 
 async function bootstrap() {
   console.log('🚀 Iniciando aplicación...');
@@ -36,11 +35,6 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   console.log('📦 Aplicación Nest creada');
-
-  // Activar cierre correcto de conexiones de Prisma
-  const prismaService = app.get(PrismaService);
-  console.log('🔌 Activando shutdown hooks de Prisma...');
-  await prismaService.enableShutdownHooks(app);
 
   const port = process.env.PORT || 8000;
 
