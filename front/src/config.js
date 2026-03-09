@@ -7,6 +7,7 @@ const api = axios.create({ baseURL: URI });
 
 let isBannerVisible = false;
 let wakeUpTimer = null;
+let activeRequests = 0;
 
 function showWakeUpBanner() {
     if (isBannerVisible) return;
@@ -40,24 +41,34 @@ function closeBanner() {
 
 // Interceptor de PETICIÓN
 api.interceptors.request.use(config => {
-    // Si no es un reintento, ponemos el timer
-    if (!config._wakeRetry) {
+    activeRequests++;
+    // Si es el primer request y no es un reintento, ponemos el timer
+    if (activeRequests === 1 && !config._wakeRetry) {
         wakeUpTimer = setTimeout(() => {
             showWakeUpBanner();
         }, 4000); // 4 segundos de espera antes de avisar
     }
     return config;
-}, error => Promise.reject(error));
+}, error => {
+    activeRequests--;
+    if (activeRequests === 0) closeBanner();
+    return Promise.reject(error);
+});
 
 // Interceptor de RESPUESTA
 api.interceptors.response.use(
     response => {
-        closeBanner();
+        activeRequests--;
+        if (activeRequests === 0) closeBanner();
         return response;
     },
     async error => {
-        closeBanner();
+        activeRequests--;
         const originalRequest = error.config;
+
+        if (activeRequests === 0 && !originalRequest?._wakeRetry) {
+             closeBanner();
+        }
 
         // Caso A: Error 500 o similar (El servidor respondiò pero mal)
         if (error.response) {
