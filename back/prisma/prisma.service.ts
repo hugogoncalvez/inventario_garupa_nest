@@ -6,39 +6,22 @@ export class PrismaService
     extends PrismaClient
     implements OnModuleInit, OnModuleDestroy {
     
-    private heartbeatInterval: NodeJS.Timeout;
-
-    constructor() {
-        super();
-    }
+    // Eliminamos el heartbeat y el constructor manual
+    // Dejamos que Prisma maneje el pool de forma nativa y eficiente.
 
     async onModuleInit() {
-        console.log('CONECTANDO A BASE DE DATOS (Prisma 5)...');
+        console.log('--- CONECTANDO A CLEVER CLOUD (Límite Estricto) ---');
         try {
             await this.$connect();
-            console.log('¡CONEXIÓN EXITOSA CON LA BASE DE DATOS!');
-
-            // Heartbeat cada 30 min
-            this.heartbeatInterval = setInterval(async () => {
-                try {
-                    await this.$queryRawUnsafe('SELECT 1');
-                    console.log('DB Heartbeat: Conexión activa ✅');
-                } catch (err) {
-                    console.error('DB Heartbeat Falló:', err.message);
-                }
-            }, 1000 * 60 * 30);
-
+            console.log('✅ BASE DE DATOS CONECTADA');
         } catch (error) {
-            console.error('ERROR AL CONECTAR A LA BASE DE DATOS:', error);
+            console.error('❌ ERROR DE CONEXIÓN:', error.message);
         }
     }
 
     async onModuleDestroy() {
-        console.log('CERRANDO CONEXIONES A BASE DE DATOS...');
-        if (this.heartbeatInterval) {
-            clearInterval(this.heartbeatInterval);
-        }
+        console.log('--- LIBERANDO CONEXIÓN ---');
         await this.$disconnect();
-        console.log('¡CONEXIONES CERRADAS CORRECTAMENTE!');
+        console.log('✅ CONEXIÓN CERRADA');
     }
 }
