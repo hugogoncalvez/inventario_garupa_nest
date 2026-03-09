@@ -5,18 +5,17 @@ import { PrismaClient } from '@prisma/client';
 export class PrismaService
     extends PrismaClient
     implements OnModuleInit, OnModuleDestroy {
-    
-    // Eliminamos el heartbeat y el constructor manual
-    // Dejamos que Prisma maneje el pool de forma nativa y eficiente.
 
     async onModuleInit() {
-        console.log('--- CONECTANDO A CLEVER CLOUD (Límite Estricto) ---');
-        try {
-            await this.$connect();
-            console.log('✅ BASE DE DATOS CONECTADA');
-        } catch (error) {
-            console.error('❌ ERROR DE CONEXIÓN:', error.message);
-        }
+        console.log('--- CONECTANDO A LA BASE DE DATOS ---');
+        await this.$connect();
+        console.log('✅ BASE DE DATOS CONECTADA');
+    }
+
+    async enableShutdownHooks(app: any) {
+        (this as any).$on('beforeExit', async () => {
+            await app.close();
+        });
     }
 
     async onModuleDestroy() {
