@@ -1,10 +1,7 @@
 import api, { URI } from '../../config.js';
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
-
-
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import ConfirDialog from '../dialogs/ShowConfirm'
-
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';
@@ -12,12 +9,10 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
-import { styled } from '@mui/material/styles';
-import Divider from '@mui/material/Divider';
-import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import TextField from '@mui/material/TextField';
@@ -25,232 +20,256 @@ import Container from '@mui/material/Container';
 import TablePagination from '@mui/material/TablePagination';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
 import Tooltip from '@mui/material/Tooltip';
+import Grid from '@mui/material/Grid';
+import { Card, CardContent, Stack } from '@mui/material';
+import FilterAltIcon from '@mui/icons-material/FilterAlt';
+import ConfirmDialog from '../dialogs/ShowConfirm';
 
+// estilos de la tabla
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+    [`&.${tableCellClasses.head}`]: {
+        backgroundColor: theme.palette.primary.main,
+        color: theme.palette.common.white,
+        fontSize: 14,
+        fontWeight: 600,
+    },
+    [`&.${tableCellClasses.body}`]: {
+        fontSize: 13,
+    },
+}));
+
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+    '&:nth-of-type(odd)': {
+        backgroundColor: theme.palette.action.hover,
+    },
+    '&:last-child td, &:last-child th': {
+        border: 0,
+    },
+}));
 
 export const ConfigComponentes = () => {
-
-
     // Data State
-    const [tipos, setTipos] = useState([])
+    const [tipos, setTipos] = useState([]);
     // Form State
-    const [id, setId] = useState('')
-    const [tipo, setTipo] = useState('')
-    const [isUpdate, setIsUpdate] = useState(false)
+    const [id, setId] = useState('');
+    const [tipo, setTipo] = useState('');
+    const [isUpdate, setIsUpdate] = useState(false);
     // Error State
-    const [errTipo, setErrTipo] = useState(false)
+    const [errTipo, setErrTipo] = useState(false);
     // Dialog State
-    const [open, setOpen] = useState(false)
+    const [open, setOpen] = useState(false);
     // Filter State
     const [filterTipo, setFilterTipo] = useState('');
     // Pagination State
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
-    // estilos de la tabla
-    const StyledTableCell = styled(TableCell)(({ theme }) => ({
-        [`&.${tableCellClasses.head}`]: {
-            backgroundColor: '#4F4F4F',
-            color: theme.palette.common.white,
-            fontSize: 18,
-        },
-        [`&.${tableCellClasses.body}`]: {
-            fontSize: 14,
-            borderRight: '1px solid #E0E0E0',
-        },
-    }));
-
-    const StyledTableRow = styled(TableRow)(({ theme }) => ({
-        '&:nth-of-type(odd)': {
-            backgroundColor: theme.palette.action.hover,
-        },
-    }));
-
     const getTipos = useCallback(async () => {
-        const res = await api.get(`${URI}/tipos`);
-        setTipos(res.data);
-    }, [setTipos]);
+        try {
+            const res = await api.get(`${URI}/tipos`);
+            setTipos(res.data);
+        } catch (error) {
+            console.error("Error al obtener los tipos:", error);
+        }
+    }, []);
 
     useEffect(() => {
-        getTipos()
-    }, [getTipos])
+        getTipos();
+    }, [getTipos]);
 
-    // Filtering Logic
     const filteredTipos = useMemo(() => {
-        let filtered = tipos;
-        if (filterTipo) {
-            filtered = filtered.filter(t => t.tipo.toLowerCase().includes(filterTipo.toLowerCase()));
-        }
-        return filtered;
+        return tipos.filter(t => 
+            (filterTipo === '' || (t.tipo && t.tipo.toLowerCase().includes(filterTipo.toLowerCase())))
+        );
     }, [tipos, filterTipo]);
 
     useEffect(() => {
         setPage(0);
     }, [filteredTipos.length]);
 
-    // Pagination Handlers
-    const handleChangePage = (event, newPage) => {
-        setPage(newPage);
-    };
-
+    const handleChangePage = (event, newPage) => setPage(newPage);
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
     };
 
-    // Form Handlers
-    const handleChange = (event) => {
-        setTipo(event.target.value);
-    };
-
-    // Dialog Handlers
     const handleClose = (value) => {
         setOpen(false);
-        value && deletetipos();
+        value && deleteTipos();
     };
 
     const handleClickOpen = (id) => {
         setOpen(true);
-        setId(id)
+        setId(id);
     };
 
-    const validate = (data) => {
-        const isValid = data.tipo && data.tipo.length > 0 && new RegExp(/[a-z]/i).test(data.tipo);
+    const validate = () => {
+        const isValid = tipo.trim().length > 0;
         setErrTipo(!isValid);
         return isValid;
-    }
+    };
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        const data = { tipo: tipo.trim() };
+        if (!validate()) return;
 
-        if (validate(data)) {
+        try {
+            const payload = { tipo: tipo.trim() };
             if (isUpdate) {
-                await api.put(`${URI}/tipos/${id}`, {
-                    tipo: data.tipo,
-                });
+                await api.put(`${URI}/tipos/${id}`, payload);
             } else {
-                await api.post(`${URI}/tipos/create`, {
-                    tipo: data.tipo,
-                });
+                await api.post(`${URI}/tipos/create`, payload);
             }
             setIsUpdate(false);
-            setTipo('');
+            setId(''); setTipo('');
             getTipos();
+        } catch (error) {
+            console.error("Error al guardar el tipo:", error);
         }
-    }
+    };
 
-    const deletetipos = async () => {
-        await api.delete(`${URI}/tipos/${id}`)
-        getTipos();
-    }
+    const deleteTipos = async () => {
+        try {
+            await api.delete(`${URI}/tipos/${id}`);
+            getTipos();
+        } catch (error) {
+            console.error("Error al eliminar el tipo:", error);
+        }
+    };
+
+    const handleEditClick = (row) => {
+        setId(row.id);
+        setTipo(row.tipo || '');
+        setIsUpdate(true);
+        setErrTipo(false);
+    };
 
     const clearFilters = () => {
         setFilterTipo('');
     };
 
     return (
-        <>
-            <Container component='main' maxWidth='md' sx={{ mt: 10 }}>
-                <Typography component="h1" variant="h5">
-                    Agregar Componentes
+        <Container maxWidth="xl" sx={{ mt: 10, mb: 4 }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+                <Typography variant="h4" fontWeight="bold" color="primary">
+                    Configuración de Componentes
                 </Typography>
-                <Box component='form' noValidate onSubmit={handleSubmit} sx={{ "& .MuiTextField-root": { m: 2, width: "40ch" } }}>
+            </Box>
 
-                    <TextField
-                        name="tipos"
-                        required
-                        id="outlined-required"
-                        label="Componente"
-                        autoFocus
-                        value={tipo || ''}
-                        onChange={handleChange}
-                        error={errTipo}
-                        helperText='Ingrese el nombre del componente'
-                    />
-                    <Button
-                        type="submit"
-                        variant="contained"
-                        sx={{ mt: 3, ml: 2 }}
-                        disabled={false}
-                        size="large"
-                        startIcon={<SaveOutlinedIcon />}
-                    >
-                        {isUpdate ? 'Actualizar' : 'Guardar'}
-                    </Button>
-                </Box>
-            </Container>
-            <Divider />
-            <Typography component="h1" variant="h5" sx={{ mt: 2, mb: 2 }}>
-                Componentes de Hardware
-            </Typography>
-            <Container>
-                <TextField
-                    name="Filtro_Tipo"
-                    label="Filtrar por Componente"
-                    value={filterTipo}
-                    onChange={(e) => setFilterTipo(e.target.value)}
-                    helperText='Ingrese Componente'
-                    sx={{ m: 1 }}
-                />
-                <Button
-                    variant="contained"
-                    sx={{
-                        m: 2, backgroundColor: '#446A46',
-                        '&:hover': {
-                            backgroundColor: '#2f5731',
-                        },
-                    }}
-                    onClick={clearFilters}
-                    startIcon={<ClearAllIcon />}
-                >
-                    Limpiar
-                </Button>
-            </Container>
-            <ConfirDialog
-                open={open}
-                onClose={handleClose}
-            />
-            <Paper>
-                <TableContainer>
-                    <Table stickyHeader sx={{ minWidth: 700 }} aria-label="customized table">
-                        <TableHead>
-                            <TableRow>
-                                <StyledTableCell align='center'>Descripción</StyledTableCell>
-                                <StyledTableCell align='center'>Acciones</StyledTableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {filteredTipos.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
-                                <StyledTableRow key={row.id}>
-                                    <StyledTableCell align='center'>{row.tipo}</StyledTableCell>
-                                    <StyledTableCell align='center'>
-                                        <Tooltip title="Editar">
-                                            <IconButton aria-label="edit" onClick={() => { setId(row.id); setTipo(row.tipo); setIsUpdate(true) }}>
-                                                <EditIcon />
-                                            </IconButton>
-                                        </Tooltip>
+            <ConfirmDialog open={open} onClose={handleClose} />
 
-                                        <Tooltip title="Eliminar">
-                                            <IconButton aria-label="delete" onClick={() => handleClickOpen(row.id)}>
-                                                <DeleteForeverIcon />
-                                            </IconButton>
-                                        </Tooltip>
-                                    </StyledTableCell>
-                                </StyledTableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-                <TablePagination
-                    rowsPerPageOptions={[5, 10, 25, 50]}
-                    component="div"
-                    count={filteredTipos.length}
-                    rowsPerPage={rowsPerPage}
-                    page={page}
-                    onPageChange={handleChangePage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                />
-            </Paper>
-        </>
-    )
-}
+            <Grid container spacing={3}>
+                {/* Formulario */}
+                <Grid item xs={12} md={4}>
+                    <Card sx={{ borderRadius: 2, boxShadow: 1 }}>
+                        <CardContent>
+                            <Typography variant="h6" fontWeight="600" mb={2}>
+                                {isUpdate ? 'Editar Componente' : 'Nuevo Componente'}
+                            </Typography>
+                            <Box component="form" onSubmit={handleSubmit} noValidate>
+                                <Stack spacing={2}>
+                                    <TextField
+                                        label="Nombre del Componente"
+                                        required
+                                        value={tipo}
+                                        onChange={(e) => setTipo(e.target.value)}
+                                        error={errTipo}
+                                        helperText={errTipo && 'El nombre es requerido'}
+                                        fullWidth
+                                        size="small"
+                                    />
+                                    <Button
+                                        type="submit"
+                                        variant="contained"
+                                        fullWidth
+                                        startIcon={<SaveOutlinedIcon />}
+                                    >
+                                        {isUpdate ? 'Actualizar' : 'Guardar'}
+                                    </Button>
+                                    {isUpdate && (
+                                        <Button
+                                            variant="outlined"
+                                            fullWidth
+                                            onClick={() => {
+                                                setIsUpdate(false); setId(''); setTipo('');
+                                                setErrTipo(false);
+                                            }}
+                                        >
+                                            Cancelar
+                                        </Button>
+                                    )}
+                                </Stack>
+                            </Box>
+                        </CardContent>
+                    </Card>
+                </Grid>
+
+                {/* Listado y Filtros */}
+                <Grid item xs={12} md={8}>
+                    {/* Panel de Filtros */}
+                    <Card sx={{ mb: 3, borderRadius: 2, boxShadow: 1 }}>
+                        <CardContent sx={{ p: 2 }}>
+                            <Box display="flex" alignItems="center" mb={2}>
+                                <FilterAltIcon color="primary" sx={{ mr: 1, fontSize: 20 }} />
+                                <Typography variant="subtitle1" fontWeight="600">Filtros de Búsqueda</Typography>
+                            </Box>
+                            <Grid container spacing={2} alignItems="center">
+                                <Grid item xs={12} sm={9}>
+                                    <TextField label="Buscar por Nombre" value={filterTipo} onChange={(e) => setFilterTipo(e.target.value)} fullWidth size="small" />
+                                </Grid>
+                                <Grid item xs={12} sm={3} display="flex" justifyContent="flex-end">
+                                    <Button variant="text" color="secondary" startIcon={<ClearAllIcon />} onClick={clearFilters} fullWidth size="small" sx={{ height: 40 }}>
+                                        Limpiar
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                        </CardContent>
+                    </Card>
+
+                    <Paper sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                        <TableContainer sx={{ maxHeight: '60vh' }}>
+                            <Table stickyHeader size="small">
+                                <TableHead>
+                                    <TableRow>
+                                        <StyledTableCell>Descripción del Componente</StyledTableCell>
+                                        <StyledTableCell align='center'>Acciones</StyledTableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {filteredTipos.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
+                                        <StyledTableRow key={row.id} hover>
+                                            <StyledTableCell sx={{ fontWeight: 600 }}>{row.tipo}</StyledTableCell>
+                                            <StyledTableCell align='center'>
+                                                <Stack direction="row" spacing={0.5} justifyContent="center">
+                                                    <Tooltip title="Editar"><IconButton size="small" color="primary" onClick={() => handleEditClick(row)}><EditIcon fontSize="small" /></IconButton></Tooltip>
+                                                    <Tooltip title="Eliminar"><IconButton size="small" color="error" onClick={() => handleClickOpen(row.id)}><DeleteForeverIcon fontSize="small" /></IconButton></Tooltip>
+                                                </Stack>
+                                            </StyledTableCell>
+                                        </StyledTableRow>
+                                    ))}
+                                    {filteredTipos.length === 0 && (
+                                        <StyledTableRow>
+                                            <StyledTableCell colSpan={2} align="center" sx={{ py: 3, color: 'text.secondary' }}>
+                                                No se encontraron componentes.
+                                            </StyledTableCell>
+                                        </StyledTableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                        <TablePagination
+                            rowsPerPageOptions={[10, 25, 50]}
+                            component="div"
+                            count={filteredTipos.length}
+                            rowsPerPage={rowsPerPage}
+                            page={page}
+                            onPageChange={handleChangePage}
+                            onRowsPerPageChange={handleChangeRowsPerPage}
+                            labelRowsPerPage="Filas por página"
+                        />
+                    </Paper>
+                </Grid>
+            </Grid>
+        </Container>
+    );
+};

@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 
 import Drawer from '@mui/material/Drawer';
@@ -15,6 +15,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import ListSubheader from '@mui/material/ListSubheader';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import DesktopWindowsIcon from '@mui/icons-material/DesktopWindows';
 import TableChartIcon from '@mui/icons-material/TableChart';
@@ -25,131 +26,169 @@ import SummarizeIcon from '@mui/icons-material/Summarize';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
 import PrintIcon from '@mui/icons-material/Print';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import AnalyticsIcon from '@mui/icons-material/Analytics';
+import SettingsIcon from '@mui/icons-material/Settings';
 
 export default function NavBar() {
-
-
-    const navigate = useNavigate()
+    const navigate = useNavigate();
+    const location = useLocation();
     const { setAuth } = useAuth();
-
-    const [openDrawer, setOpenDrawer] = useState(false)
+    const [openDrawer, setOpenDrawer] = useState(false);
 
     const toggleDrawer = (open) => (event) => {
         if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
             return;
         }
-
-
-        setOpenDrawer(!openDrawer)
-
+        setOpenDrawer(open);
     };
 
-    const list = () => {
-        const mainNavItems = [
-            { text: 'Inventario', path: '/inventario', icon: <Inventory2OutlinedIcon /> },
-            { text: 'Órdenes de Servicio', path: '/ordenes', icon: <BuildIcon /> },
-            { text: 'Control de Insumos', path: '/tintas/cartuchos', icon: <FactCheckIcon /> },
-            { text: 'Control de Insumos a Granel', path: '/insumos-granel', icon: <LocalShippingIcon /> }, // Added and moved here
-            { text: 'Reporte de Insumos', path: '/tintas/reportes', icon: <SummarizeIcon /> },
-            { text: 'Reporte de Recargas', path: '/tintas/reportes/recargas', icon: <SummarizeIcon /> },
-            { text: 'Reporte de Compras', path: '/reportes/compras', icon: <SummarizeIcon /> }
-        ];
+    const mainNavItems = [
+        { text: 'Inventario', path: '/inventario', icon: <Inventory2OutlinedIcon /> },
+        { text: 'Órdenes de Servicio', path: '/ordenes', icon: <BuildIcon /> },
+        { text: 'Control de Insumos', path: '/tintas/cartuchos', icon: <FactCheckIcon /> },
+        { text: 'Insumos a Granel', path: '/insumos-granel', icon: <LocalShippingIcon /> },
+    ];
 
+    const reportItems = [
+        { text: 'Consumo por Área', path: '/tintas/reportes', icon: <AnalyticsIcon /> },
+        { text: 'Recargas Realizadas', path: '/tintas/reportes/recargas', icon: <AssignmentIcon /> },
+        { text: 'Historial de Compras', path: '/reportes/compras', icon: <SummarizeIcon /> }
+    ];
+
+    const configItems = [
+        { text: 'Áreas Municipales', path: '/areas', icon: <TableChartIcon /> },
+        { text: 'Tipos de Componentes', path: '/tipos', icon: <DesktopWindowsIcon /> },
+        { text: 'Gestión de Impresoras', path: '/tintas/impresoras', icon: <PrintIcon /> },
+    ];
+
+    const renderListItem = (item) => {
+        const isActive = location.pathname === item.path;
         return (
-            <Box
-                sx={{ width: 200 }}
-                role="presentation"
-                onClick={toggleDrawer(false)}
-                onKeyDown={toggleDrawer(false)}
-            >
-                <List>
-                    {mainNavItems.map((item) => (
-                        <ListItem key={item.text} disablePadding>
-                            <ListItemButton onClick={() => navigate(item.path)}>
-                                <ListItemIcon>
-                                    {item.icon}
-                                </ListItemIcon>
-                                <ListItemText primary={item.text} />
-                            </ListItemButton>
-                        </ListItem>
-                    ))}
-                </List>
-                <Divider />
-                <Typography component="h2" variant="h5" align='center' sx={{ mt: 3 }}>
-                    Configuración
-                </Typography>
-                <Divider />
+            <ListItem key={item.text} disablePadding>
+                <ListItemButton 
+                    onClick={() => { navigate(item.path); setOpenDrawer(false); }}
+                    selected={isActive}
+                    sx={{
+                        mx: 1,
+                        borderRadius: 2,
+                        mb: 0.5,
+                        '&.Mui-selected': {
+                            backgroundColor: 'primary.light',
+                            color: 'primary.main',
+                            '& .MuiListItemIcon-root': { color: 'primary.main' },
+                            '&:hover': { backgroundColor: 'primary.light' }
+                        }
+                    }}
+                >
+                    <ListItemIcon sx={{ minWidth: 40 }}>
+                        {item.icon}
+                    </ListItemIcon>
+                    <ListItemText 
+                        primary={item.text} 
+                        primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: isActive ? 600 : 500 }}
+                    />
+                </ListItemButton>
+            </ListItem>
+        );
+    };
 
-                <ListItemButton onClick={() => navigate(`/areas`)}>
-                    <ListItemIcon>
-                        <TableChartIcon />
+    const list = () => (
+        <Box sx={{ width: 280, pb: 2 }} role="presentation">
+            {/* Header del Drawer */}
+            <Box sx={{ 
+                p: 3, 
+                backgroundColor: 'primary.main', 
+                color: 'white',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 1
+            }}>
+                <Typography variant="h6" fontWeight="bold">
+                    Inventario Garupá
+                </Typography>
+                <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                    Sistema de Gestión Integral
+                </Typography>
+            </Box>
+
+            <List subheader={<ListSubheader sx={{ bgcolor: 'transparent', fontWeight: 700, mt: 1 }}>GESTIÓN</ListSubheader>}>
+                {mainNavItems.map(renderListItem)}
+            </List>
+
+            <Divider sx={{ mx: 2, my: 1 }} />
+
+            <List subheader={<ListSubheader sx={{ bgcolor: 'transparent', fontWeight: 700 }}>REPORTES</ListSubheader>}>
+                {reportItems.map(renderListItem)}
+            </List>
+
+            <Divider sx={{ mx: 2, my: 1 }} />
+
+            <List subheader={<ListSubheader sx={{ bgcolor: 'transparent', fontWeight: 700 }}>CONFIGURACIÓN</ListSubheader>}>
+                {configItems.map(renderListItem)}
+            </List>
+
+            <Box sx={{ flexGrow: 1 }} />
+            
+            <Box sx={{ p: 2, mt: 2 }}>
+                <ListItemButton 
+                    onClick={() => { setAuth(false); navigate('/'); }}
+                    sx={{ borderRadius: 2, color: 'error.main' }}
+                >
+                    <ListItemIcon sx={{ color: 'error.main', minWidth: 40 }}>
+                        <LogoutIcon />
                     </ListItemIcon>
-                    <ListItemText primary={'Areas'} />
-                </ListItemButton>
-                <ListItemButton onClick={() => navigate(`/tipos`)}>
-                    <ListItemIcon>
-                        <DesktopWindowsIcon />
-                    </ListItemIcon>
-                    <ListItemText primary={'Componentes'} />
-                </ListItemButton>
-                <ListItemButton onClick={() => navigate(`/tintas/impresoras`)}>
-                    <ListItemIcon>
-                        <PrintIcon />
-                    </ListItemIcon>
-                    <ListItemText primary={'Gestión de Impresoras'} />
+                    <ListItemText primary="Cerrar Sesión" primaryTypographyProps={{ fontWeight: 600 }} />
                 </ListItemButton>
             </Box>
-        )
-    };
-
-    const handleOpenDrawer = () => {
-        setOpenDrawer(!openDrawer)
-    }
+        </Box>
+    );
 
     return (
         <Box sx={{ flexGrow: 1 }}>
-            <AppBar position="fixed">
-                <Toolbar sx={{ justifyContent: "space-between", backgroundColor: '#22314f' }}>
-                    <IconButton
-                        size="large"
-                        edge="start"
-                        color="inherit"
-                        aria-label="menu"
-                        sx={{ mr: 2 }}
-                        onClick={() => handleOpenDrawer()}
-                    >
-                        <MenuIcon />
-                    </IconButton>
-                    <IconButton
-                        size="large"
-                        edge="start"
-                        color="inherit"
-                        aria-label="home"
-                        sx={{ mr: 2 }}
-                        onClick={() => navigate('/inventario')}
-                    >
-                        <HomeIcon />
-                    </IconButton>
-                    <Box sx={{ flexGrow: 1 }} />
-                    <IconButton
-                        size="large"
-                        color="inherit"
-                        aria-label="logout"
-                        onClick={() => {
-                            setAuth(false);
-                            navigate('/');
-                        }}
-                    >
-                        <LogoutIcon />
-                    </IconButton>
-                    {/* <Button color="inherit" onClick={()=> navigate('/')}>LogOut</Button> */}
+            <AppBar position="fixed" elevation={0} sx={{ borderBottom: '1px solid', borderColor: 'divider' }}>
+                <Toolbar sx={{ justifyContent: "space-between" }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <IconButton
+                            size="large"
+                            edge="start"
+                            color="inherit"
+                            aria-label="menu"
+                            sx={{ mr: 2 }}
+                            onClick={() => setOpenDrawer(true)}
+                        >
+                            <MenuIcon />
+                        </IconButton>
+                        <Typography variant="h6" component="div" sx={{ display: { xs: 'none', sm: 'block' }, fontWeight: 700 }}>
+                            Gestión de Inventario
+                        </Typography>
+                    </Box>
+
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                        <IconButton color="inherit" onClick={() => navigate('/inventario')} title="Inicio">
+                            <HomeIcon />
+                        </IconButton>
+                        <IconButton
+                            color="inherit"
+                            onClick={() => {
+                                setAuth(false);
+                                navigate('/');
+                            }}
+                            title="Cerrar Sesión"
+                        >
+                            <LogoutIcon />
+                        </IconButton>
+                    </Box>
                 </Toolbar>
             </AppBar>
+            
             <Drawer
-                anchor={"left"}
+                anchor="left"
                 open={openDrawer}
                 onClose={toggleDrawer(false)}
+                PaperProps={{
+                    sx: { border: 'none', boxShadow: 4 }
+                }}
             >
                 {list()}
             </Drawer>
