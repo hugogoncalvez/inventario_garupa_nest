@@ -1,6 +1,4 @@
 import api, { URI } from '../../config.js';
-
-
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from 'react';
 import { styled } from '@mui/material/styles';
@@ -35,8 +33,10 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
-import ClearAllIcon from '@mui/icons-material/ClearAll'; // Importar el nuevo icono
+import ClearAllIcon from '@mui/icons-material/ClearAll';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import FilterAltIcon from '@mui/icons-material/FilterAlt';
+import { Container, Card, CardContent, Stack, Chip } from '@mui/material';
 
 import ModalRegistrarEntrega from './ModalRegistrarEntrega';
 import ModalRegistrarCompra from './ModalRegistrarCompra';
@@ -47,13 +47,13 @@ import ReporteInventarioInsumos from '../../pdf/ReporteInventarioInsumos';
 // Estilos de la tabla
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
-        backgroundColor: '#4F4F4F',
+        backgroundColor: theme.palette.primary.main,
         color: theme.palette.common.white,
-        fontSize: 18,
+        fontSize: 14,
+        fontWeight: 600,
     },
     [`&.${tableCellClasses.body}`]: {
-        fontSize: 14,
-        borderRight: '1px solid #E0E0E0',
+        fontSize: 13,
     },
 }));
 
@@ -61,12 +61,13 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
     '&:nth-of-type(odd)': {
         backgroundColor: theme.palette.action.hover,
     },
+    '&:last-child td, &:last-child th': {
+        border: 0,
+    },
 }));
 
-// Acciones de paginación
 function TablePaginationActions(props) {
     const { count, page, rowsPerPage, onPageChange } = props;
-
     const handleFirstPageButtonClick = (event) => onPageChange(event, 0);
     const handleBackButtonClick = (event) => onPageChange(event, page - 1);
     const handleNextButtonClick = (event) => onPageChange(event, page + 1);
@@ -74,42 +75,35 @@ function TablePaginationActions(props) {
 
     return (
         <Box sx={{ flexShrink: 0, ml: 2.5 }}>
-            <IconButton onClick={handleFirstPageButtonClick} disabled={page === 0} aria-label="first page"><FirstPageIcon /></IconButton>
-            <IconButton onClick={handleBackButtonClick} disabled={page === 0} aria-label="previous page"><KeyboardArrowLeft /></IconButton>
-            <IconButton onClick={handleNextButtonClick} disabled={page >= Math.ceil(count / rowsPerPage) - 1} aria-label="next page"><KeyboardArrowRight /></IconButton>
-            <IconButton onClick={handleLastPageButtonClick} disabled={page >= Math.ceil(count / rowsPerPage) - 1} aria-label="last page"><LastPageIcon /></IconButton>
+            <IconButton onClick={handleFirstPageButtonClick} disabled={page === 0}><FirstPageIcon /></IconButton>
+            <IconButton onClick={handleBackButtonClick} disabled={page === 0}><KeyboardArrowLeft /></IconButton>
+            <IconButton onClick={handleNextButtonClick} disabled={page >= Math.ceil(count / rowsPerPage) - 1}><KeyboardArrowRight /></IconButton>
+            <IconButton onClick={handleLastPageButtonClick} disabled={page >= Math.ceil(count / rowsPerPage) - 1}><LastPageIcon /></IconButton>
         </Box>
     );
 }
 
-
 const GestionCartuchos = () => {
-    // Estados principales
     const [cartuchos, setCartuchos] = useState([]);
     const [filteredCartuchos, setFilteredCartuchos] = useState([]);
     const navigate = useNavigate();
     const { auth } = useAuth();
 
-    // Estados para modales
     const [openEntregaModal, setOpenEntregaModal] = useState(false);
     const [openCompraModal, setOpenCompraModal] = useState(false);
     const [openRecargaModal, setOpenRecargaModal] = useState(false);
 
-    // Estados de paginación
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
-    // Estados de los filtros
     const [filtroModelo, setFiltroModelo] = useState('');
     const [filtroTipo, setFiltroTipo] = useState('Todos');
     const [filtroRecargable, setFiltroRecargable] = useState('Todos');
 
-    // Carga inicial de datos
     useEffect(() => {
         getCartuchos();
     }, []);
 
-    // Aplicar filtros cuando cambian los datos o los filtros
     useEffect(() => {
         let items = [...cartuchos];
         if (filtroModelo) {
@@ -125,7 +119,6 @@ const GestionCartuchos = () => {
         setFilteredCartuchos(items);
     }, [cartuchos, filtroModelo, filtroTipo, filtroRecargable]);
 
-    // Obtener datos de la API
     const getCartuchos = async () => {
         try {
             const res = await api.get(`${URI}/tintas/cartuchos`, { params: { includeInsumoGranel: 'true' } });
@@ -135,11 +128,10 @@ const GestionCartuchos = () => {
         }
     };
 
-    // Eliminar un cartucho
     const deleteCartucho = async (id) => {
         try {
             await api.delete(`${URI}/tintas/cartuchos/${id}`, { data: { usuario_id: auth.id } });
-            getCartuchos(); // Refrescar lista
+            getCartuchos();
         } catch (error) {
             console.error("Error al eliminar el cartucho:", error);
         }
@@ -163,7 +155,6 @@ const GestionCartuchos = () => {
         });
     };
 
-    // Handlers de paginación
     const handleChangePage = (event, newPage) => setPage(newPage);
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(parseInt(event.target.value, 10));
@@ -176,7 +167,6 @@ const GestionCartuchos = () => {
         setFiltroRecargable('Todos');
     };
 
-    // Ajustar stock
     const handleAdjustStockUnidades = async (cartucho) => {
         const { value: nuevaCantidad } = await Swal.fire({
             title: `Ajustar stock de ${cartucho.modelo} (${cartucho.color})`,
@@ -209,102 +199,110 @@ const GestionCartuchos = () => {
     };
 
     return (
-        <>
-            <Typography component="h1" variant="h4" sx={{ mt: { xs: 4, md: 9 }, mb: 4, fontWeight: 'bold' }}>
-                Gestión de Insumos
-            </Typography>
+        <Container maxWidth="xl" sx={{ mt: 10, mb: 4 }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={3} flexWrap="wrap" gap={2}>
+                <Typography variant="h4" fontWeight="bold" color="primary">
+                    Gestión de Insumos
+                </Typography>
+                <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
+                    <Button variant="contained" size="small" onClick={() => navigate('/tintas/cartuchos/create')} startIcon={<AddCircleOutlineIcon />}>Nuevo Insumo</Button>
+                    <Button variant="contained" size="small" color="success" onClick={() => setOpenCompraModal(true)} startIcon={<ShoppingCartIcon />}>Compra</Button>
+                    <Button variant="contained" size="small" color="info" onClick={() => setOpenEntregaModal(true)} startIcon={<SendIcon />}>Entrega</Button>
+                    <Button variant="contained" size="small" color="warning" onClick={() => setOpenRecargaModal(true)} startIcon={<RecyclingIcon />}>Recarga</Button>
+                    <Button variant="contained" size="small" color="error" onClick={() => ReporteInventarioInsumos(filteredCartuchos)} startIcon={<PictureAsPdfIcon />}>Reporte PDF</Button>
+                </Stack>
+            </Box>
 
-            <Grid container spacing={3} sx={{ mb: 4 }} alignItems="center">
-                {/* Columna de Botones */}
-                <Grid item xs={12} lg={7}>
-                    <Box sx={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        gap: 2,
-                        justifyContent: { xs: 'center', lg: 'flex-start' }
-                    }}>
-                        <Button variant="contained" onClick={() => navigate('/tintas/cartuchos/create')} startIcon={<AddCircleOutlineIcon />}>Agregar Insumo</Button>
-                        <Button variant="contained" onClick={() => setOpenCompraModal(true)} startIcon={<ShoppingCartIcon />}>Compra</Button>
-                        <Button variant="contained" onClick={() => setOpenEntregaModal(true)} startIcon={<SendIcon />}>Entrega</Button>
-                        <Button variant="contained" onClick={() => setOpenRecargaModal(true)} startIcon={<RecyclingIcon />}>Recarga</Button>
-                        <Button variant="contained" onClick={() => ReporteInventarioInsumos(filteredCartuchos)} color="error" startIcon={<PictureAsPdfIcon />}>Reporte PDF</Button>
+            {/* Panel de Filtros */}
+            <Card sx={{ mb: 4, borderRadius: 2, boxShadow: 1 }}>
+                <CardContent sx={{ p: 2 }}>
+                    <Box display="flex" alignItems="center" mb={2}>
+                        <FilterAltIcon color="primary" sx={{ mr: 1, fontSize: 20 }} />
+                        <Typography variant="subtitle1" fontWeight="600">Filtros de Búsqueda</Typography>
                     </Box>
-                </Grid>
+                    <Grid container spacing={2} alignItems="center">
+                        <Grid item xs={12} sm={6} md={4}>
+                            <TextField label="Buscar por Modelo" variant="outlined" size="small" value={filtroModelo} onChange={(e) => setFiltroModelo(e.target.value)} fullWidth />
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={3}>
+                            <FormControl size="small" fullWidth>
+                                <InputLabel>Tipo</InputLabel>
+                                <Select value={filtroTipo} label="Tipo" onChange={(e) => setFiltroTipo(e.target.value)}>
+                                    <MenuItem value="Todos">Todos</MenuItem>
+                                    <MenuItem value="Tinta">Tinta</MenuItem>
+                                    <MenuItem value="Toner">Toner</MenuItem>
+                                    <MenuItem value="Drum">Drum</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={3}>
+                            <FormControl size="small" fullWidth>
+                                <InputLabel>Recargable</InputLabel>
+                                <Select value={filtroRecargable} label="Recargable" onChange={(e) => setFiltroRecargable(e.target.value)}>
+                                    <MenuItem value="Todos">Todos</MenuItem>
+                                    <MenuItem value="Sí">Sí</MenuItem>
+                                    <MenuItem value="No">No</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Grid>
+                        <Grid item xs={12} md={2} display="flex" justifyContent="flex-end">
+                            <Button variant="text" color="secondary" startIcon={<ClearAllIcon />} onClick={handleClearFilters} size="small" fullWidth sx={{ height: 40 }}>
+                                Limpiar
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </CardContent>
+            </Card>
 
-                {/* Columna de Filtros */}
-                <Grid item xs={12} lg={5}>
-                    <Paper sx={{ p: 2, display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center', boxShadow: 2 }}>
-                        <TextField
-                            label="Modelo"
-                            variant="outlined"
-                            size="small"
-                            value={filtroModelo}
-                            onChange={(e) => setFiltroModelo(e.target.value)}
-                            sx={{ flexGrow: 1, minWidth: '120px' }}
-                        />
-                        <FormControl size="small" sx={{ flexGrow: 1, minWidth: '110px' }}>
-                            <InputLabel>Tipo</InputLabel>
-                            <Select value={filtroTipo} label="Tipo" onChange={(e) => setFiltroTipo(e.target.value)}>
-                                <MenuItem value="Todos">Todos</MenuItem>
-                                <MenuItem value="Tinta">Tinta</MenuItem>
-                                <MenuItem value="Toner">Toner</MenuItem>
-                                <MenuItem value="Drum">Drum</MenuItem>
-                            </Select>
-                        </FormControl>
-                        <FormControl size="small" sx={{ flexGrow: 1, minWidth: '110px' }}>
-                            <InputLabel>Rec.</InputLabel>
-                            <Select value={filtroRecargable} label="Rec." onChange={(e) => setFiltroRecargable(e.target.value)}>
-                                <MenuItem value="Todos">Todos</MenuItem>
-                                <MenuItem value="Sí">Sí</MenuItem>
-                                <MenuItem value="No">No</MenuItem>
-                            </Select>
-                        </FormControl>
-                        <Tooltip title="Limpiar Filtros">
-                            <IconButton color="primary" onClick={handleClearFilters} size="small">
-                                <ClearAllIcon />
-                            </IconButton>
-                        </Tooltip>
-                    </Paper>
-                </Grid>
-            </Grid>
-
-            {/* Modales */}
             <ModalRegistrarEntrega open={openEntregaModal} onClose={() => setOpenEntregaModal(false)} onEntregaExitosa={getCartuchos} />
             <ModalRegistrarCompra open={openCompraModal} onClose={() => setOpenCompraModal(false)} onCompraExitosa={getCartuchos} />
             <ModalRegistrarRecarga open={openRecargaModal} onClose={() => setOpenRecargaModal(false)} onRecargaExitosa={getCartuchos} />
 
-            {/* Tabla de Datos */}
-            <Paper sx={{ width: '100%', overflow: 'hidden', boxShadow: 3 }}>
-                <TableContainer sx={{ maxHeight: 650, overflowX: 'auto' }}>
-                    <Table stickyHeader aria-label="customized table">
+            <Paper sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                <TableContainer sx={{ maxHeight: '60vh' }}>
+                    <Table stickyHeader size="small">
                         <TableHead>
                             <TableRow>
-                                <StyledTableCell align='center'>Modelo</StyledTableCell>
+                                <StyledTableCell>Modelo</StyledTableCell>
                                 <StyledTableCell align='center'>SKU</StyledTableCell>
                                 <StyledTableCell align='center'>Color</StyledTableCell>
                                 <StyledTableCell align='center'>Tipo</StyledTableCell>
                                 <StyledTableCell align='center'>Recargable</StyledTableCell>
-                                <StyledTableCell align='center'>Stock Unidades</StyledTableCell>
-                                <StyledTableCell align='center'>Stock Mínimo Unidades</StyledTableCell>
+                                <StyledTableCell align='center'>Stock</StyledTableCell>
+                                <StyledTableCell align='center'>Mínimo</StyledTableCell>
                                 <StyledTableCell align='center'>Acciones</StyledTableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
                             {filteredCartuchos.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((cartucho) => (
-                                <StyledTableRow key={cartucho.id}>
-                                    <StyledTableCell align='left'>{cartucho.modelo}</StyledTableCell>
-                                    <StyledTableCell align='center'>{cartucho.sku}</StyledTableCell>
-                                    <StyledTableCell align='center'>{cartucho.color}</StyledTableCell>
+                                <StyledTableRow key={cartucho.id} hover>
+                                    <StyledTableCell sx={{ fontWeight: 600 }}>{cartucho.modelo}</StyledTableCell>
+                                    <StyledTableCell align='center'>{cartucho.sku || '---'}</StyledTableCell>
+                                    <StyledTableCell align='center'>
+                                        <Box display="flex" alignItems="center" justifyContent="center" gap={1}>
+                                            <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: cartucho.color?.toLowerCase() === 'negro' ? 'black' : (cartucho.color?.toLowerCase() === 'cian' ? 'cyan' : (cartucho.color?.toLowerCase() === 'magenta' ? 'magenta' : (cartucho.color?.toLowerCase() === 'amarillo' ? 'yellow' : 'grey.300'))), border: '1px solid #ddd' }} />
+                                            {cartucho.color}
+                                        </Box>
+                                    </StyledTableCell>
                                     <StyledTableCell align='center'>{cartucho.tipo}</StyledTableCell>
-                                    <StyledTableCell align='center'>{cartucho.es_recargable ? 'Sí' : 'No'}</StyledTableCell>
-                                    <StyledTableCell align='center' sx={{ fontWeight: 'bold', color: cartucho.stock_unidades <= cartucho.stock_minimo_unidades ? 'red' : 'green' }}>
-                                        {cartucho.stock_unidades}
+                                    <StyledTableCell align='center'>
+                                        <Chip label={cartucho.es_recargable ? 'Sí' : 'No'} size="small" color={cartucho.es_recargable ? 'primary' : 'default'} variant="outlined" />
+                                    </StyledTableCell>
+                                    <StyledTableCell align='center'>
+                                        <Box sx={{ 
+                                            bgcolor: cartucho.stock_unidades <= cartucho.stock_minimo_unidades ? 'error.light' : 'success.light',
+                                            color: 'white', px: 1, borderRadius: 1, fontSize: '0.85rem', fontWeight: 700
+                                        }}>
+                                            {cartucho.stock_unidades}
+                                        </Box>
                                     </StyledTableCell>
                                     <StyledTableCell align='center'>{cartucho.stock_minimo_unidades}</StyledTableCell>
                                     <StyledTableCell align='center'>
-                                        <Tooltip title="Editar"><IconButton aria-label="edit" onClick={() => navigate(`/tintas/cartuchos/edit/${cartucho.id}`)}><EditIcon /></IconButton></Tooltip>
-                                        <Tooltip title="Eliminar"><IconButton aria-label="delete" onClick={() => handleDelete(cartucho.id)}><DeleteForeverIcon /></IconButton></Tooltip>
-                                        <Tooltip title="Ajustar Stock"><IconButton onClick={() => handleAdjustStockUnidades(cartucho)} aria-label="ajustar stock"><InventoryIcon /></IconButton></Tooltip>
+                                        <Stack direction="row" spacing={0.5} justifyContent="center">
+                                            <Tooltip title="Editar"><IconButton size="small" color="primary" onClick={() => navigate(`/tintas/cartuchos/edit/${cartucho.id}`)}><EditIcon fontSize="small" /></IconButton></Tooltip>
+                                            <Tooltip title="Eliminar"><IconButton size="small" color="error" onClick={() => handleDelete(cartucho.id)}><DeleteForeverIcon fontSize="small" /></IconButton></Tooltip>
+                                            <Tooltip title="Ajustar Stock"><IconButton size="small" color="info" onClick={() => handleAdjustStockUnidades(cartucho)}><InventoryIcon fontSize="small" /></IconButton></Tooltip>
+                                        </Stack>
                                     </StyledTableCell>
                                 </StyledTableRow>
                             ))}
@@ -312,19 +310,18 @@ const GestionCartuchos = () => {
                     </Table>
                 </TableContainer>
                 <TablePagination
-                    rowsPerPageOptions={[5, 10, 25, 50]}
+                    rowsPerPageOptions={[10, 25, 50]}
                     component="div"
                     count={filteredCartuchos.length}
                     rowsPerPage={rowsPerPage}
                     page={page}
                     onPageChange={handleChangePage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
-                    ActionsComponent={TablePaginationActions}
+                    labelRowsPerPage="Filas por página"
                 />
             </Paper>
-        </>
+        </Container>
     );
 };
 
 export default GestionCartuchos;
-
