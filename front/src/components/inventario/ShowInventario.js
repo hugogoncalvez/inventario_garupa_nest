@@ -1,6 +1,4 @@
 import api, { URI } from '../../config.js';
-
-
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo } from 'react';
 import { styled } from '@mui/material/styles';
@@ -12,7 +10,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import Box from '@mui/material/Box'; // Importar Box
+import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
@@ -30,8 +28,9 @@ import FirstPageIcon from '@mui/icons-material/FirstPage';
 import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
 import LastPageIcon from '@mui/icons-material/LastPage';
+import FilterAltIcon from '@mui/icons-material/FilterAlt';
 
-import { Divider, FormControl } from '@mui/material';
+import { Divider, FormControl, Grid, Card, CardContent, Stack } from '@mui/material';
 import { FormGroup } from '@mui/material';
 import { FormControlLabel } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
@@ -40,99 +39,53 @@ import Auditoria from '../../pdf/Auditoria';
 import ActaDevolucion from '../../pdf/ActaDevolucion';
 import Tooltip from '@mui/material/Tooltip';
 
-
-
 // estilos de la tabla
-
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
-
-
     [`&.${tableCellClasses.head}`]: {
-        backgroundColor: '#4F4F4F',
+        backgroundColor: theme.palette.primary.main,
         color: theme.palette.common.white,
-        fontSize: 18,
+        fontSize: 14,
+        fontWeight: 600,
     },
     [`&.${tableCellClasses.body}`]: {
-        fontSize: 14,
-        borderRight: '1px solid #E0E0E0',
+        fontSize: 13,
     },
-
 }));
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
     '&:nth-of-type(odd)': {
         backgroundColor: theme.palette.action.hover,
     },
+    '&:last-child td, &:last-child th': {
+        border: 0,
+    },
 }));
 
-// Componente personalizado para las acciones de paginación
 function TablePaginationActions(props) {
     const { count, page, rowsPerPage, onPageChange } = props;
-
-    const handleFirstPageButtonClick = (event) => {
-        onPageChange(event, 0);
-    };
-
-    const handleBackButtonClick = (event) => {
-        onPageChange(event, page - 1);
-    };
-
-    const handleNextButtonClick = (event) => {
-        onPageChange(event, page + 1);
-    };
-
-    const handleLastPageButtonClick = (event) => {
-        onPageChange(event, Math.max(0, Math.ceil(count / rowsPerPage) - 1));
-    };
+    const handleFirstPageButtonClick = (event) => onPageChange(event, 0);
+    const handleBackButtonClick = (event) => onPageChange(event, page - 1);
+    const handleNextButtonClick = (event) => onPageChange(event, page + 1);
+    const handleLastPageButtonClick = (event) => onPageChange(event, Math.max(0, Math.ceil(count / rowsPerPage) - 1));
 
     return (
         <Box sx={{ flexShrink: 0, ml: 2.5 }}>
-            <IconButton
-                onClick={handleFirstPageButtonClick}
-                disabled={page === 0}
-                aria-label="first page"
-            >
-                <FirstPageIcon />
-            </IconButton>
-            <IconButton
-                onClick={handleBackButtonClick}
-                disabled={page === 0}
-                aria-label="previous page"
-            >
-                <KeyboardArrowLeft />
-            </IconButton>
-            <IconButton
-                onClick={handleNextButtonClick}
-                disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-                aria-label="next page"
-            >
-                <KeyboardArrowRight />
-            </IconButton>
-            <IconButton
-                onClick={handleLastPageButtonClick}
-                disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-                aria-label="last page"
-            >
-                <LastPageIcon />
-            </IconButton>
+            <IconButton onClick={handleFirstPageButtonClick} disabled={page === 0}><FirstPageIcon /></IconButton>
+            <IconButton onClick={handleBackButtonClick} disabled={page === 0}><KeyboardArrowLeft /></IconButton>
+            <IconButton onClick={handleNextButtonClick} disabled={page >= Math.ceil(count / rowsPerPage) - 1}><KeyboardArrowRight /></IconButton>
+            <IconButton onClick={handleLastPageButtonClick} disabled={page >= Math.ceil(count / rowsPerPage) - 1}><LastPageIcon /></IconButton>
         </Box>
     );
 }
 
-
 const ShowInventario = () => {
-
-    // --- Dialog State ---
     const [open, setOpen] = useState(false)
     const [id, setId] = useState('')
-
-    // --- Data State ---
     const [inventario, setInventario] = useState([]);
     const [componentes, setComponentes] = useState([])
     const [estados, setEstados] = useState([])
     const [areas, setAreas] = useState([])
 
-    // --- Filter State ---
     const [tipo, setTipo] = useState('');
     const [estado, setEstado] = useState('');
     const [area, setArea] = useState('');
@@ -140,20 +93,14 @@ const ShowInventario = () => {
     const [numPc, setNumPc] = useState('');
     const [usuario, setUsuario] = useState('');
 
-    // --- UI State ---
     const [noSelected, setNoSelected] = useState(false)
     const [noSelected2, setNoSelected2] = useState(false)
-
-    // --- Pagination State ---
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
-
-    // --- Selection State ---
     const [selected, setSelected] = useState([])
-    const [marcados, setMarcados] = useState([]) // From old code
+    const [marcados, setMarcados] = useState([])
     const navigate = useNavigate();
 
-    // --- Data Fetching ---
     useEffect(() => {
         getInventario()
         getComponentes();
@@ -164,12 +111,7 @@ const ShowInventario = () => {
     const getInventario = async () => {
         const res = await api.get(`${URI}/inventario/`);
         setInventario(res.data);
-
-        let initialMarcados = []; // Initialize marcados
-        for (let i = 0; i < res.data.length; i++) {
-            initialMarcados.push(false);
-        }
-        setMarcados(initialMarcados);
+        setMarcados(new Array(res.data.length).fill(false));
     };
     const getComponentes = async () => {
         const res = await api.get(`${URI}/tipos`);
@@ -184,69 +126,33 @@ const ShowInventario = () => {
         setAreas(res.data);
     }
 
-    // --- Filtering Logic ---
     const filteredInventario = useMemo(() => {
-        let filtered = inventario;
-
-        if (tipo) {
-            filtered = filtered.filter(inv => inv.tipo.includes(tipo));
-        }
-        if (estado) {
-            filtered = filtered.filter(inv => inv.estado.includes(estado));
-        }
-        if (area) {
-            filtered = filtered.filter(inv => inv.area.includes(area));
-        }
-        if (numInv) {
-            filtered = filtered.filter(inv => inv.num_inventario.toLowerCase().includes(numInv.toLowerCase()));
-        }
-        if (numPc) {
-            filtered = filtered.filter(inv => inv.num_pc.toLowerCase().includes(numPc.toLowerCase()));
-        }
-        if (usuario) {
-            filtered = filtered.filter(inv => inv.usuario && inv.usuario.toLowerCase().includes(usuario.toLowerCase()));
-        }
-
-        return filtered;
+        return inventario.filter(inv => 
+            (tipo === '' || inv.tipo.includes(tipo)) &&
+            (estado === '' || inv.estado.includes(estado)) &&
+            (area === '' || inv.area.includes(area)) &&
+            (numInv === '' || inv.num_inventario.toLowerCase().includes(numInv.toLowerCase())) &&
+            (numPc === '' || inv.num_pc.toLowerCase().includes(numPc.toLowerCase())) &&
+            (usuario === '' || (inv.usuario && inv.usuario.toLowerCase().includes(usuario.toLowerCase())))
+        );
     }, [inventario, tipo, estado, area, numInv, numPc, usuario]);
 
     useEffect(() => {
         setPage(0);
-        // Reset marcados if inventory or filtered inventory changes significantly
-        // This is important to ensure 'marcados' matches the currently displayed data
-        let currentDataLength = filteredInventario.length > 0 ? filteredInventario.length : inventario.length;
-        if (marcados.length !== currentDataLength) {
-            let newMarcados = [];
-            for (let i = 0; i < currentDataLength; i++) {
-                newMarcados.push(false);
-            }
-            setMarcados(newMarcados);
-            setSelected([]);
-        }
-    }, [filteredInventario.length, inventario.length, marcados.length]);
+        setMarcados(new Array(filteredInventario.length).fill(false));
+        setSelected([]);
+    }, [filteredInventario.length]);
 
-
-    // --- Pagination Handlers ---
-    const handleChangePage = (event, newPage) => {
-        setPage(newPage);
-    };
-
+    const handleChangePage = (event, newPage) => setPage(newPage);
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
     };
 
-    // --- Dialog Handlers ---
-    const handleClickOpen = (id) => {
-        setOpen(true);
-        setId(id)
-    };
-
+    const handleClickOpen = (id) => { setOpen(true); setId(id) };
     const handleClose = (value) => {
         setOpen(false);
-        if (value) {
-            deleteInv();
-        }
+        if (value) deleteInv();
     };
 
     const deleteInv = async () => {
@@ -254,241 +160,147 @@ const ShowInventario = () => {
         getInventario();
     }
 
-    // --- Selection Handlers (Restored from old code) ---
     const checksSelected = (event, row, i) => {
-        const selectedId = event.target.name;
-        const isChecked = event.target.checked; // Use event.target.checked directly
-
+        const isChecked = event.target.checked;
         const newMarcados = [...marcados];
         newMarcados[i] = isChecked;
         setMarcados(newMarcados);
 
         if (isChecked) {
-            setSelected(prev => ([...prev, row]));
+            setSelected(prev => [...prev, row]);
         } else {
-            setSelected(prev => prev.filter(item => item.id.toString() !== selectedId));
+            setSelected(prev => prev.filter(item => item.id !== row.id));
         }
     }
 
     const checksTodos = () => {
-        const currentData = filteredInventario; // Use filteredInventario directly
-        const allChecked = marcados.every(checked => checked);
-
-        let newMarcados = currentData.map(() => !allChecked); // Toggle all
-        let newSelected = [];
-
-        if (!allChecked) { // If checking all
-            newSelected = currentData;
-        } else { // If unchecking all
-            // newSelected and newCheckeds remain empty for unchecking
-        }
-
-        setMarcados(newMarcados);
-        setSelected(newSelected);
+        const allChecked = marcados.every(Boolean);
+        setMarcados(new Array(filteredInventario.length).fill(!allChecked));
+        setSelected(!allChecked ? filteredInventario : []);
     }
 
-
-
     const clearFilters = () => {
-        setTipo('');
-        setEstado('');
-        setArea('');
-        setNumInv('');
-        setNumPc('');
-        setUsuario('');
-        // Re-initialize marcados for the full inventory after clearing filters
-        let initialMarcados = [];
-        for (let i = 0; i < inventario.length; i++) {
-            initialMarcados.push(false);
-        }
-        setMarcados(initialMarcados);
-        setSelected([]); // Also clear selected items when clearing filters
+        setTipo(''); setEstado(''); setArea(''); setNumInv(''); setNumPc(''); setUsuario('');
     };
 
-    // --- Browser History Blocker ---
-    useEffect(() => {
-        const blockBack = (e) => {
-            window.history.go(1);
-        };
-        window.history.pushState(null, null, window.location.href);
-        window.addEventListener('popstate', blockBack);
-        return () => {
-            window.removeEventListener('popstate', blockBack);
-        };
-    }, []);
-
-
     return (
-        <>
+        <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
             {noSelected && <ShowMsg msg='Debe Seleccionar un item del inventario' ruta='#' error={true} titulo='Acta de Entrega' color='red' />}
             {noSelected2 && <ShowMsg msg='Debe Seleccionar un número de PC' ruta='#' error={true} titulo='Auditoría' color='red' />}
-            <Typography component="h1" variant="h5" sx={{ mt: 9 }}>
-                Inventario Informática
-            </Typography>
-            <ConfirmDialog
-                open={open}
-                onClose={handleClose}
-            />
-            <Button
-                variant="contained"
-                sx={{ m: 5 }}
-                size="large"
-                onClick={() => navigate('/inventario/create')}
-                startIcon={<AddCircleOutlineIcon />}
-            >
-                Agregar Item
-            </Button>
-            <Divider />
-            <Divider />
-            <Typography component="h1" variant="h5" sx={{ mt: 4, mb: 2 }}>
-                Aplicar filtros de busqueda
-            </Typography>
-            <Container >
-                <TextField
-                    select
-                    label="Componentes"
-                    value={tipo}
-                    onChange={(e) => setTipo(e.target.value)}
-                    helperText="Filtrar por componente"
-                    sx={{ m: 3 }}
-                >
-                    {(componentes || []).map((e) => (
-                        <MenuItem key={e.id} value={e.tipo}>{e.tipo}</MenuItem>
-                    ))}
-                </TextField>
-                <TextField
-                    select
-                    label="Estado"
-                    value={estado}
-                    onChange={(e) => setEstado(e.target.value)}
-                    helperText="Filtrar por estado"
-                    sx={{ m: 3 }}
-                >
-                    {(estados || []).map((e) => (
-                        <MenuItem key={e.id} value={e.estado}>{e.estado}</MenuItem>
-                    ))}
-                </TextField>
-                <TextField
-                    select
-                    label="Area"
-                    value={area}
-                    onChange={(e) => setArea(e.target.value)}
-                    helperText="filtrar por area"
-                    sx={{ m: 3 }}
-                >
-                    {(areas || []).map((e) => (
-                        <MenuItem key={e.id} value={e.area}>{e.area}</MenuItem>
-                    ))}
-                </TextField>
-                <TextField
-                    name="Filtro_NumInv"
-                    label="Filtrar por Nº Inventario"
-                    value={numInv}
-                    onChange={(e) => setNumInv(e.target.value)}
-                    helperText='Ingrese Nº inventario'
-                    sx={{ m: 3 }}
-                />
-                <TextField
-                    name="Filtro_NumPC"
-                    label="Filtrar por Nº de PC"
-                    value={numPc}
-                    onChange={(e) => setNumPc(e.target.value)}
-                    helperText='Ingrese Nº PC'
-                    sx={{ m: 3 }}
-                />
-                <TextField
-                    name="Filtro_Usuario"
-                    label="Filtrar por Usuario"
-                    value={usuario}
-                    onChange={(e) => setUsuario(e.target.value)}
-                    helperText='Ingrese Usuario'
-                    sx={{ m: 3 }}
-                />
+            
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+                <Typography variant="h4" fontWeight="bold" color="primary">
+                    Inventario Informática
+                </Typography>
                 <Button
                     variant="contained"
-                    sx={{
-                        m: 5, backgroundColor: '#446A46',
-                        '&:hover': {
-                            backgroundColor: '#2f5731',
-                        },
-                    }}
                     size="large"
-                    onClick={clearFilters}
-                    startIcon={<ClearAllIcon />}
+                    onClick={() => navigate('/inventario/create')}
+                    startIcon={<AddCircleOutlineIcon />}
+                    sx={{ px: 4 }}
                 >
-                    Limpiar Filtros
+                    Nuevo Item
                 </Button>
-            </Container>
-            <Divider sx={{ mb: 2 }} />
-            <Paper>
-                <TableContainer>
-                    <Table sx={{ minWidth: 700 }} aria-label="customized table">
+            </Box>
+
+            <ConfirmDialog open={open} onClose={handleClose} />
+
+            {/* Panel de Filtros */}
+            <Card sx={{ mb: 4, borderRadius: 2 }}>
+                <CardContent>
+                    <Box display="flex" alignItems="center" mb={2}>
+                        <FilterAltIcon color="primary" sx={{ mr: 1 }} />
+                        <Typography variant="h6" fontWeight="600">Filtros de Búsqueda</Typography>
+                    </Box>
+                    <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6} md={2}>
+                            <TextField select label="Componente" value={tipo} onChange={(e) => setTipo(e.target.value)} fullWidth size="small">
+                                <MenuItem value=""><em>Todos</em></MenuItem>
+                                {componentes.map((e) => <MenuItem key={e.id} value={e.tipo}>{e.tipo}</MenuItem>)}
+                            </TextField>
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={2}>
+                            <TextField select label="Estado" value={estado} onChange={(e) => setEstado(e.target.value)} fullWidth size="small">
+                                <MenuItem value=""><em>Todos</em></MenuItem>
+                                {estados.map((e) => <MenuItem key={e.id} value={e.estado}>{e.estado}</MenuItem>)}
+                            </TextField>
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={2}>
+                            <TextField select label="Área" value={area} onChange={(e) => setArea(e.target.value)} fullWidth size="small">
+                                <MenuItem value=""><em>Todas</em></MenuItem>
+                                {areas.map((e) => <MenuItem key={e.id} value={e.area}>{e.area}</MenuItem>)}
+                            </TextField>
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={2}>
+                            <TextField label="Nº Inventario" value={numInv} onChange={(e) => setNumInv(e.target.value)} fullWidth size="small" />
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={2}>
+                            <TextField label="Nº de PC" value={numPc} onChange={(e) => setNumPc(e.target.value)} fullWidth size="small" />
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={2}>
+                            <TextField label="Usuario" value={usuario} onChange={(e) => setUsuario(e.target.value)} fullWidth size="small" />
+                        </Grid>
+                        <Grid item xs={12} display="flex" justifyContent="flex-end">
+                            <Button variant="outlined" startIcon={<ClearAllIcon />} onClick={clearFilters}>
+                                Limpiar Filtros
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </CardContent>
+            </Card>
+
+            <Paper sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                <TableContainer sx={{ maxHeight: '60vh' }}>
+                    <Table stickyHeader size="small">
                         <TableHead>
                             <TableRow>
-                                <StyledTableCell align='right'>
-                                    <FormControl component="fieldset">
-                                        <FormGroup>
-                                            <FormControlLabel control={
-                                                <Checkbox
-                                                    sx={{ color: 'white' }}
-                                                    indeterminate={marcados.includes(true) && marcados.includes(false)}
-                                                    checked={(marcados.length > 0) && marcados.every(Boolean)}
-                                                    onChange={checksTodos}
-                                                />
-                                            }></FormControlLabel>
-                                        </FormGroup>
-                                    </FormControl>
+                                <StyledTableCell padding="checkbox">
+                                    <Checkbox
+                                        sx={{ color: 'white !important' }}
+                                        indeterminate={marcados.includes(true) && marcados.includes(false)}
+                                        checked={(marcados.length > 0) && marcados.every(Boolean)}
+                                        onChange={checksTodos}
+                                    />
                                 </StyledTableCell>
-                                <StyledTableCell align='center'>Nº Inventario</StyledTableCell>
+                                <StyledTableCell align='center'>Inv. Nº</StyledTableCell>
                                 <StyledTableCell align='center'>PC</StyledTableCell>
-                                <StyledTableCell align='center'>Tipo</StyledTableCell>
-                                <StyledTableCell align='center'>Descripción</StyledTableCell>
-                                <StyledTableCell align='center'>Marca</StyledTableCell>
-                                <StyledTableCell align='center'>Nº Serie</StyledTableCell>
-                                <StyledTableCell align='center'>Observaciones</StyledTableCell>
-                                <StyledTableCell align='center'>Area</StyledTableCell>
-                                <StyledTableCell align='center'>Usuario</StyledTableCell>
+                                <StyledTableCell>Tipo</StyledTableCell>
+                                <StyledTableCell>Descripción</StyledTableCell>
+                                <StyledTableCell>Marca</StyledTableCell>
+                                <StyledTableCell>Nº Serie</StyledTableCell>
+                                <StyledTableCell>Área</StyledTableCell>
+                                <StyledTableCell>Usuario</StyledTableCell>
                                 <StyledTableCell align='center'>Estado</StyledTableCell>
                                 <StyledTableCell align='center'>Acciones</StyledTableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
                             {filteredInventario.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, i) => (
-                                <StyledTableRow key={row.id}>
-                                    <StyledTableCell align='right'>
-                                        <FormControl component="fieldset">
-                                            <FormGroup>
-                                                <FormControlLabel control={
-                                                    <Checkbox
-                                                        checked={marcados[i] || false}
-                                                        onChange={(e) => checksSelected(e, row, i)}
-                                                        name={row.id.toString()}
-                                                    />
-                                                }></FormControlLabel>
-                                            </FormGroup>
-                                        </FormControl>
+                                <StyledTableRow key={row.id} hover>
+                                    <StyledTableCell padding="checkbox">
+                                        <Checkbox checked={marcados[i] || false} onChange={(e) => checksSelected(e, row, i)} />
                                     </StyledTableCell>
-                                    <StyledTableCell align='center'>{row.num_inventario}</StyledTableCell>
+                                    <StyledTableCell align='center' sx={{ fontWeight: 600 }}>{row.num_inventario}</StyledTableCell>
                                     <StyledTableCell align='center'>{row.num_pc}</StyledTableCell>
-                                    <StyledTableCell align='center'>{row.tipo}</StyledTableCell>
-                                    <StyledTableCell align='center'>{row.descripcion}</StyledTableCell>
-                                    <StyledTableCell align='center'>{row.marca}</StyledTableCell>
-                                    <StyledTableCell align='center'>{row.num_serie}</StyledTableCell>
-                                    <StyledTableCell align='center'>{row.observaciones}</StyledTableCell>
-                                    <StyledTableCell align='center'>{row.area}</StyledTableCell>
-                                    <StyledTableCell align='center'>{row.usuario}</StyledTableCell>
-                                    <StyledTableCell align='center'>{row.estado}</StyledTableCell>
+                                    <StyledTableCell>{row.tipo}</StyledTableCell>
+                                    <StyledTableCell>{row.descripcion}</StyledTableCell>
+                                    <StyledTableCell>{row.marca}</StyledTableCell>
+                                    <StyledTableCell>{row.num_serie}</StyledTableCell>
+                                    <StyledTableCell>{row.area}</StyledTableCell>
+                                    <StyledTableCell>{row.usuario}</StyledTableCell>
                                     <StyledTableCell align='center'>
-                                        <Tooltip title="Editar">
-                                            <IconButton aria-label="edit" onClick={() => navigate(`/edit/${row.id}`)}>
-                                                <EditIcon />
-                                            </IconButton>
-                                        </Tooltip>
-                                        <Tooltip title="Eliminar">
-                                            <IconButton aria-label="delete" onClick={() => handleClickOpen(row.id)}>
-                                                <DeleteForeverIcon />
-                                            </IconButton>
-                                        </Tooltip>
+                                        <Box sx={{ 
+                                            bgcolor: row.estado === 'Bueno' ? 'success.light' : (row.estado === 'Regular' ? 'warning.light' : 'error.light'),
+                                            color: 'white', px: 1, borderRadius: 1, fontSize: '0.75rem', fontWeight: 700
+                                        }}>
+                                            {row.estado}
+                                        </Box>
+                                    </StyledTableCell>
+                                    <StyledTableCell align='center'>
+                                        <Stack direction="row" spacing={0.5} justifyContent="center">
+                                            <Tooltip title="Editar"><IconButton size="small" color="primary" onClick={() => navigate(`/edit/${row.id}`)}><EditIcon fontSize="small" /></IconButton></Tooltip>
+                                            <Tooltip title="Eliminar"><IconButton size="small" color="error" onClick={() => handleClickOpen(row.id)}><DeleteForeverIcon fontSize="small" /></IconButton></Tooltip>
+                                        </Stack>
                                     </StyledTableCell>
                                 </StyledTableRow>
                             ))}
@@ -496,65 +308,48 @@ const ShowInventario = () => {
                     </Table>
                 </TableContainer>
                 <TablePagination
-                    rowsPerPageOptions={[5, 10, 25, 50]}
+                    rowsPerPageOptions={[10, 25, 50, 100]}
                     component="div"
                     count={filteredInventario.length}
                     rowsPerPage={rowsPerPage}
                     page={page}
                     onPageChange={handleChangePage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
-                    ActionsComponent={TablePaginationActions}
+                    labelRowsPerPage="Filas por página"
                 />
             </Paper>
-            <Divider />
-            <Button
-                variant="contained"
-                sx={{
-                    m: 6, backgroundColor: '#9b2226',
-                    '&:hover': {
-                        backgroundColor: '#ae2012',
-                    },
-                }}
-                disabled={selected.length === 0}
-                size="large"
-                onClick={(selected.length > 0) ? () => ActaEntrega(selected) : () => setNoSelected(true)}
-                startIcon={<PictureAsPdfIcon />}
-            >
-                Acta Entrega
-            </Button>
-            <Button
-                variant="contained"
-                sx={{
-                    m: 6, backgroundColor: '#9b2226',
-                    '&:hover': {
-                        backgroundColor: '#ae2012',
-                    },
-                }}
-                disabled={selected.length === 0}
-                size="large"
-                onClick={(selected.length > 0) ? () => ActaDevolucion(selected) : () => setNoSelected(true)}
-                startIcon={<PictureAsPdfIcon />}
-            >
-                Acta Devolución
-            </Button>
-            <Button
-                variant="contained"
-                sx={{
-                    m: 6, backgroundColor: '#9b2226',
-                    '&:hover': {
-                        backgroundColor: '#ae2012',
-                    },
-                }}
-                disabled={filteredInventario.length === 0}
-                size="large"
-                onClick={(filteredInventario.length > 0) ? () => Auditoria(filteredInventario) : () => setNoSelected2(true)}
-                startIcon={<PictureAsPdfIcon />}
-            >
-                Auditoria
-            </Button>
-        </>
+
+            <Box mt={3} display="flex" gap={2} flexWrap="wrap">
+                <Button
+                    variant="contained"
+                    color="error"
+                    disabled={selected.length === 0}
+                    onClick={() => ActaEntrega(selected)}
+                    startIcon={<PictureAsPdfIcon />}
+                >
+                    Acta Entrega
+                </Button>
+                <Button
+                    variant="contained"
+                    color="error"
+                    disabled={selected.length === 0}
+                    onClick={() => ActaDevolucion(selected)}
+                    startIcon={<PictureAsPdfIcon />}
+                >
+                    Acta Devolución
+                </Button>
+                <Button
+                    variant="contained"
+                    color="error"
+                    disabled={filteredInventario.length === 0}
+                    onClick={() => Auditoria(filteredInventario)}
+                    startIcon={<PictureAsPdfIcon />}
+                >
+                    Auditoria
+                </Button>
+            </Box>
+        </Container>
     );
 }
-
 
 export default ShowInventario;
