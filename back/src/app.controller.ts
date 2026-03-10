@@ -6,20 +6,26 @@ export class AppController {
     constructor(private readonly prisma: PrismaService) { }
 
     @Get()
-    async getStatus() {
+    getStatus() {
+        // Respuesta estática para que Render no sature la base de datos
+        return {
+            status: 'ok',
+            server: 'awake 🚀',
+            info: 'Visit /health to check database'
+        };
+    }
+
+    @Get('health')
+    async getHealth() {
         let databaseStatus = 'unknown';
         try {
-            // Intenta una consulta simple para verificar la conexión
             await this.prisma.$queryRaw`SELECT 1`;
             databaseStatus = 'connected';
         } catch (error) {
-            console.error('🚨 Error de conexión a la base de datos:', error.message);
             databaseStatus = 'disconnected';
         }
 
         return {
-            status: 'ok',
-            server: 'awake 🚀',
             database: databaseStatus,
             timestamp: new Date().toISOString()
         };
