@@ -15,6 +15,8 @@ export class AuthService {
                 select: {
                     id: true,
                     usuario: true,
+                    nombre: true,
+                    apellido: true,
                     password: true,
                 },
             });

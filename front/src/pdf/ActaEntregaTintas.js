@@ -74,7 +74,12 @@ const ActaEntregaTintasPdf = (entregaData) => {
                     widths: ['30%', '70%'],
                     body: [
                         [{ text: 'Área Destino:', style: 'tableHeader' }, area.area],
-                        [{ text: 'Entregado por:', style: 'tableHeader' }, `${usuario.nombre} ${usuario.apellido}`]
+                        [
+                            { text: 'Entregado por:', style: 'tableHeader' }, 
+                            (usuario.nombre || usuario.apellido) 
+                                ? `${usuario.nombre || ''} ${usuario.apellido || ''}`.trim() 
+                                : usuario.usuario || 'Usuario'
+                        ]
                     ]
                 },
                 layout: {

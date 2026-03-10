@@ -1,6 +1,9 @@
 import './App.css';
 import React, { Suspense, lazy } from 'react'; // Importar Suspense y lazy
 import { Routes, Route, useLocation } from 'react-router-dom';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import theme from './theme';
 import Layout from './components/Layout';
 import SignUp from './components/Registro'
 import LogIn from './components/LogIn';
@@ -31,7 +34,9 @@ function App() {
   const { pathname } = useLocation();
 
   return (
-    <div className="App">
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <div className="App">
 
       {(pathname !== '/' && pathname !== '/register') && <NavBar />}
 
@@ -67,6 +72,7 @@ function App() {
 
       <Footer />
     </div>
+    </ThemeProvider>
   );
 }
 

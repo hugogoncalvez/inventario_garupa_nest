@@ -4,7 +4,7 @@ import "pdfmake/build/vfs_fonts";
 
 const ActaRecargaTintaPdf = (recargaData) => {
 
-    const { insumoGranel, cartucho, impresora, area, cantidadInsumo, cantidadCartuchos, fechaRecarga } = recargaData;
+    const { insumoGranel, cartucho, impresora, area, usuario, cantidadInsumo, cantidadCartuchos, fechaRecarga } = recargaData;
 
     const meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
     const fecha = new Date(fechaRecarga);
@@ -60,6 +60,13 @@ const ActaRecargaTintaPdf = (recargaData) => {
                         [{ text: 'Impresora:', style: 'tableHeader' }, { text: `${impresora.marca} ${impresora.modelo}`, fontSize: 13, alignment: 'center' }],
                         [{ text: 'Insumo a Granel Utilizado:', style: 'tableHeader' }, { text: `${insumoGranel.nombre}`, fontSize: 13, alignment: 'center' }],
                         [{ text: 'Cantidad Utilizada:', style: 'tableHeader' }, { text: `${cantidadInsumo} ${insumoGranel.unidad_medida}`, fontSize: 13, alignment: 'center' }],
+                        [{ text: 'Recargado por:', style: 'tableHeader' }, { 
+                            text: usuario ? ((usuario.nombre || usuario.apellido) 
+                                ? `${usuario.nombre || ''} ${usuario.apellido || ''}`.trim() 
+                                : usuario.usuario || 'Usuario') : 'Usuario',
+                            fontSize: 13, 
+                            alignment: 'center' 
+                        }],
                         [{ text: 'Cartucho Recargado:', style: 'tableHeader' }, { text: cartucho ? `${cartucho.modelo} (${cartucho.color})` : 'No especificado', fontSize: 13, alignment: 'center' }],
                         [{ text: 'Número de Cartuchos Recargados:', style: 'tableHeader' }, { text: `${cantidadCartuchos}`, fontSize: 13, alignment: 'center' }]
                     ]
