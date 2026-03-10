@@ -102,29 +102,32 @@ const ShowInventario = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        getInventario()
-        getComponentes();
-        getEstado()
-        getAreas()
-    }, [])
+        const loadData = async () => {
+            try {
+                const [resInv, resComp, resEst, resAreas] = await Promise.all([
+                    api.get(`${URI}/inventario/`),
+                    api.get(`${URI}/tipos`),
+                    api.get(`${URI}/estado`),
+                    api.get(`${URI}/areas`)
+                ]);
+                
+                setInventario(resInv.data);
+                setMarcados(new Array(resInv.data.length).fill(false));
+                setComponentes(resComp.data);
+                setEstados(resEst.data);
+                setAreas(resAreas.data);
+            } catch (error) {
+                console.error(\"Error cargando datos iniciales:\", error);
+            }
+        };
+        loadData();
+    }, []);
 
     const getInventario = async () => {
         const res = await api.get(`${URI}/inventario/`);
         setInventario(res.data);
         setMarcados(new Array(res.data.length).fill(false));
     };
-    const getComponentes = async () => {
-        const res = await api.get(`${URI}/tipos`);
-        setComponentes(res.data);
-    }
-    const getEstado = async () => {
-        const res = await api.get(`${URI}/estado`);
-        setEstados(res.data);
-    }
-    const getAreas = async () => {
-        const res = await api.get(`${URI}/areas`);
-        setAreas(res.data);
-    }
 
     const filteredInventario = useMemo(() => {
         return inventario.filter(inv => 

@@ -88,8 +88,19 @@ const ShowOrdenes = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        getOrdenes();
-        getEstados();
+        const loadData = async () => {
+            try {
+                const [resOrd, resEst] = await Promise.all([
+                    api.get(`${URI}/ordenes`),
+                    api.get(`${URI}/estado`)
+                ]);
+                setOrdenes(Array.isArray(resOrd.data) ? resOrd.data : []);
+                setEstados(resEst.data);
+            } catch (error) {
+                console.error("Error cargando datos de órdenes:", error);
+            }
+        };
+        loadData();
     }, []);
 
     const getOrdenes = async () => {
@@ -100,11 +111,6 @@ const ShowOrdenes = () => {
             setOrdenes([]);
         }
     };
-
-    const getEstados = async () => {
-        const res = await api.get(`${URI}/estado`);
-        setEstados(res.data);
-    }
 
     const filteredOrdenes = useMemo(() => {
         return ordenes.filter(o => 

@@ -86,8 +86,19 @@ export const GestionImpresoras = () => {
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
     useEffect(() => {
-        getImpresoras();
-        getAreas();
+        const loadData = async () => {
+            try {
+                const [resImp, resAreas] = await Promise.all([
+                    api.get(`${URI}/tintas/impresoras`),
+                    api.get(`${URI}/areas`)
+                ]);
+                setImpresoras(resImp.data);
+                setAreas(resAreas.data);
+            } catch (error) {
+                console.error("Error al cargar datos de impresoras:", error);
+            }
+        };
+        loadData();
     }, []);
 
     const getImpresoras = async () => {
@@ -96,15 +107,6 @@ export const GestionImpresoras = () => {
             setImpresoras(res.data);
         } catch (error) {
             console.error("Error al obtener las impresoras:", error);
-        }
-    };
-
-    const getAreas = async () => {
-        try {
-            const res = await api.get(`${URI}/areas`);
-            setAreas(res.data);
-        } catch (error) {
-            console.error("Error al obtener las áreas:", error);
         }
     };
 
