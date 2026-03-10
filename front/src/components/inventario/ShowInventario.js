@@ -206,43 +206,51 @@ const ShowInventario = () => {
             <ConfirmDialog open={open} onClose={handleClose} />
 
             {/* Panel de Filtros */}
-            <Card sx={{ mb: 4, borderRadius: 2 }}>
-                <CardContent>
+            <Card sx={{ mb: 4, borderRadius: 2, boxShadow: 1 }}>
+                <CardContent sx={{ p: 2 }}>
                     <Box display="flex" alignItems="center" mb={2}>
-                        <FilterAltIcon color="primary" sx={{ mr: 1 }} />
-                        <Typography variant="h6" fontWeight="600">Filtros de Búsqueda</Typography>
+                        <FilterAltIcon color="primary" sx={{ mr: 1, fontSize: 20 }} />
+                        <Typography variant="subtitle1" fontWeight="600">Filtros de Búsqueda</Typography>
                     </Box>
-                    <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6} md={2}>
-                            <TextField select label="Componente" value={tipo} onChange={(e) => setTipo(e.target.value)} fullWidth size="small">
+                    <Grid container spacing={1.5} alignItems="flex-start">
+                        <Grid item xs={12} sm={4} md={1.5}>
+                            <TextField select label="Tipo" value={tipo} onChange={(e) => setTipo(e.target.value)} fullWidth size="small">
                                 <MenuItem value=""><em>Todos</em></MenuItem>
                                 {componentes.map((e) => <MenuItem key={e.id} value={e.tipo}>{e.tipo}</MenuItem>)}
                             </TextField>
                         </Grid>
-                        <Grid item xs={12} sm={6} md={2}>
+                        <Grid item xs={12} sm={4} md={1.5}>
                             <TextField select label="Estado" value={estado} onChange={(e) => setEstado(e.target.value)} fullWidth size="small">
                                 <MenuItem value=""><em>Todos</em></MenuItem>
                                 {estados.map((e) => <MenuItem key={e.id} value={e.estado}>{e.estado}</MenuItem>)}
                             </TextField>
                         </Grid>
-                        <Grid item xs={12} sm={6} md={2}>
+                        <Grid item xs={12} sm={4} md={1.5}>
                             <TextField select label="Área" value={area} onChange={(e) => setArea(e.target.value)} fullWidth size="small">
                                 <MenuItem value=""><em>Todas</em></MenuItem>
                                 {areas.map((e) => <MenuItem key={e.id} value={e.area}>{e.area}</MenuItem>)}
                             </TextField>
                         </Grid>
-                        <Grid item xs={12} sm={6} md={2}>
+                        <Grid item xs={12} sm={4} md={2}>
                             <TextField label="Nº Inventario" value={numInv} onChange={(e) => setNumInv(e.target.value)} fullWidth size="small" />
                         </Grid>
-                        <Grid item xs={12} sm={6} md={2}>
+                        <Grid item xs={12} sm={4} md={2}>
                             <TextField label="Nº de PC" value={numPc} onChange={(e) => setNumPc(e.target.value)} fullWidth size="small" />
                         </Grid>
-                        <Grid item xs={12} sm={6} md={2}>
+                        <Grid item xs={12} sm={4} md={2}>
                             <TextField label="Usuario" value={usuario} onChange={(e) => setUsuario(e.target.value)} fullWidth size="small" />
                         </Grid>
-                        <Grid item xs={12} display="flex" justifyContent="flex-end">
-                            <Button variant="outlined" startIcon={<ClearAllIcon />} onClick={clearFilters}>
-                                Limpiar Filtros
+                        <Grid item xs={12} md={1.5} display="flex" alignItems="center">
+                            <Button 
+                                variant="text" 
+                                color="secondary" 
+                                startIcon={<ClearAllIcon />} 
+                                onClick={clearFilters}
+                                fullWidth
+                                size="small"
+                                sx={{ height: 40 }}
+                            >
+                                Limpiar
                             </Button>
                         </Grid>
                     </Grid>
