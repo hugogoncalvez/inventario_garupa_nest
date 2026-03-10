@@ -1,7 +1,6 @@
 import api, { URI } from '../../config.js';
 import React, { useState, useEffect } from 'react';
-
-
+import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -20,22 +19,23 @@ import FirstPageIcon from '@mui/icons-material/FirstPage';
 import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
 import LastPageIcon from '@mui/icons-material/LastPage';
-import { styled } from '@mui/material/styles';
 import EventIcon from '@mui/icons-material/Event';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import { Divider } from '@mui/material';
+import FilterAltIcon from '@mui/icons-material/FilterAlt';
+import { Divider, Card, CardContent, Stack, Grid, Chip } from '@mui/material';
 
 import ReporteComprasPdf from '../../pdf/ReporteComprasPdf';
 
+// estilos de la tabla
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
-        backgroundColor: '#4F4F4F',
+        backgroundColor: theme.palette.primary.main,
         color: theme.palette.common.white,
-        fontSize: 18,
+        fontSize: 14,
+        fontWeight: 600,
     },
     [`&.${tableCellClasses.body}`]: {
-        fontSize: 14,
-        borderRight: '1px solid #E0E0E0',
+        fontSize: 13,
     },
 }));
 
@@ -43,41 +43,39 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
     '&:nth-of-type(odd)': {
         backgroundColor: theme.palette.action.hover,
     },
+    '&:last-child td, &:last-child th': {
+        border: 0,
+    },
 }));
 
 function TablePaginationActions(props) {
     const { count, page, rowsPerPage, onPageChange } = props;
-
-    const handleFirstPageButtonClick = (event) => { onPageChange(event, 0); };
-    const handleBackButtonClick = (event) => { onPageChange(event, page - 1); };
-    const handleNextButtonClick = (event) => { onPageChange(event, page + 1); };
-    const handleLastPageButtonClick = (event) => { onPageChange(event, Math.max(0, Math.ceil(count / rowsPerPage) - 1)); };
+    const handleFirstPageButtonClick = (event) => onPageChange(event, 0);
+    const handleBackButtonClick = (event) => onPageChange(event, page - 1);
+    const handleNextButtonClick = (event) => onPageChange(event, page + 1);
+    const handleLastPageButtonClick = (event) => onPageChange(event, Math.max(0, Math.ceil(count / rowsPerPage) - 1));
 
     return (
         <Box sx={{ flexShrink: 0, ml: 2.5 }}>
-            <IconButton onClick={handleFirstPageButtonClick} disabled={page === 0} aria-label="first page"><FirstPageIcon /></IconButton>
-            <IconButton onClick={handleBackButtonClick} disabled={page === 0} aria-label="previous page"><KeyboardArrowLeft /></IconButton>
-            <IconButton onClick={handleNextButtonClick} disabled={page >= Math.ceil(count / rowsPerPage) - 1} aria-label="next page"><KeyboardArrowRight /></IconButton>
-            <IconButton onClick={handleLastPageButtonClick} disabled={page >= Math.ceil(count / rowsPerPage) - 1} aria-label="last page"><LastPageIcon /></IconButton>
+            <IconButton onClick={handleFirstPageButtonClick} disabled={page === 0}><FirstPageIcon /></IconButton>
+            <IconButton onClick={handleBackButtonClick} disabled={page === 0}><KeyboardArrowLeft /></IconButton>
+            <IconButton onClick={handleNextButtonClick} disabled={page >= Math.ceil(count / rowsPerPage) - 1}><KeyboardArrowRight /></IconButton>
+            <IconButton onClick={handleLastPageButtonClick} disabled={page >= Math.ceil(count / rowsPerPage) - 1}><LastPageIcon /></IconButton>
         </Box>
     );
 }
-
 
 export const ReportesCompras = () => {
     const [reporteData, setReporteData] = useState([]);
     const [fechaDesde, setFechaDesde] = useState('');
     const [fechaHasta, setFechaHasta] = useState('');
     const [error, setError] = useState('');
-
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
-    useEffect(() => {
-        setPage(0);
-    }, [reporteData.length]);
+    useEffect(() => { setPage(0); }, [reporteData.length]);
 
-    const handleChangePage = (event, newPage) => { setPage(newPage); };
+    const handleChangePage = (event, newPage) => setPage(newPage);
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
@@ -85,95 +83,78 @@ export const ReportesCompras = () => {
 
     const handleGenerateReport = async () => {
         if (!fechaDesde || !fechaHasta) {
-            setError("Por favor, seleccione ambas fechas para generar el reporte.");
+            setError("Por favor, seleccione ambas fechas.");
             return;
         }
 
         try {
-            const hastaDate = new Date(fechaHasta);
-            hastaDate.setHours(23, 59, 59, 999);
-            const desdeDate = new Date(fechaDesde);
-            desdeDate.setHours(0, 0, 0, 0);
-
             const res = await api.get(`${URI}/reportes/compras`, {
                 params: {
-                    desde: desdeDate.toISOString(),
-                    hasta: hastaDate.toISOString()
+                    desde: new Date(fechaDesde).toISOString(),
+                    hasta: new Date(fechaHasta + 'T23:59:59').toISOString()
                 }
             });
-
             setReporteData(res.data);
             setError('');
         } catch (err) {
-            console.error("Error al generar el reporte de compras:", err.response ? err.response.data : err);
             setError(err.response?.data?.message || "Error al generar el reporte.");
             setReporteData([]);
         }
     };
 
     const generatePdf = () => {
-        if (reporteData.length === 0) {
-            setError("No hay datos para generar el PDF. Genere un reporte primero.");
-            return;
-        }
+        if (reporteData.length === 0) return;
         ReporteComprasPdf(reporteData, fechaDesde, fechaHasta);
-        setError('');
     };
 
     return (
-        <Container component="main" maxWidth="lg" sx={{ mt: 10 }}>
-            <Typography component="h1" variant="h5" sx={{ mb: 4 }}>
-                Reporte de Compras
-            </Typography>
-
-            <Paper sx={{ p: 3, mb: 4 }}>
-                <Typography variant="h6" sx={{ mb: 2 }}>Seleccionar Rango de Fechas</Typography>
-                <TextField
-                    label="Fecha Desde"
-                    type="date"
-                    value={fechaDesde}
-                    onChange={(e) => setFechaDesde(e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                    sx={{ mr: 2, mb: 2 }}
-                />
-                <TextField
-                    label="Fecha Hasta"
-                    type="date"
-                    value={fechaHasta}
-                    onChange={(e) => setFechaHasta(e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                    sx={{ mr: 2, mb: 2 }}
-                />
+        <Container maxWidth="xl" sx={{ mt: 10, mb: 4 }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+                <Typography variant="h4" fontWeight="bold" color="primary">
+                    Reporte de Compras
+                </Typography>
                 <Button
                     variant="contained"
-                    onClick={handleGenerateReport}
-                    startIcon={<EventIcon />}
-                    sx={{ mt: 1, mb: 2, mr: 2 }}
-                >
-                    Generar Reporte
-                </Button>
-                <Button
-                    variant="contained"
+                    color="error"
                     onClick={generatePdf}
                     startIcon={<PictureAsPdfIcon />}
-                    sx={{ mt: 1, mb: 2 }}
                     disabled={reporteData.length === 0}
+                    sx={{ px: 4 }}
                 >
                     Generar PDF
                 </Button>
-                {error && (
-                    <Typography color="error" variant="body2" sx={{ mt: 1 }}>{error}</Typography>
-                )}
-            </Paper>
+            </Box>
 
-            <Divider sx={{ mb: 4 }} />
+            <Card sx={{ mb: 4, borderRadius: 2, boxShadow: 1 }}>
+                <CardContent sx={{ p: 2 }}>
+                    <Box display="flex" alignItems="center" mb={2}>
+                        <FilterAltIcon color="primary" sx={{ mr: 1, fontSize: 20 }} />
+                        <Typography variant="subtitle1" fontWeight="600">Rango de Fechas</Typography>
+                    </Box>
+                    <Grid container spacing={2} alignItems="center">
+                        <Grid item xs={12} sm={4} md={3}>
+                            <TextField label="Desde" type="date" value={fechaDesde} onChange={(e) => setFechaDesde(e.target.value)} fullWidth size="small" InputLabelProps={{ shrink: true }} />
+                        </Grid>
+                        <Grid item xs={12} sm={4} md={3}>
+                            <TextField label="Hasta" type="date" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} fullWidth size="small" InputLabelProps={{ shrink: true }} />
+                        </Grid>
+                        <Grid item xs={12} sm={4} md={2}>
+                            <Button variant="contained" fullWidth onClick={handleGenerateReport} startIcon={<EventIcon />} sx={{ height: 40 }}>
+                                Consultar
+                            </Button>
+                        </Grid>
+                        {error && (
+                            <Grid item xs={12}>
+                                <Typography color="error" variant="caption">{error}</Typography>
+                            </Grid>
+                        )}
+                    </Grid>
+                </CardContent>
+            </Card>
 
-            <Typography component="h2" variant="h6" sx={{ mb: 2 }}>
-                Resultados del Reporte
-            </Typography>
-            <Paper>
-                <TableContainer>
-                    <Table aria-label="reporte compras table">
+            <Paper sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                <TableContainer sx={{ maxHeight: '60vh' }}>
+                    <Table stickyHeader size="small">
                         <TableHead>
                             <TableRow>
                                 <StyledTableCell>Fecha</StyledTableCell>
@@ -187,19 +168,25 @@ export const ReportesCompras = () => {
                         <TableBody>
                             {reporteData.length > 0 ?
                                 reporteData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
-                                    <StyledTableRow key={index}>
-                                        <StyledTableCell>{new Date(row.fecha).toLocaleDateString()}</StyledTableCell>
+                                    <StyledTableRow key={index} hover>
+                                        <StyledTableCell sx={{ fontWeight: 600 }}>{new Date(row.fecha).toLocaleDateString()}</StyledTableCell>
                                         <StyledTableCell>{row.producto}</StyledTableCell>
-                                        <StyledTableCell>{row.tipo}</StyledTableCell>
-                                        <StyledTableCell align='center'>{row.cantidad}</StyledTableCell>
+                                        <StyledTableCell>
+                                            <Chip label={row.tipo} size="small" variant="outlined" color={row.tipo === 'Insumo' ? 'primary' : 'info'} />
+                                        </StyledTableCell>
+                                        <StyledTableCell align='center'>
+                                            <Box sx={{ bgcolor: 'success.light', color: 'white', px: 1, borderRadius: 1, fontWeight: 700, display: 'inline-block' }}>
+                                                {row.cantidad}
+                                            </Box>
+                                        </StyledTableCell>
                                         <StyledTableCell>{row.unidad}</StyledTableCell>
                                         <StyledTableCell>{row.usuario}</StyledTableCell>
                                     </StyledTableRow>
                                 ))
                                 :
                                 <StyledTableRow>
-                                    <StyledTableCell colSpan={6} align='center'>
-                                        No hay datos para el rango de fechas seleccionado.
+                                    <StyledTableCell colSpan={6} align='center' sx={{ py: 3, color: 'text.secondary' }}>
+                                        No hay datos para el rango seleccionado.
                                     </StyledTableCell>
                                 </StyledTableRow>
                             }
@@ -207,14 +194,14 @@ export const ReportesCompras = () => {
                     </Table>
                 </TableContainer>
                 <TablePagination
-                    rowsPerPageOptions={[5, 10, 25, 50]}
+                    rowsPerPageOptions={[10, 25, 50]}
                     component="div"
                     count={reporteData.length}
                     rowsPerPage={rowsPerPage}
                     page={page}
                     onPageChange={handleChangePage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
-                    ActionsComponent={TablePaginationActions}
+                    labelRowsPerPage="Filas por página"
                 />
             </Paper>
         </Container>
