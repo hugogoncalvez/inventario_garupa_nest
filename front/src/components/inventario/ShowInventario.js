@@ -104,24 +104,26 @@ const ShowInventario = () => {
     useEffect(() => {
         const loadData = async () => {
             try {
-                const [resInv, resComp, resEst, resAreas] = await Promise.all([
-                    api.get(`${URI}/inventario/`),
-                    api.get(`${URI}/tipos`),
-                    api.get(`${URI}/estado`),
-                    api.get(`${URI}/areas`)
-                ]);
-                
+                // Cargamos secuencialmente para no saturar las 5 conexiones de Clever Cloud
+                const resInv = await api.get(`${URI}/inventario/`);
                 setInventario(resInv.data);
                 setMarcados(new Array(resInv.data.length).fill(false));
+
+                const resComp = await api.get(`${URI}/tipos`);
                 setComponentes(resComp.data);
+
+                const resEst = await api.get(`${URI}/estado`);
                 setEstados(resEst.data);
+
+                const resAreas = await api.get(`${URI}/areas`);
                 setAreas(resAreas.data);
             } catch (error) {
-                console.error(\"Error cargando datos iniciales:\", error);
+                console.error("Error cargando datos iniciales:", error);
             }
         };
         loadData();
     }, []);
+
 
     const getInventario = async () => {
         const res = await api.get(`${URI}/inventario/`);
