@@ -90,11 +90,11 @@ const ShowOrdenes = () => {
     useEffect(() => {
         const loadData = async () => {
             try {
-                const [resOrd, resEst] = await Promise.all([
-                    api.get(`${URI}/ordenes`),
-                    api.get(`${URI}/estado`)
-                ]);
+                // Carga secuencial para estabilidad en Clever Cloud
+                const resOrd = await api.get(`${URI}/ordenes`);
                 setOrdenes(Array.isArray(resOrd.data) ? resOrd.data : []);
+
+                const resEst = await api.get(`${URI}/estado`);
                 setEstados(resEst.data);
             } catch (error) {
                 console.error("Error cargando datos de órdenes:", error);

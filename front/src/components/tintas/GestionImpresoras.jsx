@@ -88,11 +88,11 @@ export const GestionImpresoras = () => {
     useEffect(() => {
         const loadData = async () => {
             try {
-                const [resImp, resAreas] = await Promise.all([
-                    api.get(`${URI}/tintas/impresoras`),
-                    api.get(`${URI}/areas`)
-                ]);
+                // Carga secuencial para estabilidad en Clever Cloud
+                const resImp = await api.get(`${URI}/tintas/impresoras`);
                 setImpresoras(resImp.data);
+
+                const resAreas = await api.get(`${URI}/areas`);
                 setAreas(resAreas.data);
             } catch (error) {
                 console.error("Error al cargar datos de impresoras:", error);
