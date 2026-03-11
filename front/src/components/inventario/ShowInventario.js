@@ -303,8 +303,22 @@ const ShowInventario = () => {
                                     <StyledTableCell>{row.usuario}</StyledTableCell>
                                     <StyledTableCell align='center'>
                                         <Box sx={{ 
-                                            bgcolor: row.estado === 'Bueno' ? 'success.light' : (row.estado === 'Regular' ? 'warning.light' : 'error.light'),
-                                            color: 'white', px: 1, borderRadius: 1, fontSize: '0.75rem', fontWeight: 700
+                                            bgcolor: (() => {
+                                                const est = row.estado?.toLowerCase() || '';
+                                                if (est.includes('nuevo') || est.includes('bueno')) return 'success.light';
+                                                if (est.includes('utilizado') || est.includes('regular')) return 'warning.main';
+                                                if (est.includes('baja') || est.includes('malo')) return 'error.main';
+                                                return 'grey.500'; // Por defecto gris
+                                            })(),
+                                            color: 'white', 
+                                            px: 1.5, 
+                                            py: 0.5,
+                                            borderRadius: 1, 
+                                            fontSize: '0.75rem', 
+                                            fontWeight: 700,
+                                            display: 'inline-block',
+                                            minWidth: 80,
+                                            textTransform: 'capitalize'
                                         }}>
                                             {row.estado}
                                         </Box>
