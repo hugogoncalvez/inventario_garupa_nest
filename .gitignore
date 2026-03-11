@@ -22,3 +22,9 @@ Thumbs.db
 
 # Prisma
 generated/
+
+# Supabase
+supabase
+
+# TiDB
+TiDB
