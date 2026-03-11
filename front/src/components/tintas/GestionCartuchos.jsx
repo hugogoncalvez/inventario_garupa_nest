@@ -286,6 +286,7 @@ const GestionCartuchos = () => {
                                                 borderRadius: '50%', 
                                                 bgcolor: (() => {
                                                     const color = cartucho.color?.toLowerCase() || '';
+                                                    if (color.includes('tricolor')) return 'conic-gradient(#00ffff, #ff00ff, #ffff00)';
                                                     if (color.includes('negro') || color.includes('black')) return 'black';
                                                     if (color.includes('cian') || color.includes('cyan')) return '#00ffff';
                                                     if (color.includes('magenta')) return '#ff00ff';
@@ -303,8 +304,15 @@ const GestionCartuchos = () => {
                                     </StyledTableCell>
                                     <StyledTableCell align='center'>
                                         <Box sx={{ 
-                                            bgcolor: cartucho.stock_unidades <= cartucho.stock_minimo_unidades ? 'error.light' : 'success.light',
-                                            color: 'white', px: 1, borderRadius: 1, fontSize: '0.85rem', fontWeight: 700
+                                            bgcolor: (() => {
+                                                const stock = cartucho.stock_unidades;
+                                                const min = cartucho.stock_minimo_unidades;
+                                                if (stock <= 1) return 'error.main'; // Rojo para 0 o 1
+                                                if (stock <= min) return 'warning.main'; // Naranja para bajo stock
+                                                return 'success.light'; // Verde para ok
+                                            })(),
+                                            color: 'white', px: 1, borderRadius: 1, fontSize: '0.85rem', fontWeight: 700,
+                                            display: 'inline-block', minWidth: 24
                                         }}>
                                             {cartucho.stock_unidades}
                                         </Box>
