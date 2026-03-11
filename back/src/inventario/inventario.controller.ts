@@ -21,9 +21,23 @@ export class InventarioController {
 
         if (!lastItem || !lastItem.num_inventario) return { nextInvNumber: '1' };
 
-        // Intenta incrementar el último número si es numérico
-        const lastNum = parseInt(lastItem.num_inventario);
-        return { nextInvNumber: isNaN(lastNum) ? lastItem.num_inventario + '_1' : (lastNum + 1).toString() };
+        const lastValue = lastItem.num_inventario;
+        // Busca una parte no numérica al inicio y una numérica al final
+        const match = lastValue.match(/^(.*?)(\d+)$/);
+
+        if (match) {
+            const prefix = match[1];
+            const numberStr = match[2];
+            const nextNumber = (parseInt(numberStr, 10) + 1).toString();
+            
+            // Mantiene el padding de ceros si existía (ej: I001 -> I002)
+            const paddedNumber = nextNumber.padStart(numberStr.length, '0');
+            
+            return { nextInvNumber: `${prefix}${paddedNumber}` };
+        }
+
+        // Si no sigue el patrón estándar, añade el sufijo
+        return { nextInvNumber: lastValue + '_1' };
     }
 
     @Get(':id')

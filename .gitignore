@@ -28,3 +28,9 @@ supabase
 
 # TiDB
 TiDB
+
+# Bot de WhatsApp (Local)
+nodeW/
+
+# Documentación de análisis
+ANALISIS_Y_MEJORAS.md
