@@ -88,11 +88,12 @@ export const GestionImpresoras = () => {
     useEffect(() => {
         const loadData = async () => {
             try {
-                // Carga secuencial para estabilidad en Clever Cloud
-                const resImp = await api.get(`${URI}/tintas/impresoras`);
+                // Carga paralela para mayor velocidad en TiDB Cloud
+                const [resImp, resAreas] = await Promise.all([
+                    api.get(`${URI}/tintas/impresoras`),
+                    api.get(`${URI}/areas`)
+                ]);
                 setImpresoras(resImp.data);
-
-                const resAreas = await api.get(`${URI}/areas`);
                 setAreas(resAreas.data);
             } catch (error) {
                 console.error("Error al cargar datos de impresoras:", error);

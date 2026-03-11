@@ -90,11 +90,12 @@ const ShowOrdenes = () => {
     useEffect(() => {
         const loadData = async () => {
             try {
-                // Carga secuencial para estabilidad en Clever Cloud
-                const resOrd = await api.get(`${URI}/ordenes`);
+                // Carga paralela para mayor velocidad en TiDB Cloud
+                const [resOrd, resEst] = await Promise.all([
+                    api.get(`${URI}/ordenes`),
+                    api.get(`${URI}/estado`)
+                ]);
                 setOrdenes(Array.isArray(resOrd.data) ? resOrd.data : []);
-
-                const resEst = await api.get(`${URI}/estado`);
                 setEstados(resEst.data);
             } catch (error) {
                 console.error("Error cargando datos de órdenes:", error);

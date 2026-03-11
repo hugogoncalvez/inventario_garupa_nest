@@ -280,7 +280,20 @@ const GestionCartuchos = () => {
                                     <StyledTableCell align='center'>{cartucho.sku || '---'}</StyledTableCell>
                                     <StyledTableCell align='center'>
                                         <Box display="flex" alignItems="center" justifyContent="center" gap={1}>
-                                            <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: cartucho.color?.toLowerCase() === 'negro' ? 'black' : (cartucho.color?.toLowerCase() === 'cian' ? 'cyan' : (cartucho.color?.toLowerCase() === 'magenta' ? 'magenta' : (cartucho.color?.toLowerCase() === 'amarillo' ? 'yellow' : 'grey.300'))), border: '1px solid #ddd' }} />
+                                            <Box sx={{ 
+                                                width: 12, 
+                                                height: 12, 
+                                                borderRadius: '50%', 
+                                                bgcolor: (() => {
+                                                    const color = cartucho.color?.toLowerCase() || '';
+                                                    if (color.includes('negro') || color.includes('black')) return 'black';
+                                                    if (color.includes('cian') || color.includes('cyan')) return '#00ffff';
+                                                    if (color.includes('magenta')) return '#ff00ff';
+                                                    if (color.includes('amarillo') || color.includes('yellow')) return '#ffff00';
+                                                    return '#bdbdbd'; // Gris para otros
+                                                })(), 
+                                                border: '1px solid #ddd' 
+                                            }} />
                                             {cartucho.color}
                                         </Box>
                                     </StyledTableCell>
