@@ -7,7 +7,9 @@ export class InventarioController {
 
     @Get()
     findAll() {
-        return this.prisma.inventarios.findMany();
+        return this.prisma.inventarios.findMany({
+            orderBy: { id: 'desc' }
+        });
     }
 
     @Get('next')
