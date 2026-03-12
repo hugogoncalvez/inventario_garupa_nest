@@ -1,40 +1,24 @@
 import api, { URI } from '../../config.js';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { styled } from '@mui/material/styles';
-import Typography from '@mui/material/Typography';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell, { tableCellClasses } from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
-import Box from '@mui/material/Box';
-import IconButton from '@mui/material/IconButton';
+import Grid from "@mui/material/Grid";
+import {
+    Typography, Table, TableBody, TableCell, tableCellClasses, TableContainer,
+    TableHead, TableRow, Paper, Box, IconButton, Button, Tooltip,    TextField, MenuItem, Container, Card, CardContent, 
+    Stack, TablePagination, Divider, Chip 
+} from '@mui/material';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
-import Button from '@mui/material/Button';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
-import TextField from '@mui/material/TextField';
-import Container from '@mui/material/Container';
-import TablePagination from '@mui/material/TablePagination';
-import FirstPageIcon from '@mui/icons-material/FirstPage';
-import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
-import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
-import LastPageIcon from '@mui/icons-material/LastPage';
-import ClearAllIcon from '@mui/icons-material/ClearAll';
-import MenuItem from '@mui/material/MenuItem';
-import Grid from '@mui/material/Grid';
-import Tooltip from '@mui/material/Tooltip';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
-import { Card, CardContent, Stack, Divider } from '@mui/material';
+import PrintIcon from '@mui/icons-material/Print';
 import ConfirmDialog from '../dialogs/ShowConfirm';
 
-// estilos de la tabla
+// Estilos optimizados
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
-        backgroundColor: theme.palette.primary.main,
-        color: theme.palette.common.white,
+        backgroundColor: 'var(--mui-palette-primary-main)',
+        color: 'var(--mui-palette-common-white)',
         fontSize: 14,
         fontWeight: 600,
     },
@@ -45,277 +29,218 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
     '&:nth-of-type(odd)': {
-        backgroundColor: theme.palette.action.hover,
+        backgroundColor: 'var(--mui-palette-action-hover)',
     },
     '&:last-child td, &:last-child th': {
         border: 0,
     },
 }));
 
-function TablePaginationActions(props) {
-    const { count, page, rowsPerPage, onPageChange } = props;
-    const handleFirstPageButtonClick = (event) => onPageChange(event, 0);
-    const handleBackButtonClick = (event) => onPageChange(event, page - 1);
-    const handleNextButtonClick = (event) => onPageChange(event, page + 1);
-    const handleLastPageButtonClick = (event) => onPageChange(event, Math.max(0, Math.ceil(count / rowsPerPage) - 1));
-
-    return (
-        <Box sx={{ flexShrink: 0, ml: 2.5 }}>
-            <IconButton onClick={handleFirstPageButtonClick} disabled={page === 0}><FirstPageIcon /></IconButton>
-            <IconButton onClick={handleBackButtonClick} disabled={page === 0}><KeyboardArrowLeft /></IconButton>
-            <IconButton onClick={handleNextButtonClick} disabled={page >= Math.ceil(count / rowsPerPage) - 1}><KeyboardArrowRight /></IconButton>
-            <IconButton onClick={handleLastPageButtonClick} disabled={page >= Math.ceil(count / rowsPerPage) - 1}><LastPageIcon /></IconButton>
-        </Box>
-    );
-}
-
 export const GestionImpresoras = () => {
     const [impresoras, setImpresoras] = useState([]);
     const [areas, setAreas] = useState([]);
-    const [id, setId] = useState('');
-    const [modelo, setModelo] = useState('');
-    const [marca, setMarca] = useState('');
-    const [areaId, setAreaId] = useState('');
+    const [form, setForm] = useState({ id: '', modelo: '', marca: '', area_id: '' });
     const [isUpdate, setIsUpdate] = useState(false);
-    const [errModelo, setErrModelo] = useState(false);
-    const [open, setOpen] = useState(false);
-    const [filterModelo, setFilterModelo] = useState('');
-    const [filterMarca, setFilterMarca] = useState('');
-    const [filterAreaName, setFilterAreaName] = useState('');
+    const [errors, setErrors] = useState({});
+    const [openConfirm, setOpenConfirm] = useState(false);
+    const [idToDelete, setIdToDelete] = useState('');
+    
+    const [filters, setFilters] = useState({ modelo: '', marca: '', areaName: '' });
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
-    useEffect(() => {
-        const loadData = async () => {
-            try {
-                // Carga paralela para mayor velocidad en TiDB Cloud
-                const [resImp, resAreas] = await Promise.all([
-                    api.get(`${URI}/tintas/impresoras`),
-                    api.get(`${URI}/areas`)
-                ]);
-                setImpresoras(resImp.data);
-                setAreas(resAreas.data);
-            } catch (error) {
-                console.error("Error al cargar datos de impresoras:", error);
-            }
-        };
-        loadData();
+    const loadData = useCallback(async () => {
+        try {
+            const [resImp, resAreas] = await Promise.all([
+                api.get(`${URI}/tintas/impresoras`),
+                api.get(`${URI}/areas`)
+            ]);
+            setImpresoras(resImp.data);
+            setAreas(resAreas.data);
+        } catch (error) {
+            console.error("Error cargando datos:", error);
+        }
     }, []);
 
+    useEffect(() => {
+        loadData();
+    }, [loadData]);
+
     const getImpresoras = async () => {
-        try {
-            const res = await api.get(`${URI}/tintas/impresoras`);
-            setImpresoras(res.data);
-        } catch (error) {
-            console.error("Error al obtener las impresoras:", error);
-        }
+        const res = await api.get(`${URI}/tintas/impresoras`);
+        setImpresoras(res.data);
     };
 
     const filteredImpresoras = useMemo(() => {
         return impresoras.filter(imp => 
-            (filterModelo === '' || imp.modelo.toLowerCase().includes(filterModelo.toLowerCase())) &&
-            (filterMarca === '' || (imp.marca && imp.marca.toLowerCase().includes(filterMarca.toLowerCase()))) &&
-            (filterAreaName === '' || (imp.areas && imp.areas.area.toLowerCase().includes(filterAreaName.toLowerCase())))
+            (filters.modelo === '' || imp.modelo.toLowerCase().includes(filters.modelo.toLowerCase())) &&
+            (filters.marca === '' || (imp.marca && imp.marca.toLowerCase().includes(filters.marca.toLowerCase()))) &&
+            (filters.areaName === '' || (imp.areas && imp.areas.area.toLowerCase().includes(filters.areaName.toLowerCase())))
         );
-    }, [impresoras, filterModelo, filterMarca, filterAreaName]);
+    }, [impresoras, filters]);
 
-    useEffect(() => {
-        setPage(0);
-    }, [filteredImpresoras.length]);
-
-    const handleChangePage = (event, newPage) => setPage(newPage);
-    const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(parseInt(event.target.value, 10));
-        setPage(0);
+    const validate = () => {
+        const newErrors = {};
+        if (!form.modelo.trim()) newErrors.modelo = "Requerido";
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
     };
 
-    const handleClose = (value) => {
-        setOpen(false);
-        value && deleteImpresora();
-    };
-
-    const handleClickOpen = (id) => {
-        setOpen(true);
-        setId(id);
-    };
-
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-        if (!modelo.trim()) {
-            setErrModelo(true);
-            return;
-        }
-        setErrModelo(false);
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!validate()) return;
 
         try {
-            const printerData = { modelo: modelo.trim(), marca: marca.trim(), area_id: areaId };
             if (isUpdate) {
-                await api.put(`${URI}/tintas/impresoras/${id}`, printerData);
+                await api.put(`${URI}/tintas/impresoras/${form.id}`, form);
             } else {
-                await api.post(`${URI}/tintas/impresoras`, printerData);
+                await api.post(`${URI}/tintas/impresoras`, form);
             }
-            setIsUpdate(false);
+            clearForm();
             getImpresoras();
-            setId(''); setModelo(''); setMarca(''); setAreaId('');
         } catch (error) {
-            console.error("Error al guardar la impresora:", error);
+            console.error("Error al guardar:", error);
         }
     };
 
-    const deleteImpresora = async () => {
-        try {
-            await api.delete(`${URI}/tintas/impresoras/${id}`);
-            getImpresoras();
-        } catch (error) {
-            console.error("Error al eliminar la impresora:", error);
-        }
+    const clearForm = () => {
+        setForm({ id: '', modelo: '', marca: '', area_id: '' });
+        setIsUpdate(false);
+        setErrors({});
     };
 
-    const handleEditClick = (impresora) => {
-        setId(impresora.id);
-        setModelo(impresora.modelo);
-        setMarca(impresora.marca);
-        setAreaId(impresora.area_id || '');
+    const handleEditClick = (row) => {
+        setForm({
+            id: row.id,
+            modelo: row.modelo,
+            marca: row.marca || '',
+            area_id: row.area_id || ''
+        });
         setIsUpdate(true);
-    };
-
-    const clearFilters = () => {
-        setFilterModelo(''); setFilterMarca(''); setFilterAreaName('');
+        setErrors({});
     };
 
     return (
-        <Container maxWidth="xl" sx={{ mt: 10, mb: 4 }}>
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-                <Typography variant="h4" fontWeight="bold" color="primary">
-                    Gestión de Impresoras
-                </Typography>
-            </Box>
+        <Container maxWidth="xl" sx={{ mt: 12, mb: 4 }}>
+            <Typography variant="h4" fontWeight="800" color="primary" mb={4}>
+                Gestión de Impresoras
+            </Typography>
 
-            <ConfirmDialog open={open} onClose={handleClose} />
+            <ConfirmDialog open={openConfirm} onClose={(v) => {
+                setOpenConfirm(false);
+                v && api.delete(`${URI}/tintas/impresoras/${idToDelete}`).then(getImpresoras);
+            }} />
 
             <Grid container spacing={3}>
-                {/* Formulario de Registro/Edición */}
-                <Grid item xs={12} md={4}>
-                    <Card sx={{ borderRadius: 2, boxShadow: 1 }}>
+                <Grid size={{ xs: 12, md: 4 }}>
+                    <Card sx={{ borderRadius: 3, border: '1px solid var(--mui-palette-divider)' }}>
                         <CardContent>
-                            <Typography variant="h6" fontWeight="600" mb={2}>
-                                {isUpdate ? 'Editar Impresora' : 'Nueva Impresora'}
-                            </Typography>
-                            <Box component="form" onSubmit={handleSubmit} noValidate>
-                                <Stack spacing={2}>
-                                    <TextField
-                                        label="Modelo"
-                                        required
-                                        value={modelo}
-                                        onChange={(e) => setModelo(e.target.value)}
-                                        error={errModelo}
-                                        helperText={errModelo && 'El modelo es requerido'}
-                                        fullWidth
-                                        size="small"
+                            <Box display="flex" alignItems="center" mb={2} gap={1}>
+                                <PrintIcon color="primary" />
+                                <Typography variant="h6" fontWeight="700">
+                                    {isUpdate ? 'Editar Equipo' : 'Nueva Impresora'}
+                                </Typography>
+                            </Box>
+                            <Divider sx={{ mb: 3 }} />
+                            <Box component="form" onSubmit={handleSubmit}>
+                                <Stack spacing={2.5}>
+                                    <TextField 
+                                        label="Modelo" 
+                                        required 
+                                        value={form.modelo} 
+                                        onChange={(e) => setForm({...form, modelo: e.target.value})}
+                                        error={!!errors.modelo}
+                                        helperText={errors.modelo}
+                                        fullWidth 
+                                        size="small" 
                                     />
-                                    <TextField
-                                        label="Marca"
-                                        value={marca}
-                                        onChange={(e) => setMarca(e.target.value)}
-                                        fullWidth
-                                        size="small"
+                                    <TextField 
+                                        label="Marca" 
+                                        value={form.marca} 
+                                        onChange={(e) => setForm({...form, marca: e.target.value})}
+                                        fullWidth 
+                                        size="small" 
                                     />
                                     <TextField
                                         select
-                                        label="Área"
-                                        value={areaId}
-                                        onChange={(e) => setAreaId(e.target.value)}
+                                        label="Área Asignada"
+                                        value={form.area_id}
+                                        onChange={(e) => setForm({...form, area_id: e.target.value})}
                                         fullWidth
                                         size="small"
                                     >
-                                        <MenuItem value=""><em>Ninguna</em></MenuItem>
+                                        <MenuItem value=""><em>Ninguna (Depósito)</em></MenuItem>
                                         {areas.map((a) => (
                                             <MenuItem key={a.id} value={a.id}>{a.area}</MenuItem>
                                         ))}
                                     </TextField>
-                                    <Button
-                                        type="submit"
-                                        variant="contained"
-                                        fullWidth
-                                        startIcon={<SaveOutlinedIcon />}
-                                    >
+                                    <Button type="submit" variant="contained" fullWidth startIcon={<SaveOutlinedIcon />} sx={{ py: 1.2, borderRadius: 2 }}>
                                         {isUpdate ? 'Actualizar' : 'Guardar'}
                                     </Button>
-                                    {isUpdate && (
-                                        <Button
-                                            variant="outlined"
-                                            fullWidth
-                                            onClick={() => {
-                                                setIsUpdate(false); setId(''); setModelo(''); setMarca(''); setAreaId(''); setErrModelo(false);
-                                            }}
-                                        >
-                                            Cancelar
-                                        </Button>
-                                    )}
+                                    <Button variant="outlined" color="secondary" fullWidth onClick={clearForm} sx={{ borderRadius: 2 }}>
+                                        {isUpdate ? 'Cancelar' : 'Limpiar'}
+                                    </Button>
                                 </Stack>
                             </Box>
                         </CardContent>
                     </Card>
                 </Grid>
 
-                {/* Listado y Filtros */}
-                <Grid item xs={12} md={8}>
-                    {/* Panel de Filtros */}
-                    <Card sx={{ mb: 3, borderRadius: 2, boxShadow: 1 }}>
+                <Grid size={{ xs: 12, md: 8 }}>
+                    <Card sx={{ mb: 3, borderRadius: 3, border: '1px solid var(--mui-palette-divider)' }}>
                         <CardContent sx={{ p: 2 }}>
-                            <Box display="flex" alignItems="center" mb={2}>
-                                <FilterAltIcon color="primary" sx={{ mr: 1, fontSize: 20 }} />
-                                <Typography variant="subtitle1" fontWeight="600">Filtros de Búsqueda</Typography>
+                            <Box display="flex" alignItems="center" mb={2} gap={1}>
+                                <FilterAltIcon color="primary" fontSize="small" />
+                                <Typography variant="subtitle2" fontWeight="700">Filtros de Búsqueda</Typography>
                             </Box>
-                            <Grid container spacing={2} alignItems="center">
-                                <Grid item xs={12} sm={4}>
-                                    <TextField label="Modelo" value={filterModelo} onChange={(e) => setFilterModelo(e.target.value)} fullWidth size="small" />
+                            <Grid container spacing={2}>
+                                <Grid size={{ xs: 12, sm: 4 }}>
+                                    <TextField label="Modelo" value={filters.modelo} onChange={(e) => setFilters({...filters, modelo: e.target.value})} fullWidth size="small" />
                                 </Grid>
-                                <Grid item xs={12} sm={4}>
-                                    <TextField label="Marca" value={filterMarca} onChange={(e) => setFilterMarca(e.target.value)} fullWidth size="small" />
+                                <Grid size={{ xs: 12, sm: 4 }}>
+                                    <TextField label="Marca" value={filters.marca} onChange={(e) => setFilters({...filters, marca: e.target.value})} fullWidth size="small" />
                                 </Grid>
-                                <Grid item xs={12} sm={4}>
-                                    <TextField select label="Área" value={filterAreaName} onChange={(e) => setFilterAreaName(e.target.value)} fullWidth size="small">
+                                <Grid size={{ xs: 12, sm: 4 }}>
+                                    <TextField select label="Área" value={filters.areaName} onChange={(e) => setFilters({...filters, areaName: e.target.value})} fullWidth size="small">
                                         <MenuItem value=""><em>Todas</em></MenuItem>
                                         {areas.map((a) => (
                                             <MenuItem key={a.id} value={a.area}>{a.area}</MenuItem>
                                         ))}
                                     </TextField>
                                 </Grid>
-                                <Grid item xs={12} display="flex" justifyContent="flex-end">
-                                    <Button variant="text" color="secondary" startIcon={<ClearAllIcon />} onClick={clearFilters} size="small">
-                                        Limpiar
-                                    </Button>
-                                </Grid>
                             </Grid>
                         </CardContent>
                     </Card>
 
-                    <Paper sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                    <Paper sx={{ borderRadius: 3, overflow: 'hidden', border: '1px solid var(--mui-palette-divider)' }}>
                         <TableContainer sx={{ maxHeight: '60vh' }}>
                             <Table stickyHeader size="small">
                                 <TableHead>
                                     <TableRow>
-                                        <StyledTableCell>Modelo</StyledTableCell>
+                                        <StyledTableCell>Modelo de Impresora</StyledTableCell>
                                         <StyledTableCell align='center'>Marca</StyledTableCell>
-                                        <StyledTableCell align='center'>Área</StyledTableCell>
+                                        <StyledTableCell align='center'>Área Asignada</StyledTableCell>
                                         <StyledTableCell align='center'>Acciones</StyledTableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
                                     {filteredImpresoras.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
                                         <StyledTableRow key={row.id} hover>
-                                            <StyledTableCell sx={{ fontWeight: 600 }}>{row.modelo}</StyledTableCell>
+                                            <StyledTableCell sx={{ fontWeight: 700 }}>{row.modelo}</StyledTableCell>
                                             <StyledTableCell align='center'>{row.marca || '---'}</StyledTableCell>
                                             <StyledTableCell align='center'>
-                                                <Box sx={{ bgcolor: 'info.light', color: 'white', px: 1, borderRadius: 1, fontSize: '0.75rem', fontWeight: 700, display: 'inline-block' }}>
-                                                    {row.areas ? row.areas.area : 'N/A'}
-                                                </Box>
+                                                <Chip 
+                                                    label={row.areas ? row.areas.area : 'N/A'} 
+                                                    size="small"
+                                                    variant="outlined"
+                                                    color={row.areas ? "primary" : "default"}
+                                                    sx={{ fontWeight: 600, fontSize: '0.75rem' }}
+                                                />
                                             </StyledTableCell>
                                             <StyledTableCell align='center'>
                                                 <Stack direction="row" spacing={0.5} justifyContent="center">
                                                     <Tooltip title="Editar"><IconButton size="small" color="primary" onClick={() => handleEditClick(row)}><EditIcon fontSize="small" /></IconButton></Tooltip>
-                                                    <Tooltip title="Eliminar"><IconButton size="small" color="error" onClick={() => handleClickOpen(row.id)}><DeleteForeverIcon fontSize="small" /></IconButton></Tooltip>
+                                                    <Tooltip title="Eliminar"><IconButton size="small" color="error" onClick={() => { setIdToDelete(row.id); setOpenConfirm(true); }}><DeleteForeverIcon fontSize="small" /></IconButton></Tooltip>
                                                 </Stack>
                                             </StyledTableCell>
                                         </StyledTableRow>
@@ -329,9 +254,9 @@ export const GestionImpresoras = () => {
                             count={filteredImpresoras.length}
                             rowsPerPage={rowsPerPage}
                             page={page}
-                            onPageChange={handleChangePage}
-                            onRowsPerPageChange={handleChangeRowsPerPage}
-                            labelRowsPerPage="Filas por página"
+                            onPageChange={(e, p) => setPage(p)}
+                            onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
+                            labelRowsPerPage="Filas"
                         />
                     </Paper>
                 </Grid>

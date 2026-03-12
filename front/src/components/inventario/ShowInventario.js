@@ -24,26 +24,22 @@ import ClearAllIcon from '@mui/icons-material/ClearAll';
 import ConfirmDialog from '../dialogs/ShowConfirm'
 import ShowMsg from '../dialogs/ShowMsg'
 import TablePagination from '@mui/material/TablePagination';
-import FirstPageIcon from '@mui/icons-material/FirstPage';
-import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
-import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
-import LastPageIcon from '@mui/icons-material/LastPage';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 
-import { Divider, FormControl, Grid, Card, CardContent, Stack } from '@mui/material';
-import { FormGroup } from '@mui/material';
-import { FormControlLabel } from '@mui/material';
+import Grid from "@mui/material/Grid";
+import { Card, CardContent, Stack } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import ActaEntrega from '../../pdf/ActaEntrega';
 import Auditoria from '../../pdf/Auditoria';
 import ActaDevolucion from '../../pdf/ActaDevolucion';
 import Tooltip from '@mui/material/Tooltip';
+import SearchIcon from '@mui/icons-material/Search';
 
-// estilos de la tabla
+// estilos de la tabla con CSS Variables de MUI v7
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
-        backgroundColor: theme.palette.primary.main,
-        color: theme.palette.common.white,
+        backgroundColor: theme.vars ? theme.vars.palette.primary.main : theme.palette.primary.main,
+        color: theme.vars ? theme.vars.palette.common.white : theme.palette.common.white,
         fontSize: 14,
         fontWeight: 600,
     },
@@ -54,29 +50,12 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
     '&:nth-of-type(odd)': {
-        backgroundColor: theme.palette.action.hover,
+        backgroundColor: theme.vars ? theme.vars.palette.action.hover : theme.palette.action.hover,
     },
     '&:last-child td, &:last-child th': {
         border: 0,
     },
 }));
-
-function TablePaginationActions(props) {
-    const { count, page, rowsPerPage, onPageChange } = props;
-    const handleFirstPageButtonClick = (event) => onPageChange(event, 0);
-    const handleBackButtonClick = (event) => onPageChange(event, page - 1);
-    const handleNextButtonClick = (event) => onPageChange(event, page + 1);
-    const handleLastPageButtonClick = (event) => onPageChange(event, Math.max(0, Math.ceil(count / rowsPerPage) - 1));
-
-    return (
-        <Box sx={{ flexShrink: 0, ml: 2.5 }}>
-            <IconButton onClick={handleFirstPageButtonClick} disabled={page === 0}><FirstPageIcon /></IconButton>
-            <IconButton onClick={handleBackButtonClick} disabled={page === 0}><KeyboardArrowLeft /></IconButton>
-            <IconButton onClick={handleNextButtonClick} disabled={page >= Math.ceil(count / rowsPerPage) - 1}><KeyboardArrowRight /></IconButton>
-            <IconButton onClick={handleLastPageButtonClick} disabled={page >= Math.ceil(count / rowsPerPage) - 1}><LastPageIcon /></IconButton>
-        </Box>
-    );
-}
 
 const ShowInventario = () => {
     const [open, setOpen] = useState(false)
@@ -93,8 +72,8 @@ const ShowInventario = () => {
     const [numPc, setNumPc] = useState('');
     const [usuario, setUsuario] = useState('');
 
-    const [noSelected, setNoSelected] = useState(false)
-    const [noSelected2, setNoSelected2] = useState(false)
+    const [noSelected] = useState(false)
+    const [noSelected2] = useState(false)
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [selected, setSelected] = useState([])
@@ -210,50 +189,61 @@ const ShowInventario = () => {
 
             <ConfirmDialog open={open} onClose={handleClose} />
 
-            {/* Panel de Filtros */}
-            <Card sx={{ mb: 4, borderRadius: 2, boxShadow: 1 }}>
+            {/* Panel de Filtros Modernizado con MUI v7 */}
+            <Card sx={{ mb: 4, borderRadius: 2, boxShadow: 'var(--mui-shadows-1)' }}>
                 <CardContent sx={{ p: 2 }}>
                     <Box display="flex" alignItems="center" mb={2}>
                         <FilterAltIcon color="primary" sx={{ mr: 1, fontSize: 20 }} />
                         <Typography variant="subtitle1" fontWeight="600">Filtros de Búsqueda</Typography>
                     </Box>
-                    <Grid container spacing={1.5} alignItems="flex-start">
-                        <Grid item xs={12} sm={4} md={1.5}>
+                    <Grid container spacing={2} alignItems="stretch">
+                        <Grid size={{ xs: 12, sm: 4, md: 1.5 }}>
                             <TextField select label="Tipo" value={tipo} onChange={(e) => setTipo(e.target.value)} fullWidth size="small">
                                 <MenuItem value=""><em>Todos</em></MenuItem>
                                 {componentes.map((e) => <MenuItem key={e.id} value={e.tipo}>{e.tipo}</MenuItem>)}
                             </TextField>
                         </Grid>
-                        <Grid item xs={12} sm={4} md={1.5}>
+                        <Grid size={{ xs: 12, sm: 4, md: 1.5 }}>
                             <TextField select label="Estado" value={estado} onChange={(e) => setEstado(e.target.value)} fullWidth size="small">
                                 <MenuItem value=""><em>Todos</em></MenuItem>
                                 {estados.map((e) => <MenuItem key={e.id} value={e.estado}>{e.estado}</MenuItem>)}
                             </TextField>
                         </Grid>
-                        <Grid item xs={12} sm={4} md={1.5}>
+                        <Grid size={{ xs: 12, sm: 4, md: 1.5 }}>
                             <TextField select label="Área" value={area} onChange={(e) => setArea(e.target.value)} fullWidth size="small">
                                 <MenuItem value=""><em>Todas</em></MenuItem>
                                 {areas.map((e) => <MenuItem key={e.id} value={e.area}>{e.area}</MenuItem>)}
                             </TextField>
                         </Grid>
-                        <Grid item xs={12} sm={4} md={2}>
-                            <TextField label="Nº Inventario" value={numInv} onChange={(e) => setNumInv(e.target.value)} fullWidth size="small" />
+                        <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+                            <TextField 
+                                label="Nº Inventario" 
+                                value={numInv} 
+                                onChange={(e) => setNumInv(e.target.value)} 
+                                fullWidth 
+                                size="small"
+                                slotProps={{
+                                    input: {
+                                        startAdornment: <SearchIcon sx={{ color: 'action.active', mr: 1, fontSize: 18 }} />,
+                                    },
+                                }}
+                            />
                         </Grid>
-                        <Grid item xs={12} sm={4} md={2}>
+                        <Grid size={{ xs: 12, sm: 6, md: 2 }}>
                             <TextField label="Nº de PC" value={numPc} onChange={(e) => setNumPc(e.target.value)} fullWidth size="small" />
                         </Grid>
-                        <Grid item xs={12} sm={4} md={2}>
+                        <Grid size={{ xs: 12, sm: 12, md: 2 }}>
                             <TextField label="Usuario" value={usuario} onChange={(e) => setUsuario(e.target.value)} fullWidth size="small" />
                         </Grid>
-                        <Grid item xs={12} md={1.5} display="flex" alignItems="center">
+                        <Grid size={{ xs: 12, md: 1.5 }} display="flex">
                             <Button 
-                                variant="text" 
+                                variant="outlined" 
                                 color="secondary" 
                                 startIcon={<ClearAllIcon />} 
                                 onClick={clearFilters}
                                 fullWidth
                                 size="small"
-                                sx={{ height: 40 }}
+                                sx={{ borderRadius: 1.5 }}
                             >
                                 Limpiar
                             </Button>

@@ -1,210 +1,162 @@
 import api, { URI as BASE_URI } from '../config.js';
-import React, { useState } from 'react';
-
-
-import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
-import CssBaseline from '@mui/material/CssBaseline';
-import TextField from '@mui/material/TextField';
-import Link from '@mui/material/Link';
-import Grid from '@mui/material/Grid';
-import Box from '@mui/material/Box';
+import React, { useState, useCallback } from 'react';
+import { useNavigate } from "react-router-dom";
+import Grid from "@mui/material/Grid";
+import {
+    Avatar, Button, TextField, Link, Box, Typography,
+    Container, Paper} from '@mui/material';
 import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-
-import ShowMsg from './dialogs/ShowMsg'
-import Alerta from './dialogs/ShowAlert'
-
-
-
+import ShowMsg from './dialogs/ShowMsg';
+import Alerta from './dialogs/ShowAlert';
 
 const URI = `${BASE_URI}/register`;
 
-
-const theme = createTheme();
-
-
-
 export const SignUp = () => {
-
-    const [usuCreado, setUsuCreado] = useState(null)
-    const [errNom, setErrNom] = useState(false)
-    const [errApe, setErrApe] = useState(false)
-    const [isEmail, setIsEmail] = useState(false)
-    const [textErrEmail, setTextErrEmail] = useState('')
-    const [passOk, setPassOk] = useState(false)
-    const [msgError, setMsgError] = useState('')
-
-
+    const navigate = useNavigate();
+    const [usuCreado, setUsuCreado] = useState(null);
+    const [errors, setErrors] = useState({});
+    const [msgError, setMsgError] = useState('');
 
     const validate = (data) => {
-        let respuesta = {}
-        respuesta.nombre = new RegExp(/[a-z]/i).test(data.get('nombre'))
-        respuesta.apellido = new RegExp(/[a-z]/i).test(data.get('apellido'))
-        respuesta.email = new RegExp(/^(([^<>()[\].,;:\s@"]+(\.[^<>()[\].,;:\s@"]+)*)|(".+"))@(([^<>()[\].,;:\s@"]+\.)+[^<>()[\].,;:\s@"]{2,})$/i).test(data.get('email'))
-        respuesta.password = data.get('password').length >= 6 ? true : false
+        const newErrors = {};
+        const nombre = data.get('nombre');
+        const apellido = data.get('apellido');
+        const email = data.get('email');
+        const password = data.get('password');
 
-        setErrNom(!respuesta.nombre);
-        setErrApe(!respuesta.apellido);
-        setIsEmail(!respuesta.email);
-        setPassOk(!respuesta.password);
+        if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(nombre)) newErrors.nombre = "Nombre inválido";
+        if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(apellido)) newErrors.apellido = "Apellido inválido";
+        if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/i.test(email)) newErrors.email = "Email inválido";
+        if (password.length < 6) newErrors.password = "Mínimo 6 caracteres";
 
-        !respuesta.email && setTextErrEmail(prev => 'Ingrese un email válido')
-
-
-        return Object.values(respuesta).every(x => x === true)
-    }
-
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
     const handleSubmit = (event) => {
-        setUsuCreado(prev => null)
+        setUsuCreado(null);
         event.preventDefault();
         const data = new FormData(event.currentTarget);
 
-        let validado = validate(data)
+        if (!validate(data)) return;
 
-        validado && api.post(URI, {
+        api.post(URI, {
             nombre: data.get('nombre').trim(),
             apellido: data.get('apellido').trim(),
             usuario: data.get('email').trim(),
             password: data.get('password').trim(),
         })
-            .then((res) => {
-
-                if (res.statusText === 'OK' && res.data.msgError === '') {
-
-                    setUsuCreado(prev => true)
-
-                } else {
-                    setUsuCreado(prev => false)
-                    setIsEmail(prev => true)
-                    setTextErrEmail(prev => 'El email ya esta en uso')
-
-                    setMsgError(prev => res.data.msgError)
-
-                }
-            })
-            .catch((err) => {
-                setUsuCreado(prev => false)
-            });
+        .then((res) => {
+            if (res.data.msgError === '') {
+                setUsuCreado(true);
+            } else {
+                setUsuCreado(false);
+                setMsgError(res.data.msgError);
+                setErrors({ email: "El email ya está en uso" });
+            }
+        })
+        .catch(() => {
+            setUsuCreado(false);
+            setMsgError("Error de conexión con el servidor");
+        });
     };
 
-
-    const renderContent = React.useCallback(() => {
-        switch (usuCreado) {
-            case true:
-                return <ShowMsg msg='Usuario creado correctamente.' ruta='/' error={false} titulo='Nuevo Usuario' color='green' />;
-
-            case false:
-                return <ShowMsg msg='El usuario no ha podido crearse.' ruta='#' error={true} titulo='Nuevo Usuario' color='red' msgErr={msgError} />;
-
-            default:
-                return null;
-
-        }
+    const renderContent = useCallback(() => {
+        if (usuCreado === true) return <ShowMsg msg='Usuario creado correctamente.' ruta='/' error={false} titulo='Nuevo Usuario' color='green' />;
+        if (usuCreado === false) return <ShowMsg msg='El usuario no ha podido crearse.' ruta='#' error={true} titulo='Nuevo Usuario' color='red' msgErr={msgError} />;
+        return null;
     }, [msgError, usuCreado]);
 
     return (
-        <ThemeProvider theme={theme}>
-            <Container component="main" maxWidth="xs">
+        <Box sx={{
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'linear-gradient(135deg, var(--mui-palette-primary-main), var(--mui-palette-primary-dark))',
+            p: 2
+        }}>
+            <Container maxWidth="xs">
                 {renderContent()}
                 <Alerta />
-                <CssBaseline />
-                <Box
-                    sx={{
-                        marginTop: 8,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                    }}
-                >
-                    <Avatar sx={{ m: 1, bgcolor: 'secondary.main', width: 56, height: 56 }}>
-                        <PersonAddAltIcon fontSize='large' />
+                <Paper elevation={0} sx={{
+                    p: 4,
+                    borderRadius: 4,
+                    textAlign: 'center',
+                    bgcolor: 'var(--mui-palette-background-paper)',
+                    boxShadow: 'var(--mui-shadows-10)'
+                }}>
+                    <Avatar sx={{ m: '0 auto 20px', bgcolor: 'var(--mui-palette-primary-main)', width: 56, height: 56 }}>
+                        <PersonAddAltIcon fontSize="large" />
                     </Avatar>
-                    <Typography component="h1" variant="h5">
-                        Crear Usuario
+                    <Typography variant="h5" fontWeight="800" color="primary">
+                        Crear Cuenta
                     </Typography>
-                    <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
-                        <Grid container spacing={2}>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
+                        Regístrate para acceder al sistema
+                    </Typography>
 
-                            <Grid item xs={12} sm={6}>
+                    <Box component="form" noValidate onSubmit={handleSubmit}>
+                        <Grid container spacing={2}>
+                            <Grid size={{ xs: 12, sm: 6 }}>
                                 <TextField
-                                    autoComplete="given-name"
                                     name="nombre"
                                     required
-                                    fullWidth
-                                    id="firstName"
                                     label="Nombre"
                                     autoFocus
-                                    error={errNom}
-                                    helperText={errNom && 'Ingrese su nombre'}
+                                    error={!!errors.nombre}
+                                    helperText={errors.nombre}
+                                    size="small"
                                 />
                             </Grid>
-                            <Grid item xs={12} sm={6}>
+                            <Grid size={{ xs: 12, sm: 6 }}>
                                 <TextField
-                                    required
-                                    fullWidth
-                                    id="apellido"
-                                    label="Apellido"
                                     name="apellido"
-                                    autoComplete="family-name"
-                                    error={errApe}
-                                    helperText={errApe && 'Ingrese su apellido'}
+                                    required
+                                    label="Apellido"
+                                    error={!!errors.apellido}
+                                    helperText={errors.apellido}
+                                    size="small"
                                 />
                             </Grid>
-                            <Grid item xs={12}>
+                            <Grid size={{ xs: 12 }}>
                                 <TextField
-                                    required
-                                    fullWidth
-                                    id="email"
-                                    label="Usuario: Email"
                                     name="email"
-                                    autoComplete="email"
-                                    error={isEmail}
-                                    helperText={isEmail && textErrEmail}
-                                />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <TextField
                                     required
-                                    fullWidth
-                                    name="password"
-                                    label="Password"
-                                    type="password"
-                                    id="password"
-                                    autoComplete="new-password"
-                                    error={passOk}
-                                    helperText={passOk && 'La contraña debe tener 6 caracteres como mínimo'}
+                                    label="Correo Electrónico"
+                                    error={!!errors.email}
+                                    helperText={errors.email}
+                                    size="small"
                                 />
                             </Grid>
-
-                            <Grid item xs={12}>
-
+                            <Grid size={{ xs: 12 }}>
+                                <TextField
+                                    name="password"
+                                    required
+                                    label="Contraseña"
+                                    type="password"
+                                    error={!!errors.password}
+                                    helperText={errors.password}
+                                    size="small"
+                                />
                             </Grid>
                         </Grid>
-                        <Button
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            sx={{ mt: 3, mb: 2 }}
-                            disabled={false}
-                        >
-                            Registrar
+                        <Button type="submit" fullWidth variant="contained" size="large" sx={{ mt: 4, mb: 2, py: 1.5, borderRadius: 2, fontWeight: 700 }}>
+                            Registrarse
                         </Button>
-                        <Grid container justifyContent="flex-end">
-                            <Grid item>
-                                <Link href="/" variant="body2">
-                                    Ya tienes una cuenta? Ingresar
-                                </Link>
-                            </Grid>
-                        </Grid>
+                        <Link 
+                            component="button" 
+                            variant="body2" 
+                            onClick={() => navigate('/')} 
+                            sx={{ fontWeight: 600, textDecoration: 'none' }}
+                        >
+                            ¿Ya tienes cuenta? Ingresa aquí
+                        </Link>
                     </Box>
-                </Box>
+                </Paper>
             </Container>
-        </ThemeProvider>
+        </Box>
     );
-}
+};
 
 export default SignUp;

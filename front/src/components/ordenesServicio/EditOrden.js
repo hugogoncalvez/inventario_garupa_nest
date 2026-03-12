@@ -1,140 +1,193 @@
 import api, { URI } from '../../config.js';
-
-
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
+import Grid from "@mui/material/Grid";
+import {
+    Button, TextField, Box, Container, Typography, MenuItem,
+    Paper, Stack, Divider, CircularProgress} from '@mui/material';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import CancelIcon from '@mui/icons-material/Cancel';
-import MenuItem from '@mui/material/MenuItem';
-
+import EditNoteIcon from '@mui/icons-material/EditNote';
 
 const EditOrden = () => {
-
     const navigate = useNavigate();
     const { id } = useParams();
+    const [loading, setLoading] = useState(true);
 
-    const [id_equipo, setIdEquipo] = useState('');
-    const [problema_reportado, setProblemaReportado] = useState('');
-    const [trabajo_realizado, setTrabajoRealizado] = useState('');
-    const [tecnico_asignado, setTecnicoAsignado] = useState('');
-    const [estado, setEstado] = useState('');
-    const [fecha_recepcion, setFechaRecepcion] = useState('');
+    const [form, setForm] = useState({
+        id_equipo: '',
+        problema_reportado: '',
+        trabajo_realizado: '',
+        tecnico_asignado: '',
+        estado: '',
+        fecha_recepcion: ''
+    });
+
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
         const getOrdenById = async () => {
-            const res = await api.get(`${URI}/ordenes/${id}`);
-            setIdEquipo(res.data.id_equipo);
-            setProblemaReportado(res.data.problema_reportado);
-            setTrabajoRealizado(res.data.trabajo_realizado);
-            setTecnicoAsignado(res.data.tecnico_asignado);
-            setEstado(res.data.estado);
-            setFechaRecepcion(res.data.fecha_recepcion);
+            try {
+                const res = await api.get(`${URI}/ordenes/${id}`);
+                setForm(res.data);
+            } catch (error) {
+                console.error("Error cargando orden:", error);
+            } finally {
+                setLoading(false);
+            }
         };
         getOrdenById();
     }, [id]);
 
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setForm(prev => ({ ...prev, [name]: value }));
+    };
+
+    const validate = () => {
+        const newErrors = {};
+        if (!form.id_equipo) newErrors.id_equipo = "Requerido";
+        if (!form.problema_reportado) newErrors.problema_reportado = "Requerido";
+        if (!form.tecnico_asignado) newErrors.tecnico_asignado = "Requerido";
+        if (!form.estado) newErrors.estado = "Requerido";
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     const handleSubmit = async (event) => {
         event.preventDefault();
-        await api.put(`${URI}/ordenes/${id}`, {
-            id_equipo: id_equipo,
-            problema_reportado: problema_reportado,
-            trabajo_realizado: trabajo_realizado,
-            tecnico_asignado: tecnico_asignado,
-            estado: estado,
-            fecha_recepcion: fecha_recepcion,
-            fecha_entrega: estado === 'Entregado' ? new Date() : null
-        });
-        navigate('/ordenes');
-    }
+        if (validate()) {
+            await api.put(`${URI}/ordenes/${id}`, {
+                ...form,
+                fecha_entrega: form.estado === 'Entregado' ? new Date() : null
+            });
+            navigate('/ordenes');
+        }
+    };
 
     const estados = [
         'Recibido',
+        'En Reparación',
         'Esperando Repuestos',
         'Reparado',
         'Entregado',
         'Sin Solucion (Baja)'
     ];
 
-    return (
-        <Container component='main' maxWidth='md' sx={{ mt: 10 }}>
-            <Typography component="h1" variant="h5">
-                Editar Orden de Servicio
-            </Typography>
-            <Box component='form' noValidate onSubmit={handleSubmit} sx={{ "& .MuiTextField-root": { m: 2, width: "40ch" } }}>
-                <TextField
-                    name="id_equipo"
-                    required
-                    label="ID Equipo"
-                    value={id_equipo || ''}
-                    onChange={(e) => setIdEquipo(e.target.value)}
-                    autoFocus
-                />
-                <TextField
-                    name="problema_reportado"
-                    required
-                    label="Problema Reportado"
-                    multiline
-                    rows={4}
-                    value={problema_reportado || ''}
-                    onChange={(e) => setProblemaReportado(e.target.value)}
-                />
-                <TextField
-                    name="trabajo_realizado"
-                    label="Trabajo Realizado"
-                    multiline
-                    rows={4}
-                    value={trabajo_realizado || ''}
-                    onChange={(e) => setTrabajoRealizado(e.target.value)}
-                />
-                <TextField
-                    name="tecnico_asignado"
-                    required
-                    label="Técnico Asignado"
-                    value={tecnico_asignado || ''}
-                    onChange={(e) => setTecnicoAsignado(e.target.value)}
-                />
-                <TextField
-                    select
-                    name="estado"
-                    required
-                    label="Estado"
-                    value={estado || ''}
-                    onChange={(e) => setEstado(e.target.value)}
-                >
-                    {estados.map((option) => (
-                        <MenuItem key={option} value={option}>
-                            {option}
-                        </MenuItem>
-                    ))}
-                </TextField>
-                <div></div>
-                <Button
-                    onClick={() => navigate('/ordenes')}
-                    variant="contained"
-                    sx={{ mr: 10 }}
-                    size="large"
-                    startIcon={<CancelIcon />}
-                    color='error'
-                >
-                    Cancelar
-                </Button>
-                <Button
-                    type="submit"
-                    variant="contained"
-                    size="large"
-                    startIcon={<SaveOutlinedIcon />}
-                >
-                    Guardar
-                </Button>
+    if (loading) {
+        return (
+            <Box display="flex" justifyContent="center" alignItems="center" height="80vh">
+                <CircularProgress />
             </Box>
+        );
+    }
+
+    return (
+        <Container maxWidth="md" sx={{ mt: 12, mb: 4 }}>
+            <Paper elevation={0} sx={{ p: 4, borderRadius: 3, border: '1px solid var(--mui-palette-divider)' }}>
+                <Box display="flex" alignItems="center" mb={3} gap={2}>
+                    <EditNoteIcon color="primary" sx={{ fontSize: 40 }} />
+                    <Typography variant="h4" fontWeight="700" color="primary">
+                        Actualizar Orden
+                    </Typography>
+                </Box>
+                
+                <Divider sx={{ mb: 4 }} />
+
+                <Box component="form" noValidate onSubmit={handleSubmit}>
+                    <Grid container spacing={3}>
+                        <Grid size={{ xs: 12, sm: 6 }}>
+                            <TextField
+                                name="id_equipo"
+                                label="Equipo / Inventario"
+                                required
+                                value={form.id_equipo || ''}
+                                onChange={handleChange}
+                                error={!!errors.id_equipo}
+                                fullWidth
+                            />
+                        </Grid>
+                        <Grid size={{ xs: 12, sm: 6 }}>
+                            <TextField
+                                select
+                                name="estado"
+                                label="Estado de la Orden"
+                                value={form.estado || ''}
+                                onChange={handleChange}
+                                error={!!errors.estado}
+                                fullWidth
+                            >
+                                {estados.map((option) => (
+                                    <MenuItem key={option} value={option}>{option}</MenuItem>
+                                ))}
+                            </TextField>
+                        </Grid>
+
+                        <Grid size={{ xs: 12 }}>
+                            <TextField
+                                name="problema_reportado"
+                                label="Problema Inicial"
+                                required
+                                multiline
+                                rows={3}
+                                value={form.problema_reportado || ''}
+                                onChange={handleChange}
+                                error={!!errors.problema_reportado}
+                                fullWidth
+                            />
+                        </Grid>
+
+                        <Grid size={{ xs: 12 }}>
+                            <TextField
+                                name="trabajo_realizado"
+                                label="Detalle Técnico del Trabajo Realizado"
+                                multiline
+                                rows={4}
+                                value={form.trabajo_realizado || ''}
+                                onChange={handleChange}
+                                fullWidth
+                                helperText="Explique qué se hizo para solucionar el problema"
+                            />
+                        </Grid>
+
+                        <Grid size={{ xs: 12 }}>
+                            <TextField
+                                name="tecnico_asignado"
+                                label="Técnico Responsable"
+                                required
+                                value={form.tecnico_asignado || ''}
+                                onChange={handleChange}
+                                error={!!errors.tecnico_asignado}
+                                fullWidth
+                            />
+                        </Grid>
+
+                        <Grid size={{ xs: 12 }}>
+                            <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ mt: 2 }}>
+                                <Button 
+                                    variant="outlined" 
+                                    color="error" 
+                                    size="large" 
+                                    onClick={() => navigate('/ordenes')}
+                                    startIcon={<CancelIcon />}
+                                >
+                                    Descartar
+                                </Button>
+                                <Button 
+                                    type="submit" 
+                                    variant="contained" 
+                                    size="large" 
+                                    startIcon={<SaveOutlinedIcon />}
+                                >
+                                    Actualizar Orden
+                                </Button>
+                            </Stack>
+                        </Grid>
+                    </Grid>
+                </Box>
+            </Paper>
         </Container>
-    )
-}
+    );
+};
 
 export default EditOrden;

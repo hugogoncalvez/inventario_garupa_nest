@@ -1,21 +1,44 @@
-import { createTheme } from '@mui/material/styles';
+import { extendTheme } from '@mui/material/styles';
 
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#2563eb', // Azul moderno
-      dark: '#1d4ed8',
-      light: '#60a5fa',
+const theme = extendTheme({
+  colorSchemes: {
+    light: {
+      palette: {
+        primary: {
+          main: '#2563eb', // Azul moderno (v7 estándar)
+          dark: '#1d4ed8',
+          light: '#60a5fa',
+        },
+        secondary: {
+          main: '#64748b',
+        },
+        background: {
+          default: '#f8fafc',
+          paper: '#ffffff',
+        },
+        text: {
+          primary: '#0f172a',
+          secondary: '#475569',
+        },
+      },
     },
-    secondary: {
-      main: '#64748b',
-    },
-    background: {
-      default: '#f8fafc',
-    },
-    text: {
-      primary: '#0f172a',
-      secondary: '#475569',
+    dark: {
+      palette: {
+        primary: {
+          main: '#60a5fa',
+        },
+        secondary: {
+          main: '#94a3b8',
+        },
+        background: {
+          default: '#0f172a',
+          paper: '#1e293b',
+        },
+        text: {
+          primary: '#f8fafc',
+          secondary: '#94a3b8',
+        },
+      },
     },
   },
   typography: {
@@ -24,7 +47,7 @@ const theme = createTheme({
       fontWeight: 600,
     },
     button: {
-      textTransform: 'none', // Botones más modernos sin todo en mayúsculas
+      textTransform: 'none', 
       fontWeight: 600,
     },
   },
@@ -38,7 +61,7 @@ const theme = createTheme({
           padding: '10px 16px',
           boxShadow: 'none',
           '&:hover': {
-            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+            boxShadow: 'var(--mui-shadows-2)',
           },
         },
       },
@@ -52,7 +75,16 @@ const theme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
-          boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+          boxShadow: 'var(--mui-shadows-4)',
+          borderRadius: 12,
+        },
+      },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          boxShadow: 'var(--mui-shadows-1)',
+          borderRadius: 12,
         },
       },
     },

@@ -28,7 +28,6 @@ import PrintIcon from '@mui/icons-material/Print';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import AnalyticsIcon from '@mui/icons-material/Analytics';
-import SettingsIcon from '@mui/icons-material/Settings';
 
 export default function NavBar() {
     const navigate = useNavigate();
@@ -73,11 +72,12 @@ export default function NavBar() {
                         mx: 1,
                         borderRadius: 2,
                         mb: 0.5,
+                        transition: 'var(--mui-transitions-create-all)',
                         '&.Mui-selected': {
-                            backgroundColor: 'primary.light',
-                            color: 'primary.main',
-                            '& .MuiListItemIcon-root': { color: 'primary.main' },
-                            '&:hover': { backgroundColor: 'primary.light' }
+                            backgroundColor: 'var(--mui-palette-primary-mainChannel, rgba(37, 99, 235, 0.12))',
+                            color: 'var(--mui-palette-primary-main)',
+                            '& .MuiListItemIcon-root': { color: 'var(--mui-palette-primary-main)' },
+                            '&:hover': { backgroundColor: 'var(--mui-palette-primary-mainChannel, rgba(37, 99, 235, 0.2))' }
                         }
                     }}
                 >
@@ -94,12 +94,11 @@ export default function NavBar() {
     };
 
     const list = () => (
-        <Box sx={{ width: 280, pb: 2 }} role="presentation">
-            {/* Header del Drawer */}
+        <Box sx={{ width: 280, pb: 2, display: 'flex', flexDirection: 'column', height: '100%' }} role="presentation">
             <Box sx={{ 
                 p: 3, 
-                backgroundColor: 'primary.main', 
-                color: 'white',
+                backgroundColor: 'var(--mui-palette-primary-main)', 
+                color: 'var(--mui-palette-common-white)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 1
@@ -112,30 +111,32 @@ export default function NavBar() {
                 </Typography>
             </Box>
 
-            <List subheader={<ListSubheader sx={{ bgcolor: 'transparent', fontWeight: 700, mt: 1 }}>GESTIÓN</ListSubheader>}>
-                {mainNavItems.map(renderListItem)}
-            </List>
+            <Box sx={{ overflowY: 'auto', flexGrow: 1 }}>
+                <List subheader={<ListSubheader sx={{ bgcolor: 'var(--mui-palette-background-paper)', fontWeight: 700, pt: 1 }}>GESTIÓN</ListSubheader>}>
+                    {mainNavItems.map(renderListItem)}
+                </List>
 
-            <Divider sx={{ mx: 2, my: 1 }} />
+                <Divider sx={{ mx: 2, my: 1 }} />
 
-            <List subheader={<ListSubheader sx={{ bgcolor: 'transparent', fontWeight: 700 }}>REPORTES</ListSubheader>}>
-                {reportItems.map(renderListItem)}
-            </List>
+                <List subheader={<ListSubheader sx={{ bgcolor: 'var(--mui-palette-background-paper)', fontWeight: 700 }}>REPORTES</ListSubheader>}>
+                    {reportItems.map(renderListItem)}
+                </List>
 
-            <Divider sx={{ mx: 2, my: 1 }} />
+                <Divider sx={{ mx: 2, my: 1 }} />
 
-            <List subheader={<ListSubheader sx={{ bgcolor: 'transparent', fontWeight: 700 }}>CONFIGURACIÓN</ListSubheader>}>
-                {configItems.map(renderListItem)}
-            </List>
+                <List subheader={<ListSubheader sx={{ bgcolor: 'var(--mui-palette-background-paper)', fontWeight: 700 }}>CONFIGURACIÓN</ListSubheader>}>
+                    {configItems.map(renderListItem)}
+                </List>
+            </Box>
 
-            <Box sx={{ flexGrow: 1 }} />
+            <Divider />
             
-            <Box sx={{ p: 2, mt: 2 }}>
+            <Box sx={{ p: 2 }}>
                 <ListItemButton 
                     onClick={() => { setAuth(false); navigate('/'); }}
-                    sx={{ borderRadius: 2, color: 'error.main' }}
+                    sx={{ borderRadius: 2, color: 'var(--mui-palette-error-main)' }}
                 >
-                    <ListItemIcon sx={{ color: 'error.main', minWidth: 40 }}>
+                    <ListItemIcon sx={{ color: 'inherit', minWidth: 40 }}>
                         <LogoutIcon />
                     </ListItemIcon>
                     <ListItemText primary="Cerrar Sesión" primaryTypographyProps={{ fontWeight: 600 }} />
@@ -146,7 +147,15 @@ export default function NavBar() {
 
     return (
         <Box sx={{ flexGrow: 1 }}>
-            <AppBar position="fixed" elevation={0} sx={{ borderBottom: '1px solid', borderColor: 'divider' }}>
+            <AppBar 
+                position="fixed" 
+                elevation={0} 
+                sx={{ 
+                    backgroundColor: 'var(--mui-palette-background-paper)',
+                    color: 'var(--mui-palette-text-primary)',
+                    borderBottom: '1px solid var(--mui-palette-divider)' 
+                }}
+            >
                 <Toolbar sx={{ justifyContent: "space-between" }}>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <IconButton
@@ -187,11 +196,16 @@ export default function NavBar() {
                 open={openDrawer}
                 onClose={toggleDrawer(false)}
                 PaperProps={{
-                    sx: { border: 'none', boxShadow: 4 }
+                    sx: { 
+                        border: 'none', 
+                        boxShadow: 'var(--mui-shadows-12)',
+                        backgroundColor: 'var(--mui-palette-background-paper)'
+                    }
                 }}
             >
                 {list()}
             </Drawer>
+            <Toolbar /> {/* Espaciador para el AppBar fixed */}
         </Box>
     );
 }

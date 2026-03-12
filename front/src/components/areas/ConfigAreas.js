@@ -1,35 +1,25 @@
 import api, { URI } from '../../config.js';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { styled } from '@mui/material/styles';
-import Typography from '@mui/material/Typography';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell, { tableCellClasses } from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
-import Box from '@mui/material/Box';
-import IconButton from '@mui/material/IconButton';
+import Grid from "@mui/material/Grid";
+import {
+    Typography, Table, TableBody, TableCell, tableCellClasses, TableContainer,
+    TableHead, TableRow, Paper, Box, IconButton, Button, Tooltip,    TextField, Container, Card, CardContent, 
+    Stack, TablePagination, Divider 
+} from '@mui/material';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
-import Button from '@mui/material/Button';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
-import TextField from '@mui/material/TextField';
-import Container from '@mui/material/Container';
-import TablePagination from '@mui/material/TablePagination';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
-import Tooltip from '@mui/material/Tooltip';
-import Grid from '@mui/material/Grid';
-import { Card, CardContent, Stack } from '@mui/material';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
+import AddLocationAltIcon from '@mui/icons-material/AddLocationAlt';
 import ConfirmDialog from '../dialogs/ShowConfirm';
 
-// estilos de la tabla
+// Estilos optimizados
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
-        backgroundColor: theme.palette.primary.main,
-        color: theme.palette.common.white,
+        backgroundColor: 'var(--mui-palette-primary-main)',
+        color: 'var(--mui-palette-common-white)',
         fontSize: 14,
         fontWeight: 600,
     },
@@ -40,7 +30,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
     '&:nth-of-type(odd)': {
-        backgroundColor: theme.palette.action.hover,
+        backgroundColor: 'var(--mui-palette-action-hover)',
     },
     '&:last-child td, &:last-child th': {
         border: 0,
@@ -48,22 +38,14 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 }));
 
 export const ConfigAreas = () => {
-    // Data State
     const [areas, setAreas] = useState([]);
-    // Form State
-    const [id, setId] = useState('');
-    const [descrip, setDescrip] = useState('');
-    const [resp, setResp] = useState('');
+    const [form, setForm] = useState({ id: '', area: '', responsable: '' });
     const [isUpdate, setIsUpdate] = useState(false);
-    // Error State
-    const [errDescrip, setErrDescrip] = useState(false);
-    const [errResp, setErrResp] = useState(false);
-    // Dialog State
-    const [open, setOpen] = useState(false);
-    // Filter State
-    const [filterArea, setFilterArea] = useState('');
-    const [filterResponsable, setFilterResponsable] = useState('');
-    // Pagination State
+    const [errors, setErrors] = useState({});
+    const [openConfirm, setOpenConfirm] = useState(false);
+    const [idToDelete, setIdToDelete] = useState('');
+    
+    const [filters, setFilters] = useState({ area: '', responsable: '' });
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -82,178 +64,133 @@ export const ConfigAreas = () => {
 
     const filteredAreas = useMemo(() => {
         return areas.filter(a => 
-            (filterArea === '' || (a.area && a.area.toLowerCase().includes(filterArea.toLowerCase()))) &&
-            (filterResponsable === '' || (a.responsable && a.responsable.toLowerCase().includes(filterResponsable.toLowerCase())))
+            (filters.area === '' || (a.area && a.area.toLowerCase().includes(filters.area.toLowerCase()))) &&
+            (filters.responsable === '' || (a.responsable && a.responsable.toLowerCase().includes(filters.responsable.toLowerCase())))
         );
-    }, [areas, filterArea, filterResponsable]);
-
-    useEffect(() => {
-        setPage(0);
-    }, [filteredAreas.length]);
-
-    const handleChangePage = (event, newPage) => setPage(newPage);
-    const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(parseInt(event.target.value, 10));
-        setPage(0);
-    };
-
-    const handleClose = (value) => {
-        setOpen(false);
-        value && deleteAreas();
-    };
-
-    const handleClickOpen = (id) => {
-        setOpen(true);
-        setId(id);
-    };
+    }, [areas, filters]);
 
     const validate = () => {
-        const isDescValid = descrip.trim().length > 0;
-        const isRespValid = resp.trim().length > 0;
-        setErrDescrip(!isDescValid);
-        setErrResp(!isRespValid);
-        return isDescValid && isRespValid;
+        const newErrors = {};
+        if (!form.area.trim()) newErrors.area = "Requerido";
+        if (!form.responsable.trim()) newErrors.responsable = "Requerido";
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
+    const handleSubmit = async (e) => {
+        e.preventDefault();
         if (!validate()) return;
 
         try {
-            const payload = { area: descrip.trim(), responsable: resp.trim() };
             if (isUpdate) {
-                await api.put(`${URI}/areas/${id}`, payload);
+                await api.put(`${URI}/areas/${form.id}`, form);
             } else {
-                await api.post(`${URI}/areas/create`, payload);
+                await api.post(`${URI}/areas/create`, form);
             }
-            setIsUpdate(false);
-            setId(''); setDescrip(''); setResp('');
+            clearForm();
             getAreas();
         } catch (error) {
-            console.error("Error al guardar el área:", error);
+            console.error("Error al guardar:", error);
         }
     };
 
-    const deleteAreas = async () => {
-        try {
-            await api.delete(`${URI}/areas/${id}`);
-            getAreas();
-        } catch (error) {
-            console.error("Error al eliminar el área:", error);
-        }
+    const clearForm = () => {
+        setForm({ id: '', area: '', responsable: '' });
+        setIsUpdate(false);
+        setErrors({});
     };
 
     const handleEditClick = (row) => {
-        setId(row.id);
-        setDescrip(row.area || '');
-        setResp(row.responsable || '');
+        setForm(row);
         setIsUpdate(true);
-        setErrDescrip(false);
-        setErrResp(false);
-    };
-
-    const clearFilters = () => {
-        setFilterArea('');
-        setFilterResponsable('');
+        setErrors({});
     };
 
     return (
-        <Container maxWidth="xl" sx={{ mt: 10, mb: 4 }}>
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-                <Typography variant="h4" fontWeight="bold" color="primary">
-                    Configuración de Áreas
-                </Typography>
-            </Box>
+        <Container maxWidth="xl" sx={{ mt: 12, mb: 4 }}>
+            <Typography variant="h4" fontWeight="800" color="primary" mb={4}>
+                Áreas Municipales
+            </Typography>
 
-            <ConfirmDialog open={open} onClose={handleClose} />
+            <ConfirmDialog open={openConfirm} onClose={(v) => {
+                setOpenConfirm(false);
+                v && api.delete(`${URI}/areas/${idToDelete}`).then(getAreas);
+            }} />
 
             <Grid container spacing={3}>
-                {/* Formulario */}
-                <Grid item xs={12} md={4}>
-                    <Card sx={{ borderRadius: 2, boxShadow: 1 }}>
+                <Grid size={{ xs: 12, md: 4 }}>
+                    <Card sx={{ borderRadius: 3, border: '1px solid var(--mui-palette-divider)' }}>
                         <CardContent>
-                            <Typography variant="h6" fontWeight="600" mb={2}>
-                                {isUpdate ? 'Editar Área' : 'Nueva Área'}
-                            </Typography>
-                            <Box component="form" onSubmit={handleSubmit} noValidate>
-                                <Stack spacing={2}>
-                                    <TextField
-                                        label="Nombre del Área"
-                                        required
-                                        value={descrip}
-                                        onChange={(e) => setDescrip(e.target.value)}
-                                        error={errDescrip}
-                                        helperText={errDescrip && 'El nombre es requerido'}
-                                        fullWidth
-                                        size="small"
+                            <Box display="flex" alignItems="center" mb={2} gap={1}>
+                                <AddLocationAltIcon color="primary" />
+                                <Typography variant="h6" fontWeight="700">
+                                    {isUpdate ? 'Editar Área' : 'Nueva Área'}
+                                </Typography>
+                            </Box>
+                            <Divider sx={{ mb: 3 }} />
+                            <Box component="form" onSubmit={handleSubmit}>
+                                <Stack spacing={2.5}>
+                                    <TextField 
+                                        label="Nombre de la Oficina" 
+                                        required 
+                                        value={form.area} 
+                                        onChange={(e) => setForm({...form, area: e.target.value})}
+                                        error={!!errors.area}
+                                        helperText={errors.area}
+                                        fullWidth 
+                                        size="small" 
                                     />
-                                    <TextField
-                                        label="Responsable"
-                                        required
-                                        value={resp}
-                                        onChange={(e) => setResp(e.target.value)}
-                                        error={errResp}
-                                        helperText={errResp && 'El responsable es requerido'}
-                                        fullWidth
-                                        size="small"
+                                    <TextField 
+                                        label="Responsable a Cargo" 
+                                        required 
+                                        value={form.responsable} 
+                                        onChange={(e) => setForm({...form, responsable: e.target.value})}
+                                        error={!!errors.responsable}
+                                        helperText={errors.responsable}
+                                        fullWidth 
+                                        size="small" 
                                     />
-                                    <Button
-                                        type="submit"
-                                        variant="contained"
-                                        fullWidth
-                                        startIcon={<SaveOutlinedIcon />}
-                                    >
-                                        {isUpdate ? 'Actualizar' : 'Guardar'}
+                                    <Button type="submit" variant="contained" fullWidth startIcon={<SaveOutlinedIcon />} sx={{ py: 1.2, borderRadius: 2 }}>
+                                        {isUpdate ? 'Actualizar Área' : 'Guardar Área'}
                                     </Button>
-                                    {isUpdate && (
-                                        <Button
-                                            variant="outlined"
-                                            fullWidth
-                                            onClick={() => {
-                                                setIsUpdate(false); setId(''); setDescrip(''); setResp('');
-                                                setErrDescrip(false); setErrResp(false);
-                                            }}
-                                        >
-                                            Cancelar
-                                        </Button>
-                                    )}
+                                    <Button variant="outlined" color="secondary" fullWidth onClick={clearForm} sx={{ borderRadius: 2 }}>
+                                        {isUpdate ? 'Cancelar' : 'Limpiar'}
+                                    </Button>
                                 </Stack>
                             </Box>
                         </CardContent>
                     </Card>
                 </Grid>
 
-                {/* Listado y Filtros */}
-                <Grid item xs={12} md={8}>
-                    {/* Panel de Filtros */}
-                    <Card sx={{ mb: 3, borderRadius: 2, boxShadow: 1 }}>
+                <Grid size={{ xs: 12, md: 8 }}>
+                    <Card sx={{ mb: 3, borderRadius: 3, border: '1px solid var(--mui-palette-divider)' }}>
                         <CardContent sx={{ p: 2 }}>
-                            <Box display="flex" alignItems="center" mb={2}>
-                                <FilterAltIcon color="primary" sx={{ mr: 1, fontSize: 20 }} />
-                                <Typography variant="subtitle1" fontWeight="600">Filtros de Búsqueda</Typography>
+                            <Box display="flex" alignItems="center" mb={2} gap={1}>
+                                <FilterAltIcon color="primary" fontSize="small" />
+                                <Typography variant="subtitle2" fontWeight="700">Filtros de Búsqueda</Typography>
                             </Box>
-                            <Grid container spacing={2} alignItems="center">
-                                <Grid item xs={12} sm={5}>
-                                    <TextField label="Buscar por Área" value={filterArea} onChange={(e) => setFilterArea(e.target.value)} fullWidth size="small" />
+                            <Grid container spacing={2}>
+                                <Grid size={{ xs: 12, sm: 5 }}>
+                                    <TextField label="Buscar Oficina" value={filters.area} onChange={(e) => setFilters({...filters, area: e.target.value})} fullWidth size="small" />
                                 </Grid>
-                                <Grid item xs={12} sm={5}>
-                                    <TextField label="Buscar por Responsable" value={filterResponsable} onChange={(e) => setFilterResponsable(e.target.value)} fullWidth size="small" />
+                                <Grid size={{ xs: 12, sm: 5 }}>
+                                    <TextField label="Buscar Responsable" value={filters.responsable} onChange={(e) => setFilters({...filters, responsable: e.target.value})} fullWidth size="small" />
                                 </Grid>
-                                <Grid item xs={12} sm={2} display="flex" justifyContent="flex-end">
-                                    <Button variant="text" color="secondary" startIcon={<ClearAllIcon />} onClick={clearFilters} fullWidth size="small" sx={{ height: 40 }}>
-                                        Limpiar
+                                <Grid size={{ xs: 12, sm: 2 }}>
+                                    <Button variant="outlined" color="secondary" startIcon={<ClearAllIcon />} onClick={() => setFilters({area: '', responsable: ''})} fullWidth sx={{ borderRadius: 2 }}>
+                                        Reset
                                     </Button>
                                 </Grid>
                             </Grid>
                         </CardContent>
                     </Card>
 
-                    <Paper sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                    <Paper sx={{ borderRadius: 3, overflow: 'hidden', border: '1px solid var(--mui-palette-divider)' }}>
                         <TableContainer sx={{ maxHeight: '60vh' }}>
                             <Table stickyHeader size="small">
                                 <TableHead>
                                     <TableRow>
-                                        <StyledTableCell>Descripción del Área</StyledTableCell>
+                                        <StyledTableCell>Área / Oficina</StyledTableCell>
                                         <StyledTableCell>Responsable</StyledTableCell>
                                         <StyledTableCell align='center'>Acciones</StyledTableCell>
                                     </TableRow>
@@ -261,23 +198,16 @@ export const ConfigAreas = () => {
                                 <TableBody>
                                     {filteredAreas.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
                                         <StyledTableRow key={row.id} hover>
-                                            <StyledTableCell sx={{ fontWeight: 600 }}>{row.area}</StyledTableCell>
+                                            <StyledTableCell sx={{ fontWeight: 700 }}>{row.area}</StyledTableCell>
                                             <StyledTableCell>{row.responsable}</StyledTableCell>
                                             <StyledTableCell align='center'>
                                                 <Stack direction="row" spacing={0.5} justifyContent="center">
                                                     <Tooltip title="Editar"><IconButton size="small" color="primary" onClick={() => handleEditClick(row)}><EditIcon fontSize="small" /></IconButton></Tooltip>
-                                                    <Tooltip title="Eliminar"><IconButton size="small" color="error" onClick={() => handleClickOpen(row.id)}><DeleteForeverIcon fontSize="small" /></IconButton></Tooltip>
+                                                    <Tooltip title="Eliminar"><IconButton size="small" color="error" onClick={() => { setIdToDelete(row.id); setOpenConfirm(true); }}><DeleteForeverIcon fontSize="small" /></IconButton></Tooltip>
                                                 </Stack>
                                             </StyledTableCell>
                                         </StyledTableRow>
                                     ))}
-                                    {filteredAreas.length === 0 && (
-                                        <StyledTableRow>
-                                            <StyledTableCell colSpan={3} align="center" sx={{ py: 3, color: 'text.secondary' }}>
-                                                No se encontraron áreas con esos criterios.
-                                            </StyledTableCell>
-                                        </StyledTableRow>
-                                    )}
                                 </TableBody>
                             </Table>
                         </TableContainer>
@@ -287,9 +217,9 @@ export const ConfigAreas = () => {
                             count={filteredAreas.length}
                             rowsPerPage={rowsPerPage}
                             page={page}
-                            onPageChange={handleChangePage}
-                            onRowsPerPageChange={handleChangeRowsPerPage}
-                            labelRowsPerPage="Filas por página"
+                            onPageChange={(e, p) => setPage(p)}
+                            onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
+                            labelRowsPerPage="Filas"
                         />
                     </Paper>
                 </Grid>
