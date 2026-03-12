@@ -146,28 +146,31 @@ export class TintasController {
 
     @Post('movimientos/compra')
     async registerPurchase(@Body() body: any) {
-        const { cartucho_id, cantidad, usuario_id } = body;
+        const { usuario_id, items } = body;
 
         return this.prisma.$transaction(async (tx) => {
-            await tx.movimientos_tinta.create({
-                data: {
-                    cartucho_id: Number(cartucho_id),
-                    cantidad: Number(cantidad),
-                    usuario_id: Number(usuario_id),
-                    tipo_movimiento: movimientos_tinta_tipo_movimiento.COMPRA,
-                    fecha: new Date(),
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
-                }
-            });
+            for (const item of items) {
+                await tx.movimientos_tinta.create({
+                    data: {
+                        cartucho_id: Number(item.cartucho_id),
+                        cantidad: Number(item.cantidad),
+                        usuario_id: Number(usuario_id),
+                        tipo_movimiento: movimientos_tinta_tipo_movimiento.COMPRA,
+                        fecha: new Date(),
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                    }
+                });
 
-            return tx.cartuchos.update({
-                where: { id: Number(cartucho_id) },
-                data: {
-                    stock_unidades: { increment: Number(cantidad) },
-                    updatedAt: new Date(),
-                }
-            });
+                await tx.cartuchos.update({
+                    where: { id: Number(item.cartucho_id) },
+                    data: {
+                        stock_unidades: { increment: Number(item.cantidad) },
+                        updatedAt: new Date(),
+                    }
+                });
+            }
+            return { success: true };
         });
     }
 

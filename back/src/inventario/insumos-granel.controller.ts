@@ -85,28 +85,31 @@ export class InsumosGranelController {
 
     @Post('movimientos/compra')
     async registerPurchase(@Body() body: any) {
-        const { insumo_granel_id, cantidad, usuario_id } = body;
+        const { usuario_id, items } = body;
 
         return this.prisma.$transaction(async (tx) => {
-            await tx.movimientos_insumo_granel.create({
-                data: {
-                    insumo_granel_id: Number(insumo_granel_id),
-                    cantidad_usada: Number(cantidad), // En compras usamos este campo para la cantidad ingresada
-                    usuario_id: Number(usuario_id),
-                    tipo_movimiento: 'COMPRA',
-                    fecha: new Date(),
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
-                }
-            });
+            for (const item of items) {
+                await tx.movimientos_insumo_granel.create({
+                    data: {
+                        insumo_granel_id: Number(item.insumo_granel_id),
+                        cantidad_usada: Number(item.cantidad),
+                        usuario_id: Number(usuario_id),
+                        tipo_movimiento: 'COMPRA',
+                        fecha: new Date(),
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                    }
+                });
 
-            return tx.insumos_granel.update({
-                where: { id: Number(insumo_granel_id) },
-                data: {
-                    stock_actual: { increment: Number(cantidad) },
-                    updatedAt: new Date(),
-                }
-            });
+                await tx.insumos_granel.update({
+                    where: { id: Number(item.insumo_granel_id) },
+                    data: {
+                        stock_actual: { increment: Number(item.cantidad) },
+                        updatedAt: new Date(),
+                    }
+                });
+            }
+            return { success: true };
         });
     }
 }
