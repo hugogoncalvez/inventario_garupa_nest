@@ -99,6 +99,7 @@ const GestionCartuchos = () => {
     const [filtroModelo, setFiltroModelo] = useState('');
     const [filtroTipo, setFiltroTipo] = useState('Todos');
     const [filtroRecargable, setFiltroRecargable] = useState('Todos');
+    const [filtroStock, setFiltroStock] = useState('Todos');
 
     useEffect(() => {
         getCartuchos();
@@ -116,8 +117,20 @@ const GestionCartuchos = () => {
             const esRecargable = filtroRecargable === 'Sí';
             items = items.filter(c => c.es_recargable === esRecargable);
         }
+        if (filtroStock !== 'Todos') {
+            items = items.filter(c => {
+                const stock = c.stock_unidades;
+                const min = c.stock_minimo_unidades;
+                const umbralMedio = min === 0 ? 5 : min * 2;
+                
+                if (filtroStock === 'Bajo') return stock <= min;
+                if (filtroStock === 'Medio') return stock > min && stock <= umbralMedio;
+                if (filtroStock === 'Alto') return stock > umbralMedio;
+                return true;
+            });
+        }
         setFilteredCartuchos(items);
-    }, [cartuchos, filtroModelo, filtroTipo, filtroRecargable]);
+    }, [cartuchos, filtroModelo, filtroTipo, filtroRecargable, filtroStock]);
 
     const getCartuchos = async () => {
         try {
@@ -165,6 +178,7 @@ const GestionCartuchos = () => {
         setFiltroModelo('');
         setFiltroTipo('Todos');
         setFiltroRecargable('Todos');
+        setFiltroStock('Todos');
     };
 
     const handleAdjustStockUnidades = async (cartucho) => {
@@ -221,10 +235,10 @@ const GestionCartuchos = () => {
                         <Typography variant="subtitle1" fontWeight="600">Filtros de Búsqueda</Typography>
                     </Box>
                     <Grid container spacing={2} alignItems="center">
-                        <Grid item xs={12} sm={6} md={4}>
+                        <Grid item xs={12} sm={6} md={3}>
                             <TextField label="Buscar por Modelo" variant="outlined" size="small" value={filtroModelo} onChange={(e) => setFiltroModelo(e.target.value)} fullWidth />
                         </Grid>
-                        <Grid item xs={12} sm={6} md={3}>
+                        <Grid item xs={12} sm={6} md={2}>
                             <FormControl size="small" fullWidth>
                                 <InputLabel>Tipo</InputLabel>
                                 <Select value={filtroTipo} label="Tipo" onChange={(e) => setFiltroTipo(e.target.value)}>
@@ -235,13 +249,24 @@ const GestionCartuchos = () => {
                                 </Select>
                             </FormControl>
                         </Grid>
-                        <Grid item xs={12} sm={6} md={3}>
+                        <Grid item xs={12} sm={6} md={2}>
                             <FormControl size="small" fullWidth>
                                 <InputLabel>Recargable</InputLabel>
                                 <Select value={filtroRecargable} label="Recargable" onChange={(e) => setFiltroRecargable(e.target.value)}>
                                     <MenuItem value="Todos">Todos</MenuItem>
                                     <MenuItem value="Sí">Sí</MenuItem>
                                     <MenuItem value="No">No</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={3}>
+                            <FormControl size="small" fullWidth>
+                                <InputLabel>Estado Stock</InputLabel>
+                                <Select value={filtroStock} label="Estado Stock" onChange={(e) => setFiltroStock(e.target.value)}>
+                                    <MenuItem value="Todos">Todos</MenuItem>
+                                    <MenuItem value="Bajo">Bajo (Crítico)</MenuItem>
+                                    <MenuItem value="Medio">Medio (Alerta)</MenuItem>
+                                    <MenuItem value="Alto">Alto (Óptimo)</MenuItem>
                                 </Select>
                             </FormControl>
                         </Grid>
@@ -307,9 +332,11 @@ const GestionCartuchos = () => {
                                             bgcolor: (() => {
                                                 const stock = cartucho.stock_unidades;
                                                 const min = cartucho.stock_minimo_unidades;
-                                                if (stock <= 1) return 'error.main'; // Rojo para 0 o 1
-                                                if (stock <= min) return 'warning.main'; // Naranja para bajo stock
-                                                return 'success.light'; // Verde para ok
+                                                const umbralMedio = min === 0 ? 5 : min * 2;
+                                                
+                                                if (stock <= min) return 'error.main'; // Rojo para bajo stock (crítico)
+                                                if (stock <= umbralMedio) return 'warning.main'; // Amarillo/Naranja para medio
+                                                return 'success.light'; // Verde para alto
                                             })(),
                                             color: 'white', 
                                             px: 1.5, 
