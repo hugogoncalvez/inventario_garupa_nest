@@ -39,8 +39,12 @@ export default function NavBar() {
     const [openDrawer, setOpenDrawer] = useState(false);
     const { mode, setMode } = useColorScheme();
 
+    console.log('Modo actual:', mode);
+
     const toggleMode = () => {
-        setMode(mode === 'light' ? 'dark' : 'light');
+        const nextMode = mode === 'light' ? 'dark' : 'light';
+        console.log('Cambiando a:', nextMode);
+        setMode(nextMode);
     };
 
     if (!mode) {
