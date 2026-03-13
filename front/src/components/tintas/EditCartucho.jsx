@@ -1,12 +1,9 @@
 import api, { URI } from '../../config.js';
 import React, { useState, useEffect, useCallback } from 'react';
-
-
 import { useNavigate, useParams } from "react-router-dom";
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
-import CartuchoForm from './CartuchoForm'; // Importar el componente de formulario reutilizable
-
+import { Typography, Container, Paper, Box, Divider, CircularProgress } from '@mui/material';
+import EditNoteIcon from '@mui/icons-material/EditNote';
+import CartuchoForm from './CartuchoForm';
 
 export const EditCartucho = () => {
     const [cartuchoData, setCartuchoData] = useState({
@@ -31,8 +28,7 @@ export const EditCartucho = () => {
             const res = await api.get(`${URI}/insumos-granel`);
             setInsumosGranel(res.data);
         } catch (err) {
-            console.error("Error al obtener insumos a granel:", err);
-            setError(prev => `${prev} Error al cargar los insumos a granel.`);
+            setError(prev => `${prev} Error granel.`);
         }
     }, []);
 
@@ -50,16 +46,13 @@ export const EditCartucho = () => {
                 selectedInsumoGranelId: res.data.insumo_granel_id || ''
             });
         } catch (err) {
-            console.error("Error al obtener insumo por ID:", err.response ? err.response.data : err);
-            setError(err.response?.data?.message || "Error al cargar el insumo.");
+            setError("Error al cargar el insumo.");
         }
     }, [id]);
 
-    // useEffect para cargar todos los datos necesarios al montar el componente
     useEffect(() => {
         const loadData = async () => {
             setLoading(true);
-            setError('');
             await Promise.all([getCartuchoById(), fetchInsumosGranel()]);
             setLoading(false);
         };
@@ -77,12 +70,12 @@ export const EditCartucho = () => {
         const { modelo, color, esRecargable, selectedInsumoGranelId } = cartuchoData;
 
         if (!modelo.trim() || !color.trim()) {
-            setError('El modelo y el color son campos obligatorios.');
+            setError('El modelo y el color son obligatorios.');
             return;
         }
 
         if (esRecargable && !selectedInsumoGranelId) {
-            setError('Debe seleccionar un insumo a granel si el cartucho es recargable.');
+            setError('Seleccione un insumo a granel para la recarga.');
             return;
         }
 
@@ -98,29 +91,38 @@ export const EditCartucho = () => {
             });
             navigate('/tintas/cartuchos');
         } catch (err) {
-            console.error("Error al actualizar insumo:", err.response ? err.response.data : err);
-            setError(err.response?.data?.message || "Error al actualizar el insumo.");
+            setError(err.response?.data?.message || "Error al actualizar.");
         }
     };
 
     if (loading) {
-        return <Typography sx={{ mt: 12, textAlign: 'center' }}>Cargando datos del insumo...</Typography>;
+        return (
+            <Box display="flex" justifyContent="center" alignItems="center" height="80vh">
+                <CircularProgress />
+            </Box>
+        );
     }
 
     return (
-        <Container component="main" maxWidth="md" sx={{ mt: 10 }}>
-            <Typography component="h1" variant="h5" sx={{ mb: 4, textAlign: 'center' }}>
-                Editar Insumo
-            </Typography>
-            <CartuchoForm
-                cartuchoData={cartuchoData}
-                onDataChange={handleDataChange}
-                onSubmit={handleSubmit}
-                error={error}
-                insumosGranel={insumosGranel}
-                isEditMode={true}
-                onNavigateBack={() => navigate('/tintas/cartuchos')}
-            />
+        <Container maxWidth="md" sx={{ mt: 12, mb: 4 }}>
+            <Paper elevation={0} sx={{ p: 4, borderRadius: 3, border: '1px solid var(--mui-palette-divider)' }}>
+                <Box display="flex" alignItems="center" mb={3} gap={2}>
+                    <EditNoteIcon color="primary" fontSize="large" />
+                    <Typography variant="h4" fontWeight="700" color="primary">
+                        Editar Insumo
+                    </Typography>
+                </Box>
+                <Divider sx={{ mb: 4 }} />
+                <CartuchoForm
+                    cartuchoData={cartuchoData}
+                    onDataChange={handleDataChange}
+                    onSubmit={handleSubmit}
+                    error={error}
+                    insumosGranel={insumosGranel}
+                    isEditMode={true}
+                    onNavigateBack={() => navigate('/tintas/cartuchos')}
+                />
+            </Paper>
         </Container>
     );
 };

@@ -1,37 +1,29 @@
 import api, { URI } from '../../config.js';
 import React, { useState, useEffect } from 'react';
-
-
 import {
     Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, MenuItem,
-    Typography, Grid, IconButton, Table, TableBody, TableCell, TableContainer,
-    TableHead, TableRow, Paper
+    Typography, Grid2 as Grid, IconButton, Table, TableBody, TableCell, TableContainer,
+    TableHead, TableRow, Paper, Box, Divider, Stack, Chip
 } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import DeleteIcon from '@mui/icons-material/Delete';
+import SendIcon from '@mui/icons-material/Send';
 import useAuth from '../../hooks/useAuth';
 import ActaEntregaTintasPdf from '../../pdf/ActaEntregaTintas';
-
 
 export default function ModalRegistrarEntrega({ open, onClose, onEntregaExitosa }) {
     const { auth } = useAuth();
 
-    // Listas maestras
     const [areas, setAreas] = useState([]);
     const [impresoras, setImpresoras] = useState([]);
     const [insumos, setInsumos] = useState([]);
 
-    // Estado del formulario de agregado
     const [stagedEntrega, setStagedEntrega] = useState({ impresoraId: '', insumoId: '', cantidad: 1 });
     const [selectedAreaId, setSelectedAreaId] = useState('');
     const [filteredImpresoras, setFilteredImpresoras] = useState([]);
-
-    // Lista de entregas a realizar
     const [listaEntregas, setListaEntregas] = useState([]);
-
     const [error, setError] = useState('');
 
-    // Carga inicial de datos
     useEffect(() => {
         if (open) {
             const fetchData = async () => {
@@ -49,7 +41,6 @@ export default function ModalRegistrarEntrega({ open, onClose, onEntregaExitosa 
                 }
             };
             fetchData();
-            // Resetear estados al abrir
             setListaEntregas([]);
             setSelectedAreaId('');
             setStagedEntrega({ impresoraId: '', insumoId: '', cantidad: 1 });
@@ -57,11 +48,9 @@ export default function ModalRegistrarEntrega({ open, onClose, onEntregaExitosa 
         }
     }, [open]);
 
-    // Filtrar impresoras cuando cambia el área
     useEffect(() => {
         if (selectedAreaId) {
             setFilteredImpresoras(impresoras.filter(imp => imp.area_id === selectedAreaId));
-            // Resetear la impresora seleccionada en el formulario si el área cambia
             setStagedEntrega(prev => ({ ...prev, impresoraId: '' }));
         } else {
             setFilteredImpresoras([]);
@@ -77,25 +66,23 @@ export default function ModalRegistrarEntrega({ open, onClose, onEntregaExitosa 
         const { insumoId, impresoraId, cantidad } = stagedEntrega;
 
         if (!insumoId || !impresoraId || !cantidad || cantidad <= 0) {
-            setError("Debe seleccionar un insumo, una impresora y una cantidad válida para agregar.");
+            setError("Complete todos los campos para agregar.");
             return;
         }
 
         const insumo = insumos.find(i => i.id === insumoId);
         if (!insumo.es_recargable && cantidad > insumo.stock_unidades) {
-            setError(`Stock insuficiente para ${insumo.modelo}. Stock actual: ${insumo.stock_unidades}`);
+            setError(`Stock insuficiente para ${insumo.modelo}.`);
             return;
         }
 
         const impresora = impresoras.find(i => i.id === impresoraId);
 
-        // Usar un ID único para la fila de la tabla para poder borrarla
         const newEntrega = {
             rowId: Date.now(),
             cartucho_id: insumo.id,
             impresora_id: impresora.id,
             cantidad: parseInt(cantidad),
-            // Guardar data extra para mostrar en la tabla
             display: {
                 insumo: `${insumo.modelo} (${insumo.color})`,
                 impresora: `${impresora.modelo} (${impresora.marca})`
@@ -103,8 +90,7 @@ export default function ModalRegistrarEntrega({ open, onClose, onEntregaExitosa 
         };
 
         setListaEntregas(prev => [...prev, newEntrega]);
-        // Resetear formulario de staged
-        setStagedEntrega({ impresoraId: '', insumoId: '', cantidad: 1 });
+        setStagedEntrega(prev => ({ ...prev, insumoId: '', cantidad: 1 }));
     };
 
     const handleRemoveFromLista = (rowId) => {
@@ -112,10 +98,7 @@ export default function ModalRegistrarEntrega({ open, onClose, onEntregaExitosa 
     };
 
     const handleSubmit = async () => {
-        if (listaEntregas.length === 0) {
-            setError("La lista de entregas está vacía.");
-            return;
-        }
+        if (listaEntregas.length === 0) return;
 
         try {
             const payload = {
@@ -145,65 +128,110 @@ export default function ModalRegistrarEntrega({ open, onClose, onEntregaExitosa 
 
             onEntregaExitosa();
             onClose();
-
         } catch (err) {
-            setError(err.response?.data?.message || "Error al registrar las entregas.");
+            setError(err.response?.data?.message || "Error al registrar.");
         }
     };
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
-            <DialogTitle>Registrar Entrega Múltiple</DialogTitle>
-            <DialogContent>
-                {/* --- SECCIÓN DE FORMULARIO DE AGREGADO --- */}
-                <Grid container spacing={2} sx={{ mt: 1, p: 2, border: '1px solid #ddd', borderRadius: '4px' }}>
-                    <Grid item xs={12}>
-                        <TextField select label="Área de Destino" value={selectedAreaId} onChange={(e) => setSelectedAreaId(e.target.value)} fullWidth>
-                            {areas.map(area => <MenuItem key={area.id} value={area.id}>{area.area}</MenuItem>)}
-                        </TextField>
+        <Dialog 
+            open={open} 
+            onClose={onClose} 
+            maxWidth="lg" 
+            fullWidth
+            PaperProps={{ sx: { borderRadius: 3 } }}
+        >
+            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, fontWeight: 700, color: 'info.main' }}>
+                <SendIcon /> Registrar Entrega de Insumos
+            </DialogTitle>
+            <Divider />
+            <DialogContent sx={{ pt: 3 }}>
+                <Box sx={{ p: 2.5, bgcolor: 'var(--mui-palette-action-hover)', borderRadius: 2, border: '1px solid var(--mui-palette-divider)', mb: 2 }}>
+                    <Grid container spacing={2} alignItems="center">
+                        <Grid size={{ xs: 12, md: 3 }}>
+                            <TextField 
+                                select 
+                                label="Área Municipal" 
+                                value={selectedAreaId} 
+                                onChange={(e) => setSelectedAreaId(e.target.value)} 
+                                fullWidth 
+                                size="small"
+                            >
+                                {areas.map(area => <MenuItem key={area.id} value={area.id}>{area.area}</MenuItem>)}
+                            </TextField>
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 3 }}>
+                            <TextField 
+                                select 
+                                label="Impresora Destino" 
+                                value={stagedEntrega.impresoraId} 
+                                onChange={(e) => handleStagedChange('impresoraId', e.target.value)} 
+                                fullWidth 
+                                size="small"
+                                disabled={!selectedAreaId}
+                            >
+                                {filteredImpresoras.map(imp => <MenuItem key={imp.id} value={imp.id}>{imp.modelo} - {imp.marca}</MenuItem>)}
+                            </TextField>
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 4 }}>
+                            <TextField 
+                                select 
+                                label="Insumo / Cartucho" 
+                                value={stagedEntrega.insumoId} 
+                                onChange={(e) => handleStagedChange('insumoId', e.target.value)} 
+                                fullWidth 
+                                size="small"
+                            >
+                                {insumos.map(ins => <MenuItem key={ins.id} value={ins.id}>{`${ins.modelo} (${ins.color}) - Stock: ${ins.stock_unidades}`}</MenuItem>)}
+                            </TextField>
+                        </Grid>
+                        <Grid size={{ xs: 8, md: 1 }}>
+                            <TextField 
+                                label="Cant." 
+                                type="number" 
+                                value={stagedEntrega.cantidad} 
+                                onChange={(e) => handleStagedChange('cantidad', e.target.value)} 
+                                fullWidth 
+                                size="small"
+                                slotProps={{ input: { min: 1 } }} 
+                            />
+                        </Grid>
+                        <Grid size={{ xs: 4, md: 1 }} display="flex" justifyContent="center">
+                            <IconButton 
+                                onClick={handleAddToLista} 
+                                color="primary" 
+                                disabled={!selectedAreaId}
+                                sx={{ bgcolor: 'var(--mui-palette-background-paper)', boxShadow: 'var(--mui-shadows-1)' }}
+                            >
+                                <AddCircleOutlineIcon />
+                            </IconButton>
+                        </Grid>
                     </Grid>
-                    <Grid item xs={12} sm={5}>
-                        <TextField select label="Impresora" value={stagedEntrega.impresoraId} onChange={(e) => handleStagedChange('impresoraId', e.target.value)} fullWidth disabled={!selectedAreaId}>
-                            {filteredImpresoras.map(imp => <MenuItem key={imp.id} value={imp.id}>{imp.modelo}</MenuItem>)}
-                        </TextField>
-                    </Grid>
-                    <Grid item xs={12} sm={5}>
-                        <TextField select label="Insumo" value={stagedEntrega.insumoId} onChange={(e) => handleStagedChange('insumoId', e.target.value)} fullWidth>
-                            {insumos.map(ins => <MenuItem key={ins.id} value={ins.id}>{`${ins.modelo} (${ins.color}) - Stock: ${ins.stock_unidades}`}</MenuItem>)}
-                        </TextField>
-                    </Grid>
-                    <Grid item xs={8} sm={1}>
-                        <TextField label="Cant." type="number" value={stagedEntrega.cantidad} onChange={(e) => handleStagedChange('cantidad', e.target.value)} fullWidth inputProps={{ min: 1 }} />
-                    </Grid>
-                    <Grid item xs={4} sm={1} display="flex" alignItems="center">
-                        <IconButton onClick={handleAddToLista} color="primary" disabled={!selectedAreaId}><AddCircleOutlineIcon /></IconButton>
-                    </Grid>
-                </Grid>
+                </Box>
 
-                {error && <Typography color="error" variant="body2" sx={{ mt: 2 }}>{error}</Typography>}
+                {error && <Typography color="error" variant="caption" sx={{ mb: 2, display: 'block', fontWeight: 600 }}>⚠️ {error}</Typography>}
 
-                {/* --- SECCIÓN DE TABLA DE ENTREGAS --- */}
-                <TableContainer component={Paper} sx={{ mt: 3, maxHeight: 400 }}>
-                    <Table stickyHeader aria-label="tabla de entregas">
+                <TableContainer component={Paper} elevation={0} sx={{ maxHeight: 400, border: '1px solid var(--mui-palette-divider)', borderRadius: 2 }}>
+                    <Table stickyHeader size="small">
                         <TableHead>
                             <TableRow>
-                                <TableCell>Insumo</TableCell>
-                                <TableCell>Impresora Destino</TableCell>
-                                <TableCell align="right">Cantidad</TableCell>
-                                <TableCell align="center">Acción</TableCell>
+                                <TableCell sx={{ fontWeight: 700, bgcolor: 'var(--mui-palette-background-paper)' }}>Insumo</TableCell>
+                                <TableCell sx={{ fontWeight: 700, bgcolor: 'var(--mui-palette-background-paper)' }}>Equipo Destino</TableCell>
+                                <TableCell align="right" sx={{ fontWeight: 700, bgcolor: 'var(--mui-palette-background-paper)' }}>Cant.</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 700, bgcolor: 'var(--mui-palette-background-paper)' }}>Quitar</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
                             {listaEntregas.length === 0 ? (
-                                <TableRow><TableCell colSpan={4} align="center">Agregue insumos a la lista de entrega</TableCell></TableRow>
+                                <TableRow><TableCell colSpan={4} align="center" sx={{ py: 4, color: 'text.secondary', fontStyle: 'italic' }}>No hay entregas en la lista</TableCell></TableRow>
                             ) : (
                                 listaEntregas.map((item) => (
-                                    <TableRow key={item.rowId}>
-                                        <TableCell>{item.display.insumo}</TableCell>
+                                    <TableRow key={item.rowId} hover>
+                                        <TableCell sx={{ fontWeight: 600 }}>{item.display.insumo}</TableCell>
                                         <TableCell>{item.display.impresora}</TableCell>
-                                        <TableCell align="right">{item.cantidad}</TableCell>
+                                        <TableCell align="right"><Typography variant="body2" fontWeight="800">{item.cantidad}</Typography></TableCell>
                                         <TableCell align="center">
-                                            <IconButton size="small" onClick={() => handleRemoveFromLista(item.rowId)}><DeleteIcon color="warning" /></IconButton>
+                                            <IconButton size="small" onClick={() => handleRemoveFromLista(item.rowId)} color="error"><DeleteIcon fontSize="small" /></IconButton>
                                         </TableCell>
                                     </TableRow>
                                 ))
@@ -212,10 +240,16 @@ export default function ModalRegistrarEntrega({ open, onClose, onEntregaExitosa 
                     </Table>
                 </TableContainer>
             </DialogContent>
-            <DialogActions>
-                <Button onClick={onClose}>Cancelar</Button>
-                <Button onClick={handleSubmit} variant="contained" color="primary" disabled={listaEntregas.length === 0}>
-                    Registrar Entregas
+            <DialogActions sx={{ p: 2.5, bgcolor: 'var(--mui-palette-background-default)' }}>
+                <Button onClick={onClose} color="inherit" sx={{ fontWeight: 600 }}>Cancelar</Button>
+                <Button 
+                    onClick={handleSubmit} 
+                    variant="contained" 
+                    color="info" 
+                    disabled={listaEntregas.length === 0}
+                    sx={{ px: 4, borderRadius: 2, fontWeight: 700 }}
+                >
+                    Generar Acta y Registrar
                 </Button>
             </DialogActions>
         </Dialog>

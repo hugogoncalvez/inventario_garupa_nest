@@ -1,13 +1,13 @@
 import api, { URI } from '../../config.js';
 import React, { useState, useEffect } from 'react';
-
 import {
     Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, MenuItem,
-    Typography, Grid, IconButton, Table, TableBody, TableCell, TableContainer,
-    TableHead, TableRow, Paper
+    Typography, Grid2 as Grid, IconButton, Table, TableBody, TableCell, TableContainer,
+    TableHead, TableRow, Paper, Box, Divider, Stack
 } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import useAuth from '../../hooks/useAuth';
 
 export default function ModalRegistrarCompra({ open, onClose, onCompraExitosa }) {
@@ -34,8 +34,8 @@ export default function ModalRegistrarCompra({ open, onClose, onCompraExitosa })
             const res = await api.get(`${URI}/tintas/cartuchos`);
             setInsumos(res.data);
         } catch (err) {
-            console.error("Error fetching insumos for purchase modal:", err);
-            setError("Error al cargar los insumos. Intente nuevamente.");
+            console.error("Error fetching insumos:", err);
+            setError("Error al cargar los insumos.");
         }
     };
 
@@ -67,10 +67,7 @@ export default function ModalRegistrarCompra({ open, onClose, onCompraExitosa })
     };
 
     const handleSubmit = async () => {
-        if (listaCompras.length === 0) {
-            setError("La lista de compras está vacía.");
-            return;
-        }
+        if (listaCompras.length === 0) return;
 
         try {
             const payload = {
@@ -85,78 +82,95 @@ export default function ModalRegistrarCompra({ open, onClose, onCompraExitosa })
             onCompraExitosa();
             onClose();
         } catch (err) {
-            console.error("Error al registrar compra:", err.response ? err.response.data : err);
             setError(err.response?.data?.message || "Error al registrar la compra.");
         }
     };
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-            <DialogTitle>Registrar Compra de Insumos (Carga Masiva)</DialogTitle>
-            <DialogContent>
-                <Grid container spacing={2} sx={{ mt: 1, p: 2, border: '1px solid #ddd', borderRadius: '4px' }}>
-                    <Grid item xs={12} sm={8}>
-                        <TextField
-                            select
-                            label="Insumo"
-                            value={selectedInsumoId}
-                            onChange={(e) => setSelectedInsumoId(e.target.value)}
-                            fullWidth
-                        >
-                            {insumos.map((insumo) => (
-                                <MenuItem key={insumo.id} value={insumo.id}>
-                                    {`${insumo.modelo} (${insumo.color}) - Stock Actual: ${insumo.stock_unidades}`}
-                                </MenuItem>
-                            ))}
-                        </TextField>
+        <Dialog 
+            open={open} 
+            onClose={onClose} 
+            maxWidth="md" 
+            fullWidth
+            PaperProps={{
+                sx: { borderRadius: 3, border: '1px solid var(--mui-palette-divider)' }
+            }}
+        >
+            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, fontWeight: 700, color: 'primary.main' }}>
+                <ShoppingCartIcon color="primary" />
+                Registrar Compra de Insumos
+            </DialogTitle>
+            <Divider />
+            <DialogContent sx={{ pt: 3 }}>
+                <Box sx={{ p: 2.5, bgcolor: 'var(--mui-palette-action-hover)', borderRadius: 2, border: '1px solid var(--mui-palette-divider)' }}>
+                    <Grid container spacing={2} alignItems="center">
+                        <Grid size={{ xs: 12, sm: 7, md: 8 }}>
+                            <TextField
+                                select
+                                label="Seleccionar Insumo / Cartucho"
+                                value={selectedInsumoId}
+                                onChange={(e) => setSelectedInsumoId(e.target.value)}
+                                fullWidth
+                                size="small"
+                            >
+                                {insumos.map((insumo) => (
+                                    <MenuItem key={insumo.id} value={insumo.id}>
+                                        {`${insumo.modelo} (${insumo.color}) - Stock: ${insumo.stock_unidades}`}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                        </Grid>
+                        <Grid size={{ xs: 8, sm: 3, md: 3 }}>
+                            <TextField
+                                label="Cantidad"
+                                type="number"
+                                value={cantidad}
+                                onChange={(e) => setCantidad(e.target.value)}
+                                fullWidth
+                                size="small"
+                                slotProps={{ input: { min: 1 } }}
+                            />
+                        </Grid>
+                        <Grid size={{ xs: 4, sm: 2, md: 1 }} display="flex" justifyContent="center">
+                            <IconButton onClick={handleAddToLista} color="primary" sx={{ bgcolor: 'var(--mui-palette-background-paper)', boxShadow: 'var(--mui-shadows-1)' }}>
+                                <AddCircleOutlineIcon />
+                            </IconButton>
+                        </Grid>
                     </Grid>
-                    <Grid item xs={8} sm={3}>
-                        <TextField
-                            label="Cantidad"
-                            type="number"
-                            value={cantidad}
-                            onChange={(e) => setCantidad(e.target.value)}
-                            fullWidth
-                            inputProps={{ min: 1 }}
-                        />
-                    </Grid>
-                    <Grid item xs={4} sm={1} display="flex" alignItems="center">
-                        <IconButton onClick={handleAddToLista} color="primary">
-                            <AddCircleOutlineIcon />
-                        </IconButton>
-                    </Grid>
-                </Grid>
+                </Box>
 
                 {error && (
-                    <Typography color="error" variant="body2" sx={{ mt: 2 }}>
-                        {error}
+                    <Typography color="error" variant="caption" sx={{ mt: 1, display: 'block', fontWeight: 600 }}>
+                        ⚠️ {error}
                     </Typography>
                 )}
 
-                <TableContainer component={Paper} sx={{ mt: 3, maxHeight: 300 }}>
+                <TableContainer component={Paper} elevation={0} sx={{ mt: 3, maxHeight: 350, border: '1px solid var(--mui-palette-divider)', borderRadius: 2 }}>
                     <Table stickyHeader size="small">
                         <TableHead>
                             <TableRow>
-                                <TableCell>Insumo</TableCell>
-                                <TableCell align="right">Cantidad</TableCell>
-                                <TableCell align="center">Acción</TableCell>
+                                <TableCell sx={{ fontWeight: 700, bgcolor: 'var(--mui-palette-background-paper)' }}>Insumo</TableCell>
+                                <TableCell align="right" sx={{ fontWeight: 700, bgcolor: 'var(--mui-palette-background-paper)' }}>Cant.</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 700, bgcolor: 'var(--mui-palette-background-paper)' }}>Acción</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
                             {listaCompras.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={3} align="center">
-                                        Agregue ítems a la lista de compra
+                                    <TableCell colSpan={3} align="center" sx={{ py: 4, color: 'text.secondary', fontStyle: 'italic' }}>
+                                        La lista está vacía. Seleccione insumos arriba.
                                     </TableCell>
                                 </TableRow>
                             ) : (
                                 listaCompras.map((item) => (
-                                    <TableRow key={item.rowId}>
-                                        <TableCell>{item.display.insumo}</TableCell>
-                                        <TableCell align="right">{item.cantidad}</TableCell>
+                                    <TableRow key={item.rowId} hover>
+                                        <TableCell sx={{ fontWeight: 600 }}>{item.display.insumo}</TableCell>
+                                        <TableCell align="right">
+                                            <Typography variant="body2" fontWeight="800">{item.cantidad}</Typography>
+                                        </TableCell>
                                         <TableCell align="center">
-                                            <IconButton size="small" onClick={() => handleRemoveFromLista(item.rowId)}>
-                                                <DeleteIcon color="warning" />
+                                            <IconButton size="small" onClick={() => handleRemoveFromLista(item.rowId)} color="error">
+                                                <DeleteIcon fontSize="small" />
                                             </IconButton>
                                         </TableCell>
                                     </TableRow>
@@ -166,15 +180,16 @@ export default function ModalRegistrarCompra({ open, onClose, onCompraExitosa })
                     </Table>
                 </TableContainer>
             </DialogContent>
-            <DialogActions>
-                <Button onClick={onClose}>Cancelar</Button>
+            <DialogActions sx={{ p: 2.5, bgcolor: 'var(--mui-palette-background-default)' }}>
+                <Button onClick={onClose} color="inherit" sx={{ fontWeight: 600 }}>Cancelar</Button>
                 <Button 
                     onClick={handleSubmit} 
                     variant="contained" 
                     color="primary"
                     disabled={listaCompras.length === 0}
+                    sx={{ px: 4, borderRadius: 2, fontWeight: 700 }}
                 >
-                    Registrar Compra
+                    Finalizar Compra
                 </Button>
             </DialogActions>
         </Dialog>

@@ -1,19 +1,16 @@
 import api, { URI } from '../../config.js';
 import React, { useState, useEffect } from 'react';
-
-
 import { useNavigate } from "react-router-dom";
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
-import CartuchoForm from './CartuchoForm'; // Importar el componente de formulario reutilizable
-
+import { Typography, Container, Paper, Box, Divider } from '@mui/material';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import CartuchoForm from './CartuchoForm';
 
 export const CreateCartucho = () => {
     const [cartuchoData, setCartuchoData] = useState({
         modelo: '',
         sku: '',
         color: '',
-        tipo: 'Tinta', // Valor por defecto
+        tipo: 'Tinta',
         stockMinimoUnidades: 0,
         esRecargable: false,
         selectedInsumoGranelId: ''
@@ -29,7 +26,6 @@ export const CreateCartucho = () => {
                 const res = await api.get(`${URI}/insumos-granel`);
                 setInsumosGranel(res.data);
             } catch (err) {
-                console.error("Error al obtener insumos a granel:", err);
                 setError("Error al cargar los insumos a granel.");
             }
         };
@@ -47,12 +43,12 @@ export const CreateCartucho = () => {
         const { modelo, color, esRecargable, selectedInsumoGranelId } = cartuchoData;
 
         if (!modelo.trim() || !color.trim()) {
-            setError('El modelo y el color son campos obligatorios.');
+            setError('El modelo y el color son obligatorios.');
             return;
         }
 
         if (esRecargable && !selectedInsumoGranelId) {
-            setError('Debe seleccionar un insumo a granel si el cartucho es recargable.');
+            setError('Seleccione un insumo a granel para la recarga.');
             return;
         }
 
@@ -62,31 +58,37 @@ export const CreateCartucho = () => {
                 sku: cartuchoData.sku.trim(),
                 color: cartuchoData.color.trim(),
                 tipo: cartuchoData.tipo,
-                stock_unidades: 0, // Siempre inicia en 0 al crear
+                stock_unidades: 0,
                 stock_minimo_unidades: parseInt(cartuchoData.stockMinimoUnidades),
                 es_recargable: cartuchoData.esRecargable,
                 insumo_granel_id: cartuchoData.esRecargable ? cartuchoData.selectedInsumoGranelId : null
             });
             navigate('/tintas/cartuchos');
         } catch (err) {
-            console.error("Error al crear insumo:", err.response ? err.response.data : err);
             setError(err.response?.data?.message || "Error al crear el insumo.");
         }
     };
 
     return (
-        <Container component="main" maxWidth="md" sx={{ mt: 10 }}>
-            <Typography component="h1" variant="h5" sx={{ mb: 4, textAlign: 'center' }}>
-                Crear Nuevo Insumo
-            </Typography>
-            <CartuchoForm
-                cartuchoData={cartuchoData}
-                onDataChange={handleDataChange}
-                onSubmit={handleSubmit}
-                error={error}
-                insumosGranel={insumosGranel}
-                isEditMode={false}
-            />
+        <Container maxWidth="md" sx={{ mt: 12, mb: 4 }}>
+            <Paper elevation={0} sx={{ p: 4, borderRadius: 3, border: '1px solid var(--mui-palette-divider)' }}>
+                <Box display="flex" alignItems="center" mb={3} gap={2}>
+                    <AddCircleOutlineIcon color="primary" fontSize="large" />
+                    <Typography variant="h4" fontWeight="700" color="primary">
+                        Nuevo Insumo / Cartucho
+                    </Typography>
+                </Box>
+                <Divider sx={{ mb: 4 }} />
+                <CartuchoForm
+                    cartuchoData={cartuchoData}
+                    onDataChange={handleDataChange}
+                    onSubmit={handleSubmit}
+                    error={error}
+                    insumosGranel={insumosGranel}
+                    isEditMode={false}
+                    onNavigateBack={() => navigate('/tintas/cartuchos')}
+                />
+            </Paper>
         </Container>
     );
 };
