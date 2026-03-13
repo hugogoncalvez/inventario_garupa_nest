@@ -6,6 +6,7 @@ import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useNavigate, useLocation } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
+import { useColorScheme } from '@mui/material/styles';
 
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
@@ -28,12 +29,23 @@ import PrintIcon from '@mui/icons-material/Print';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import AnalyticsIcon from '@mui/icons-material/Analytics';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import LightModeIcon from '@mui/icons-material/LightMode';
 
 export default function NavBar() {
     const navigate = useNavigate();
     const location = useLocation();
     const { setAuth } = useAuth();
     const [openDrawer, setOpenDrawer] = useState(false);
+    const { mode, setMode } = useColorScheme();
+
+    const toggleMode = () => {
+        setMode(mode === 'light' ? 'dark' : 'light');
+    };
+
+    if (!mode) {
+        return null;
+    }
 
     const toggleDrawer = (open) => (event) => {
         if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
@@ -173,7 +185,10 @@ export default function NavBar() {
                         </Typography>
                     </Box>
 
-                    <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                        <IconButton color="inherit" onClick={toggleMode} title={`Cambiar a modo ${mode === 'light' ? 'oscuro' : 'claro'}`}>
+                            {mode === 'light' ? <DarkModeIcon /> : <LightModeIcon />}
+                        </IconButton>
                         <IconButton color="inherit" onClick={() => navigate('/inventario')} title="Inicio">
                             <HomeIcon />
                         </IconButton>
