@@ -196,7 +196,7 @@ const ShowOrdenes = () => {
                                     <StyledTableCell align='center'>{new Date(orden.fecha_recepcion).toLocaleDateString()}</StyledTableCell>
                                     <StyledTableCell align='center'>
                                         <Stack direction="row" spacing={0.5} justifyContent="center">
-                                            <Tooltip title="Editar"><IconButton size="small" color="primary" onClick={() => navigate(`/ordenes/edit/${orden.id}`)}><EditIcon fontSize="small" /></IconButton></Tooltip>
+                                            <Tooltip title="Editar"><IconButton size="small" color="success" onClick={() => navigate(`/ordenes/edit/${orden.id}`)}><EditIcon fontSize="small" /></IconButton></Tooltip>
                                             <Tooltip title="Eliminar"><IconButton size="small" color="error" onClick={() => handleClickOpen(orden.id)}><DeleteForeverIcon fontSize="small" /></IconButton></Tooltip>
                                             <Tooltip title="PDF"><IconButton size="small" color="info" onClick={() => ComprobanteServicio(orden)}><PictureAsPdfIcon fontSize="small" /></IconButton></Tooltip>
                                         </Stack>

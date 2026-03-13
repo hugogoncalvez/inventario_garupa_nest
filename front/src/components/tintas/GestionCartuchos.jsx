@@ -275,7 +275,7 @@ const GestionCartuchos = () => {
                                     <StyledTableCell align='center' sx={{ opacity: 0.7 }}>{cartucho.stock_minimo_unidades}</StyledTableCell>
                                     <StyledTableCell align='center'>
                                         <Stack direction="row" spacing={0.5} justifyContent="center">
-                                            <Tooltip title="Editar"><IconButton size="small" color="primary" onClick={() => navigate(`/tintas/cartuchos/edit/${cartucho.id}`)}><EditIcon fontSize="small" /></IconButton></Tooltip>
+                                            <Tooltip title="Editar"><IconButton size="small" color="success" onClick={() => navigate(`/tintas/cartuchos/edit/${cartucho.id}`)}><EditIcon fontSize="small" /></IconButton></Tooltip>
                                             <Tooltip title="Eliminar"><IconButton size="small" color="error" onClick={() => handleDelete(cartucho.id)}><DeleteForeverIcon fontSize="small" /></IconButton></Tooltip>
                                             <Tooltip title="Ajustar Stock"><IconButton size="small" color="info" onClick={() => handleAdjustStockUnidades(cartucho)}><InventoryIcon fontSize="small" /></IconButton></Tooltip>
                                         </Stack>

@@ -315,7 +315,7 @@ const ShowInventario = () => {
                                     </StyledTableCell>
                                     <StyledTableCell align='center'>
                                         <Stack direction="row" spacing={0.5} justifyContent="center">
-                                            <Tooltip title="Editar"><IconButton size="small" color="primary" onClick={() => navigate(`/edit/${row.id}`)}><EditIcon fontSize="small" /></IconButton></Tooltip>
+                                            <Tooltip title="Editar"><IconButton size="small" color="success" onClick={() => navigate(`/edit/${row.id}`)}><EditIcon fontSize="small" /></IconButton></Tooltip>
                                             <Tooltip title="Eliminar"><IconButton size="small" color="error" onClick={() => handleClickOpen(row.id)}><DeleteForeverIcon fontSize="small" /></IconButton></Tooltip>
                                         </Stack>
                                     </StyledTableCell>

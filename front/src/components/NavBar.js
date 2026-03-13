@@ -38,17 +38,9 @@ export default function NavBar() {
     const { setAuth } = useAuth();
     const [openDrawer, setOpenDrawer] = useState(false);
     const { mode, setMode } = useColorScheme();
-    const theme = useTheme();
 
-    console.log('--- Depuración de Tema ---');
-    console.log('Modo detectado por useColorScheme:', mode);
-    console.log('Paleta Primaria (Actual):', theme.vars?.palette.primary.main || theme.palette.primary.main);
-    console.log('Color de Fondo (Actual):', theme.vars?.palette.background.default || theme.palette.background.default);
-    
     const toggleMode = () => {
-        const nextMode = mode === 'light' ? 'dark' : 'light';
-        console.log('Cambiando modo a:', nextMode);
-        setMode(nextMode);
+        setMode(mode === 'light' ? 'dark' : 'light');
     };
 
     if (!mode) {

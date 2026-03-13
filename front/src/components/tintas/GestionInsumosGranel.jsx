@@ -239,7 +239,7 @@ export const GestionInsumosGranel = () => {
                                             </StyledTableCell>
                                             <StyledTableCell align='center'>
                                                 <Stack direction="row" spacing={0.5} justifyContent="center">
-                                                    <Tooltip title="Editar"><IconButton size="small" color="primary" onClick={() => handleEditClick(insumo)}><EditIcon fontSize="small" /></IconButton></Tooltip>
+                                                    <Tooltip title="Editar"><IconButton size="small" color="success" onClick={() => handleEditClick(insumo)}><EditIcon fontSize="small" /></IconButton></Tooltip>
                                                     <Tooltip title="Eliminar"><IconButton size="small" color="error" onClick={() => handleDeleteClick(insumo.id)}><DeleteForeverIcon fontSize="small" /></IconButton></Tooltip>
                                                     <Tooltip title="Ajustar Stock"><IconButton size="small" color="info" onClick={() => handleAdjustStock(insumo)}><InventoryIcon fontSize="small" /></IconButton></Tooltip>
                                                 </Stack>
