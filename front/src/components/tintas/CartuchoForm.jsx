@@ -1,7 +1,8 @@
 import React from 'react';
+import Grid from "@mui/material/Grid";
 import { 
     TextField, Button, MenuItem, FormControlLabel, Checkbox, 
-    FormGroup, Grid2 as Grid, Typography, Box, Stack, Divider 
+    FormGroup, Typography, Box, Stack, Divider 
 } from '@mui/material';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';

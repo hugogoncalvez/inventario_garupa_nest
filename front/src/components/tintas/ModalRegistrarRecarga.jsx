@@ -1,8 +1,9 @@
 import api, { URI } from '../../config.js';
 import React, { useState, useEffect } from 'react';
+import Grid from "@mui/material/Grid";
 import {
     Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, MenuItem,
-    Typography, Grid2 as Grid, Box, Divider, Stack
+    Typography, Box, Divider, Stack
 } from '@mui/material';
 import RecyclingIcon from '@mui/icons-material/Recycling';
 import useAuth from '../../hooks/useAuth';

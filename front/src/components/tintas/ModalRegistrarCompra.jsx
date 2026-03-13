@@ -1,8 +1,9 @@
 import api, { URI } from '../../config.js';
 import React, { useState, useEffect } from 'react';
+import Grid from "@mui/material/Grid";
 import {
     Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, MenuItem,
-    Typography, Grid2 as Grid, IconButton, Table, TableBody, TableCell, TableContainer,
+    Typography, IconButton, Table, TableBody, TableCell, TableContainer,
     TableHead, TableRow, Paper, Box, Divider, Stack
 } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
