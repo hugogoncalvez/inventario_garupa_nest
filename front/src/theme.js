@@ -1,6 +1,7 @@
 import { extendTheme } from '@mui/material/styles';
 
 const theme = extendTheme({
+  colorSchemeSelector: 'data',
   colorSchemes: {
     light: {
       palette: {

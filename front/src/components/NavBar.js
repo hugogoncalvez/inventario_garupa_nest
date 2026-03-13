@@ -6,7 +6,7 @@ import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useNavigate, useLocation } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
-import { useColorScheme } from '@mui/material/styles';
+import { useColorScheme, useTheme } from '@mui/material/styles';
 
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
@@ -38,12 +38,16 @@ export default function NavBar() {
     const { setAuth } = useAuth();
     const [openDrawer, setOpenDrawer] = useState(false);
     const { mode, setMode } = useColorScheme();
+    const theme = useTheme();
 
-    console.log('Modo actual:', mode);
-
+    console.log('--- Depuración de Tema ---');
+    console.log('Modo detectado por useColorScheme:', mode);
+    console.log('Paleta Primaria (Actual):', theme.vars?.palette.primary.main || theme.palette.primary.main);
+    console.log('Color de Fondo (Actual):', theme.vars?.palette.background.default || theme.palette.background.default);
+    
     const toggleMode = () => {
         const nextMode = mode === 'light' ? 'dark' : 'light';
-        console.log('Cambiando a:', nextMode);
+        console.log('Cambiando modo a:', nextMode);
         setMode(nextMode);
     };
 

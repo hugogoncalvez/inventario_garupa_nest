@@ -41,9 +41,9 @@ function App() {
   const { pathname } = useLocation();
 
   return (
-    <ThemeProvider theme={theme} defaultMode="system" disableTransitionOnChange>
+    <ThemeProvider theme={theme} disableTransitionOnChange>
       <CssBaseline />
-      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', bgcolor: 'background.default', color: 'text.primary' }}>
         {(pathname !== '/' && pathname !== '/register') && <NavBar />}
 
         <Box sx={{ flexGrow: 1 }}>
