@@ -1,10 +1,14 @@
 import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { movimientos_tinta_tipo_movimiento } from '@prisma/client';
+import { WhatsAppService } from './whatsapp.service';
 
 @Controller('tintas')
 export class TintasController {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly whatsappService: WhatsAppService
+    ) { }
 
     // --- Cartuchos ---
     @Get('cartuchos')
@@ -178,7 +182,8 @@ export class TintasController {
     async registerEntrega(@Body() body: any) {
         const { usuario_id, items } = body;
 
-        return this.prisma.$transaction(async (tx) => {
+        const results = await this.prisma.$transaction(async (tx) => {
+            const updatedItems = [];
             for (const item of items) {
                 await tx.movimientos_tinta.create({
                     data: {
@@ -193,16 +198,31 @@ export class TintasController {
                     }
                 });
 
-                await tx.cartuchos.update({
+                const updated = await tx.cartuchos.update({
                     where: { id: Number(item.cartucho_id) },
                     data: {
                         stock_unidades: { decrement: Number(item.cantidad) },
                         updatedAt: new Date(),
                     }
                 });
+                updatedItems.push(updated);
             }
-            return { success: true };
+            return updatedItems;
         });
+
+        // Alerta de stock bajo
+        for (const cartucho of results) {
+            if (cartucho.stock_unidades <= cartucho.stock_minimo_unidades) {
+                this.whatsappService.sendStockAlert({
+                    modelo: cartucho.modelo,
+                    color: cartucho.color,
+                    stock: cartucho.stock_unidades,
+                    min: cartucho.stock_minimo_unidades
+                });
+            }
+        }
+
+        return { success: true };
     }
 
     @Get('movimientos/historial/:id')

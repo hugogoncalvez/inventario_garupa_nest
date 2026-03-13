@@ -7,6 +7,7 @@ import { ReportesController } from "./reportes.controller";
 import { TintasController } from "./tintas.controller";
 import { OrdenesController } from "./ordenes.controller";
 import { DashboardController } from "./dashboard.controller";
+import { WhatsAppService } from "./whatsapp.service";
 
 @Module({
     controllers: [
@@ -20,5 +21,6 @@ import { DashboardController } from "./dashboard.controller";
         OrdenesController,
         DashboardController
     ],
+    providers: [WhatsAppService]
 })
 export class InventarioModule { }
