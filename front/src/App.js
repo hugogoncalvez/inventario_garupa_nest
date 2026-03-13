@@ -14,6 +14,7 @@ import RequireAuth from './components/Auth/RequireAuth';
 import { Box, CircularProgress } from '@mui/material';
 
 // Lazy-load components
+const Dashboard = lazy(() => import('./components/Dashboard'));
 const ShowInventario = lazy(() => import('./components/inventario/ShowInventario'));
 const EditInv = lazy(() => import('./components/inventario/EditInv'));
 const CreateInv = lazy(() => import('./components/inventario/CreateInv'));
@@ -54,6 +55,7 @@ function App() {
                 <Route path='/register' element={<SignUp />} />
 
                 <Route element={<RequireAuth />}>
+                  <Route path='/dashboard' element={<Dashboard />} />
                   <Route path='/inventario' element={<ShowInventario />} />
                   <Route path='/inventario/create' element={<CreateInv />} />
                   <Route path='/edit/:id' element={<EditInv />} />

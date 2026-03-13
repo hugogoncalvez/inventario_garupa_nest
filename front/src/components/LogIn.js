@@ -19,8 +19,15 @@ const fadeIn = keyframes`
 `;
 
 const LogIn = () => {
-    const { setAuth } = useAuth();
+    const { auth, setAuth } = useAuth();
     const navigate = useNavigate();
+
+    // Redirigir si ya está autenticado
+    React.useEffect(() => {
+        if (auth) {
+            navigate('/dashboard');
+        }
+    }, [auth, navigate]);
 
     const [passNoOk, setPassNoOk] = useState(false);
     const [isEmail, setIsEmail] = useState(false);
@@ -52,7 +59,7 @@ const LogIn = () => {
         })
         .then((res) => {
             setAuth(res.data);
-            navigate('/inventario');
+            navigate('/dashboard');
         })
         .catch((error) => {
             const msg = error.response?.data?.message;

@@ -55,6 +55,7 @@ export default function NavBar() {
     };
 
     const mainNavItems = [
+        { text: 'Panel de Control', path: '/dashboard', icon: <AnalyticsIcon /> },
         { text: 'Inventario', path: '/inventario', icon: <Inventory2OutlinedIcon /> },
         { text: 'Órdenes de Servicio', path: '/ordenes', icon: <BuildIcon /> },
         { text: 'Control de Insumos', path: '/tintas/cartuchos', icon: <FactCheckIcon /> },
@@ -189,7 +190,7 @@ export default function NavBar() {
                         <IconButton color="inherit" onClick={toggleMode} title={`Cambiar a modo ${mode === 'light' ? 'oscuro' : 'claro'}`}>
                             {mode === 'light' ? <DarkModeIcon /> : <LightModeIcon />}
                         </IconButton>
-                        <IconButton color="inherit" onClick={() => navigate('/inventario')} title="Inicio">
+                        <IconButton color="inherit" onClick={() => navigate('/dashboard')} title="Inicio">
                             <HomeIcon />
                         </IconButton>
                         <IconButton

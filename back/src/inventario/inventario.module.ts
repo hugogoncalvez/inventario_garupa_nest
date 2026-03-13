@@ -6,6 +6,7 @@ import { InsumosGranelController } from "./insumos-granel.controller";
 import { ReportesController } from "./reportes.controller";
 import { TintasController } from "./tintas.controller";
 import { OrdenesController } from "./ordenes.controller";
+import { DashboardController } from "./dashboard.controller";
 
 @Module({
     controllers: [
@@ -16,7 +17,8 @@ import { OrdenesController } from "./ordenes.controller";
         InsumosGranelController,
         ReportesController,
         TintasController,
-        OrdenesController
+        OrdenesController,
+        DashboardController
     ],
 })
 export class InventarioModule { }
