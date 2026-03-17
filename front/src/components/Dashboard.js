@@ -74,7 +74,7 @@ const Dashboard = () => {
             </Typography>
 
             {/* KPIs */}
-            <Grid container spacing={3} mb={4}>
+            <Grid container spacing={3} mb={4} justifyContent="center">
                 <Grid item xs={12} sm={6} md={3}>
                     <KpiCard 
                         title="Stock Crítico" 
@@ -113,7 +113,7 @@ const Dashboard = () => {
             <Grid container spacing={3}>
                 {/* Top Insumos */}
                 <Grid item xs={12} md={7}>
-                    <Paper sx={{ p: 3, borderRadius: 3, height: 400 }}>
+                    <Paper sx={{ p: 3, borderRadius: 3, height: 450 }}>
                         <Typography variant="h6" fontWeight="700" mb={3}>
                             🏆 Top 5 Insumos más Usados (Total Entregas)
                         </Typography>
@@ -140,7 +140,7 @@ const Dashboard = () => {
 
                 {/* Estado de Órdenes */}
                 <Grid item xs={12} md={5}>
-                    <Paper sx={{ p: 3, borderRadius: 3, height: 400 }}>
+                    <Paper sx={{ p: 3, borderRadius: 3, height: 450 }}>
                         <Typography variant="h6" fontWeight="700" mb={1}>
                             📊 Estado de Órdenes Técnicas
                         </Typography>
@@ -168,20 +168,31 @@ const Dashboard = () => {
 
                 {/* Consumo por Área */}
                 <Grid item xs={12}>
-                    <Paper sx={{ p: 3, borderRadius: 3, height: 400 }}>
+                    <Paper sx={{ p: 3, borderRadius: 3, height: 500 }}>
                         <Typography variant="h6" fontWeight="700" mb={3}>
                             🏢 Áreas con Mayor Consumo de Insumos
                         </Typography>
-                        <ResponsiveContainer width="100%" height="85%">
-                            <BarChart data={data.consumoPorArea}>
+                        <ResponsiveContainer width="100%" height="80%">
+                            <BarChart data={data.consumoPorArea} margin={{ bottom: 50 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                <XAxis dataKey="name" tick={{ fontSize: 11, fontWeight: 600 }} />
+                                <XAxis 
+                                    dataKey="name" 
+                                    tick={{ fontSize: 12, fontWeight: 700 }} 
+                                    interval={0} 
+                                    angle={-15} 
+                                    textAnchor="end"
+                                />
                                 <YAxis />
                                 <Tooltip 
                                     cursor={{fill: 'transparent'}}
                                     contentStyle={{ borderRadius: 8, border: 'none', boxShadow: 'var(--mui-shadows-4)' }}
                                 />
-                                <Bar dataKey="value" name="Entregas" fill={theme.palette.secondary.main} radius={[4, 4, 0, 0]} />
+                                <Bar dataKey="value" name="Entregas" radius={[4, 4, 0, 0]}>
+                                    {data.consumoPorArea.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    ))}
+                                    <LabelList dataKey="value" position="top" style={{ fontSize: 13, fontWeight: 800 }} />
+                                </Bar>
                             </BarChart>
                         </ResponsiveContainer>
                     </Paper>

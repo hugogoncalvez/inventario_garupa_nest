@@ -10,6 +10,7 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import EmailIcon from '@mui/icons-material/Email';
 import LockIcon from '@mui/icons-material/Lock';
+import ComputerIcon from '@mui/icons-material/Computer';
 
 const URI = `${BASE_URI}/auth/login`;
 
@@ -97,7 +98,7 @@ const LogIn = () => {
                     boxShadow: 'var(--mui-shadows-10)'
                 }}>
                     <Typography variant="h4" fontWeight="800" color="primary" sx={{ mb: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5 }}>
-                        📦 Inventario
+                        <ComputerIcon fontSize="large" /> Inventario IT
                     </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 4, fontWeight: 500 }}>
                         Sistema de Gestión Municipal
