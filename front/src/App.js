@@ -1,8 +1,10 @@
 import './App.css';
-import React, { Suspense, lazy, useEffect } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import React, { Suspense, lazy, useEffect, useRef } from 'react';
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
-import { startHeartbeat } from './config.js';
+import { startHeartbeat, startBotHeartbeat } from './config.js';
+import useAuth from './hooks/useAuth';
+import Swal from 'sweetalert2';
 import CssBaseline from '@mui/material/CssBaseline';
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript';
 import theme from './theme';
@@ -41,10 +43,65 @@ const LoadingFallback = () => (
 
 function App() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const { auth, setAuth } = useAuth();
+  const inactivityTimerRef = useRef(null);
 
+  // 1. Gestión de Latidos (Heartbeats) - Solo si está logueado
   useEffect(() => {
-    startHeartbeat();
-  }, []);
+    let stopBackHeartbeat = null;
+    let stopBotHeartbeat = null;
+
+    if (auth) {
+      stopBackHeartbeat = startHeartbeat();
+      stopBotHeartbeat = startBotHeartbeat();
+    }
+
+    return () => {
+      if (stopBackHeartbeat) stopBackHeartbeat();
+      if (stopBotHeartbeat) stopBotHeartbeat();
+    };
+  }, [auth]);
+
+  // 2. Gestión de Inactividad (Auto-Logout)
+  useEffect(() => {
+    const INACTIVITY_LIMIT = 15 * 60 * 1000; // 15 minutos
+
+    const resetTimer = () => {
+      if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
+      
+      // Solo activamos el timer si el usuario está logueado
+      if (auth) {
+        inactivityTimerRef.current = setTimeout(() => {
+          handleAutoLogout();
+        }, INACTIVITY_LIMIT);
+      }
+    };
+
+    const handleAutoLogout = () => {
+      setAuth(null);
+      navigate('/');
+      Swal.fire({
+        title: 'Sesión expirada',
+        text: 'Se ha cerrado la sesión por inactividad para ahorrar recursos del servidor.',
+        icon: 'info',
+        confirmButtonText: 'Entendido'
+      });
+    };
+
+    // Eventos que resetean el contador de inactividad
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+    
+    if (auth) {
+      events.forEach(event => document.addEventListener(event, resetTimer));
+      resetTimer(); // Iniciar el primer contador
+    }
+
+    return () => {
+      if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
+      events.forEach(event => document.removeEventListener(event, resetTimer));
+    };
+  }, [auth, navigate, setAuth]);
 
   return (
     <ThemeProvider theme={theme} disableTransitionOnChange>

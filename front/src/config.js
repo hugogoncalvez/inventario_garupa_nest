@@ -117,10 +117,35 @@ export const startHeartbeat = () => {
     // El primer ping es inmediato para asegurar la conexión
     axios.get(URI).catch(() => null);
 
-    setInterval(() => {
+    const interval = setInterval(() => {
         console.log("💓 Ping preventivo al backend...");
         axios.get(URI).catch(() => null);
     }, HEARTBEAT_INTERVAL);
+
+    return () => clearInterval(interval);
+};
+
+/**
+ * Mantiene vivo el Bot de WhatsApp cada 10 minutos
+ */
+export const startBotHeartbeat = () => {
+    const BOT_URL = 'https://inventario-whatsapp-bot.onrender.com/health';
+    const HEARTBEAT_INTERVAL = 10 * 60 * 1000;
+
+    console.log("🤖 Heartbeat del Bot iniciado: se mantendrá vivo en Render.");
+
+    // Primer ping inmediato
+    fetch(BOT_URL).catch(() => null);
+
+    const interval = setInterval(() => {
+        console.log("🤖 Ping preventivo al Bot de WhatsApp...");
+        fetch(BOT_URL)
+            .then(res => res.json())
+            .then(data => console.log("🤖 Estado del Bot:", data.status))
+            .catch(() => console.warn("⚠️ Despertando al bot de WhatsApp..."));
+    }, HEARTBEAT_INTERVAL);
+
+    return () => clearInterval(interval);
 };
 
 export default api;
