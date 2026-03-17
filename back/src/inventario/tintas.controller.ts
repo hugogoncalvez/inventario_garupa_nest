@@ -183,7 +183,7 @@ export class TintasController {
         const { usuario_id, items } = body;
 
         const results = await this.prisma.$transaction(async (tx) => {
-            const updatedItems = [];
+            const updatedItems: any[] = [];
             for (const item of items) {
                 await tx.movimientos_tinta.create({
                     data: {
@@ -220,6 +220,57 @@ export class TintasController {
                     min: cartucho.stock_minimo_unidades
                 });
             }
+        }
+
+        return { success: true };
+    }
+
+    @Post('movimientos/recarga')
+    async registerRecarga(@Body() body: any) {
+        const {
+            insumo_granel_id,
+            unidad_cartucho_id,
+            impresora_id,
+            cantidad_cartuchos,
+            cantidad_insumo,
+            usuario_id
+        } = body;
+
+        const results = await this.prisma.$transaction(async (tx) => {
+            // 1. Registrar el movimiento de insumo a granel
+            await tx.movimientos_insumo_granel.create({
+                data: {
+                    insumo_granel_id: Number(insumo_granel_id),
+                    unidad_cartucho_id: unidad_cartucho_id ? Number(unidad_cartucho_id) : null,
+                    impresora_id: impresora_id ? Number(impresora_id) : null,
+                    cantidad_usada: Number(cantidad_insumo),
+                    cantidad_cartuchos_recargados: Number(cantidad_cartuchos),
+                    usuario_id: Number(usuario_id),
+                    tipo_movimiento: 'RECARGA',
+                    fecha: new Date(),
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                }
+            });
+
+            // 2. Decrementar el stock del insumo a granel
+            return tx.insumos_granel.update({
+                where: { id: Number(insumo_granel_id) },
+                data: {
+                    stock_actual: { decrement: Number(cantidad_insumo) },
+                    updatedAt: new Date(),
+                }
+            });
+        });
+
+        // 3. Alerta de stock bajo para el insumo a granel
+        if (Number(results.stock_actual) <= Number(results.stock_minimo)) {
+            this.whatsappService.sendStockAlert({
+                modelo: results.nombre,
+                color: 'N/A',
+                stock: Number(results.stock_actual),
+                min: Number(results.stock_minimo)
+            });
         }
 
         return { success: true };

@@ -1,5 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { movimientos_tinta_tipo_movimiento } from '@prisma/client';
 
 @Controller('dashboard')
 export class DashboardController {
@@ -18,7 +19,7 @@ export class DashboardController {
             }),
 
             // 2. Órdenes de servicio activas
-            this.prisma.ordenes_servicio.count({
+            this.prisma.ordendeservicios.count({
                 where: {
                     estado: {
                         notIn: ['Entregado', 'Sin Solucion (Baja)']
@@ -29,10 +30,7 @@ export class DashboardController {
             // 3. Movimientos de entrega para Top Insumos y Consumo por Área
             this.prisma.movimientos_tinta.findMany({
                 where: {
-                    OR: [
-                        { tipo_movimiento: 'ENTREGA_A__REA' },
-                        { tipo_movimiento: 'ENTREGA A ÁREA' }
-                    ]
+                    tipo_movimiento: movimientos_tinta_tipo_movimiento.ENTREGA_A__REA
                 },
                 include: {
                     cartuchos: true,
@@ -73,7 +71,7 @@ export class DashboardController {
             .slice(0, 6);
 
         // Procesar Estados de Órdenes
-        const ordenesStatus = await this.prisma.ordenes_servicio.groupBy({
+        const ordenesStatus = await this.prisma.ordendeservicios.groupBy({
             by: ['estado'],
             _count: {
                 id: true
@@ -81,7 +79,7 @@ export class DashboardController {
         });
 
         const orderStats = ordenesStatus.map(s => ({
-            name: s.estado,
+            name: s.estado || 'Sin Estado',
             value: s._count.id
         }));
 
