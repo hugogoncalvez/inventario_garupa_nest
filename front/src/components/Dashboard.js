@@ -113,7 +113,7 @@ const Dashboard = () => {
             <Grid container spacing={3}>
                 {/* Top Insumos */}
                 <Grid item xs={12} md={7}>
-                    <Paper sx={{ p: 3, borderRadius: 3, height: 450 }}>
+                    <Paper sx={{ p: 3, borderRadius: 3, height: 420 }}>
                         <Typography variant="h6" fontWeight="700" mb={3}>
                             🏆 Top 5 Insumos más Usados (Total Entregas)
                         </Typography>
@@ -130,7 +130,10 @@ const Dashboard = () => {
                                 <Tooltip 
                                     contentStyle={{ borderRadius: 8, border: 'none', boxShadow: 'var(--mui-shadows-4)' }}
                                 />
-                                <Bar dataKey="total" fill={theme.palette.primary.main} radius={[0, 4, 4, 0]}>
+                                <Bar dataKey="total" radius={[0, 4, 4, 0]}>
+                                    {data.topInsumos.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    ))}
                                     <LabelList dataKey="total" position="right" style={{ fontSize: 12, fontWeight: 700 }} />
                                 </Bar>
                             </BarChart>
@@ -140,7 +143,7 @@ const Dashboard = () => {
 
                 {/* Estado de Órdenes */}
                 <Grid item xs={12} md={5}>
-                    <Paper sx={{ p: 3, borderRadius: 3, height: 450 }}>
+                    <Paper sx={{ p: 3, borderRadius: 3, height: 420 }}>
                         <Typography variant="h6" fontWeight="700" mb={1}>
                             📊 Estado de Órdenes Técnicas
                         </Typography>
@@ -168,18 +171,18 @@ const Dashboard = () => {
 
                 {/* Consumo por Área */}
                 <Grid item xs={12}>
-                    <Paper sx={{ p: 3, borderRadius: 3, height: 500 }}>
-                        <Typography variant="h6" fontWeight="700" mb={3}>
+                    <Paper sx={{ p: 3, borderRadius: 3, height: 420 }}>
+                        <Typography variant="h6" fontWeight="700" mb={2}>
                             🏢 Áreas con Mayor Consumo de Insumos
                         </Typography>
                         <ResponsiveContainer width="100%" height="80%">
-                            <BarChart data={data.consumoPorArea} margin={{ bottom: 50 }}>
+                            <BarChart data={data.consumoPorArea} margin={{ bottom: 30, left: 10, right: 10 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                 <XAxis 
                                     dataKey="name" 
-                                    tick={{ fontSize: 12, fontWeight: 700 }} 
+                                    tick={{ fontSize: 11, fontWeight: 700 }} 
                                     interval={0} 
-                                    angle={-15} 
+                                    angle={-10} 
                                     textAnchor="end"
                                 />
                                 <YAxis />
@@ -191,7 +194,7 @@ const Dashboard = () => {
                                     {data.consumoPorArea.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
-                                    <LabelList dataKey="value" position="top" style={{ fontSize: 13, fontWeight: 800 }} />
+                                    <LabelList dataKey="value" position="top" style={{ fontSize: 12, fontWeight: 800 }} />
                                 </Bar>
                             </BarChart>
                         </ResponsiveContainer>

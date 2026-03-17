@@ -2,9 +2,9 @@ import api, { URI as BASE_URI } from '../config.js';
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
-import { 
-    Button, TextField, Box, Typography, Container, Paper, 
-    InputAdornment, IconButton, keyframes 
+import {
+    Button, TextField, Box, Typography, Container, Paper,
+    InputAdornment, IconButton, keyframes
 } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
@@ -47,7 +47,7 @@ const LogIn = () => {
         setIsEmail(!emailValid);
         setPassNoOk(!passValid);
         if (!emailValid) setTextErrEmail('Ingrese un email válido');
-        
+
         return emailValid && passValid;
     };
 
@@ -60,23 +60,23 @@ const LogIn = () => {
             usuario: data.get('email').trim(),
             password: data.get('password').trim()
         })
-        .then((res) => {
-            setAuth(res.data);
-            navigate('/dashboard');
-        })
-        .catch((error) => {
-            const msg = error.response?.data?.message;
-            if (msg === 'Usuario no existe') {
-                setIsEmail(true);
-                setTextErrEmail(msg);
-            } else if (msg === 'Password incorrecto') {
-                setPassNoOk(true);
-                setTextErrPass(msg);
-            } else {
-                setIsEmail(true);
-                setTextErrEmail("Error de conexión");
-            }
-        });
+            .then((res) => {
+                setAuth(res.data);
+                navigate('/dashboard');
+            })
+            .catch((error) => {
+                const msg = error.response?.data?.message;
+                if (msg === 'Usuario no existe') {
+                    setIsEmail(true);
+                    setTextErrEmail(msg);
+                } else if (msg === 'Password incorrecto') {
+                    setPassNoOk(true);
+                    setTextErrPass(msg);
+                } else {
+                    setIsEmail(true);
+                    setTextErrEmail("Error de conexión");
+                }
+            });
     };
 
     return (
@@ -98,7 +98,7 @@ const LogIn = () => {
                     boxShadow: 'var(--mui-shadows-10)'
                 }}>
                     <Typography variant="h4" fontWeight="800" color="primary" sx={{ mb: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5 }}>
-                        <ComputerIcon fontSize="large" /> Inventario IT
+                        <ComputerIcon fontSize="large" /> Inventario
                     </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 4, fontWeight: 500 }}>
                         Sistema de Gestión Municipal
