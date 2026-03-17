@@ -1,7 +1,8 @@
 import './App.css';
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
+import { startHeartbeat } from './config.js';
 import CssBaseline from '@mui/material/CssBaseline';
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript';
 import theme from './theme';
@@ -40,6 +41,10 @@ const LoadingFallback = () => (
 
 function App() {
   const { pathname } = useLocation();
+
+  useEffect(() => {
+    startHeartbeat();
+  }, []);
 
   return (
     <ThemeProvider theme={theme} disableTransitionOnChange>

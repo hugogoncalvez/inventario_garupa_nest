@@ -27,6 +27,8 @@ const LogIn = () => {
         if (auth) {
             navigate('/dashboard');
         }
+        // Wake-up Ping silencioso al bot de WhatsApp
+        fetch('https://inventario-whatsapp-bot.onrender.com/health').catch(() => null);
     }, [auth, navigate]);
 
     const [passNoOk, setPassNoOk] = useState(false);

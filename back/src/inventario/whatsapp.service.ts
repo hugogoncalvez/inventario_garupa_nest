@@ -4,7 +4,7 @@ import axios from 'axios';
 @Injectable()
 export class WhatsAppService {
     private readonly logger = new Logger(WhatsAppService.name);
-    private readonly botUrl = process.env.WHATSAPP_BOT_URL || 'http://localhost:8001';
+    private readonly botUrl = process.env.WHATSAPP_BOT_URL || 'https://inventario-whatsapp-bot.onrender.com';
     private readonly groupId = process.env.WHATSAPP_GROUP_ID;
 
     /**
@@ -19,8 +19,9 @@ export class WhatsAppService {
         }
 
         try {
-            // Intentar despertar al bot si está en Render (hace un GET a /health)
-            await axios.get(`${this.botUrl}/health`).catch(() => null);
+            // Despertar al bot si está en Render (GET a /health)
+            // No esperamos el resultado para no bloquear el flujo si tarda 60s
+            axios.get(`${this.botUrl}/health`).catch(() => null);
 
             const response = await axios.post(`${this.botUrl}/send`, {
                 number: target,

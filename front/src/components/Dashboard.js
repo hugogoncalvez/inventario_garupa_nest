@@ -52,6 +52,9 @@ const Dashboard = () => {
             }
         };
         fetchStats();
+
+        // Wake-up Ping silencioso al bot de WhatsApp
+        fetch('https://inventario-whatsapp-bot.onrender.com/health').catch(() => null);
     }, []);
 
     if (loading) {

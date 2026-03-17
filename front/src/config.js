@@ -105,4 +105,22 @@ api.interceptors.response.use(
     }
 );
 
+/**
+ * Mantiene el servidor de Render despierto cada 10 minutos
+ */
+export const startHeartbeat = () => {
+    // 10 minutos = 600,000 ms (Render duerme a los 15 min)
+    const HEARTBEAT_INTERVAL = 10 * 60 * 1000;
+    
+    console.log("💓 Heartbeat iniciado: el servidor se mantendrá despierto.");
+    
+    // El primer ping es inmediato para asegurar la conexión
+    axios.get(URI).catch(() => null);
+
+    setInterval(() => {
+        console.log("💓 Ping preventivo al backend...");
+        axios.get(URI).catch(() => null);
+    }, HEARTBEAT_INTERVAL);
+};
+
 export default api;
