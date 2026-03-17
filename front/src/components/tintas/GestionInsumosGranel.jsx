@@ -14,6 +14,7 @@ import ClearAllIcon from '@mui/icons-material/ClearAll';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import Swal from 'sweetalert2';
 import useAuth from '../../hooks/useAuth';
 import ConfirmDialog from '../dialogs/ShowConfirm';
@@ -146,21 +147,47 @@ export const GestionInsumosGranel = () => {
         }
     };
 
+    const handleSendStockSummary = async () => {
+        try {
+            await api.post(`${URI}/tintas/whatsapp/resumen-stock`);
+            Swal.fire({
+                title: '¡Enviado!',
+                text: 'El resumen de stock se ha enviado al grupo de WhatsApp.',
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        } catch (error) {
+            Swal.fire('Error', 'No se pudo enviar el resumen por WhatsApp.', 'error');
+        }
+    };
+
     return (
         <Container maxWidth="xl" sx={{ mt: 9, mb: 4 }}>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={3} gap={2}>
                 <Typography variant="h4" fontWeight="800" color="primary">
                     Insumos a Granel
                 </Typography>
-                <Button 
-                    variant="contained" 
-                    color="success" 
-                    onClick={() => setOpenCompraModal(true)} 
-                    startIcon={<ShoppingCartIcon />}
-                    sx={{ borderRadius: 2 }}
-                >
-                    Registrar Compra
-                </Button>
+                <Stack direction="row" spacing={1}>
+                    <Button 
+                        variant="contained" 
+                        color="success" 
+                        onClick={() => setOpenCompraModal(true)} 
+                        startIcon={<ShoppingCartIcon />}
+                        sx={{ borderRadius: 2 }}
+                    >
+                        Registrar Compra
+                    </Button>
+                    <Button 
+                        variant="contained" 
+                        color="success" 
+                        onClick={handleSendStockSummary} 
+                        startIcon={<WhatsAppIcon />}
+                        sx={{ borderRadius: 2, bgcolor: '#25D366', '&:hover': { bgcolor: '#128C7E' } }}
+                    >
+                        WhatsApp
+                    </Button>
+                </Stack>
             </Box>
 
             <ConfirmDialog open={openConfirm} onClose={handleConfirmClose} />

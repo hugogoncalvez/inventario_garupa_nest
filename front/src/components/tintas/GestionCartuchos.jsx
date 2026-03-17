@@ -17,6 +17,7 @@ import RecyclingIcon from '@mui/icons-material/Recycling';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import Swal from 'sweetalert2';
 
@@ -149,6 +150,21 @@ const GestionCartuchos = () => {
         setFiltroStock('Todos');
     };
 
+    const handleSendStockSummary = async () => {
+        try {
+            await api.post(`${URI}/tintas/whatsapp/resumen-stock`);
+            Swal.fire({
+                title: '¡Enviado!',
+                text: 'El resumen de stock se ha enviado al grupo de WhatsApp.',
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        } catch (error) {
+            Swal.fire('Error', 'No se pudo enviar el resumen por WhatsApp.', 'error');
+        }
+    };
+
     return (
         <Container maxWidth="xl" sx={{ mt: 9, mb: 4 }}>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={3} flexWrap="wrap" gap={2}>
@@ -160,6 +176,7 @@ const GestionCartuchos = () => {
                     <Button variant="contained" size="small" color="success" onClick={() => setOpenCompraModal(true)} startIcon={<ShoppingCartIcon />}>Compra</Button>
                     <Button variant="contained" size="small" color="info" onClick={() => setOpenEntregaModal(true)} startIcon={<SendIcon />}>Entrega</Button>
                     <Button variant="contained" size="small" color="warning" onClick={() => setOpenRecargaModal(true)} startIcon={<RecyclingIcon />}>Recarga</Button>
+                    <Button variant="contained" size="small" color="success" onClick={handleSendStockSummary} startIcon={<WhatsAppIcon />} sx={{ bgcolor: '#25D366', '&:hover': { bgcolor: '#128C7E' } }}>WhatsApp</Button>
                     <Button variant="contained" size="small" color="error" onClick={() => ReporteInventarioInsumos(filteredCartuchos)} startIcon={<PictureAsPdfIcon />}>PDF</Button>
                 </Stack>
             </Box>

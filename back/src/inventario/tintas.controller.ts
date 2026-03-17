@@ -276,6 +276,33 @@ export class TintasController {
         return { success: true };
     }
 
+    @Post('whatsapp/resumen-stock')
+    async sendStockSummary() {
+        const [cartuchos, granel] = await Promise.all([
+            this.prisma.cartuchos.findMany({ orderBy: { modelo: 'asc' } }),
+            this.prisma.insumos_granel.findMany({ orderBy: { nombre: 'asc' } })
+        ]);
+
+        let message = `📊 *RESUMEN DE STOCK IT* 📊\n\n`;
+
+        message += `🖨️ *Cartuchos y Tóner:*\n`;
+        cartuchos.forEach(c => {
+            const alerta = c.stock_unidades <= c.stock_minimo_unidades ? '🛑' : '✅';
+            message += `${alerta} *${c.modelo}* (${c.color}): ${c.stock_unidades} un.\n`;
+        });
+
+        message += `\n🧪 *Insumos a Granel:*\n`;
+        granel.forEach(g => {
+            const alerta = Number(g.stock_actual) <= Number(g.stock_minimo) ? '🛑' : '✅';
+            message += `${alerta} *${g.nombre}*: ${Number(g.stock_actual)} ${g.unidad_medida}\n`;
+        });
+
+        message += `\n_Generado el: ${new Date().toLocaleString()}_`;
+
+        await this.whatsappService.sendMessage(message);
+        return { success: true };
+    }
+
     @Get('movimientos/historial/:id')
     async getHistorial(@Param('id') id: string) {
         return this.prisma.movimientos_tinta.findMany({
