@@ -129,7 +129,7 @@ const EditInv = () => {
     }
 
     return (
-        <Container maxWidth="md" sx={{ mt: 12, mb: 4 }}>
+        <Container maxWidth="md" sx={{ mt: 9, mb: 4 }}>
             <Paper elevation={0} sx={{ p: 4, borderRadius: 3, border: '1px solid var(--mui-palette-divider)' }}>
                 <Box display="flex" alignItems="center" mb={3} gap={2}>
                     <EditNoteIcon color="primary" sx={{ fontSize: 40 }} />

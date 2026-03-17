@@ -168,7 +168,7 @@ const ShowInventario = () => {
     };
 
     return (
-        <Container maxWidth="xl" sx={{ mt: 10, mb: 4 }}>
+        <Container maxWidth="xl" sx={{ mt: 9, mb: 4 }}>
             {noSelected && <ShowMsg msg='Debe Seleccionar un item del inventario' ruta='#' error={true} titulo='Acta de Entrega' color='red' />}
             {noSelected2 && <ShowMsg msg='Debe Seleccionar un número de PC' ruta='#' error={true} titulo='Auditoría' color='red' />}
             

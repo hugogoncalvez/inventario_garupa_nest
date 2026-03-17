@@ -104,7 +104,7 @@ const ShowOrdenes = () => {
     };
 
     return (
-        <Container maxWidth="xl" sx={{ mt: 12, mb: 4 }}>
+        <Container maxWidth="xl" sx={{ mt: 9, mb: 4 }}>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={3} gap={2}>
                 <Typography variant="h4" fontWeight="800" color="primary">
                     Órdenes de Servicio

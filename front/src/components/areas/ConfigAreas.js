@@ -107,7 +107,7 @@ export const ConfigAreas = () => {
     };
 
     return (
-        <Container maxWidth="xl" sx={{ mt: 12, mb: 4 }}>
+        <Container maxWidth="xl" sx={{ mt: 9, mb: 4 }}>
             <Typography variant="h4" fontWeight="800" color="primary" mb={4}>
                 Áreas Municipales
             </Typography>
