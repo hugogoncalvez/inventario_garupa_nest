@@ -55,7 +55,7 @@ export const CreateCartucho = () => {
         try {
             await api.post(`${URI}/tintas/cartuchos`, {
                 modelo: cartuchoData.modelo.trim(),
-                sku: cartuchoData.sku.trim(),
+                ...(cartuchoData.sku.trim() && { sku: cartuchoData.sku.trim() }),
                 color: cartuchoData.color.trim(),
                 tipo: cartuchoData.tipo,
                 stock_unidades: 0,
