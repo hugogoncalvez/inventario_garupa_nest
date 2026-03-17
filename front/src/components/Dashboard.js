@@ -113,91 +113,97 @@ const Dashboard = () => {
             <Grid container spacing={3} justifyContent="center">
                 {/* Top Insumos */}
                 <Grid item xs={12} md={7}>
-                    <Paper sx={{ p: 3, borderRadius: 3, height: 420 }}>
+                    <Paper sx={{ p: 3, borderRadius: 3, height: 420, display: 'flex', flexDirection: 'column' }}>
                         <Typography variant="h6" fontWeight="700" mb={3}>
                             🏆 Top 5 Insumos más Usados (Total Entregas)
                         </Typography>
-                        <ResponsiveContainer width="100%" height="85%">
-                            <BarChart data={data.topInsumos} layout="vertical" margin={{ left: 40, right: 40 }}>
-                                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                                <XAxis type="number" hide />
-                                <YAxis 
-                                    dataKey="name" 
-                                    type="category" 
-                                    width={120} 
-                                    tick={{ fontSize: 12, fontWeight: 600 }}
-                                />
-                                <Tooltip 
-                                    contentStyle={{ borderRadius: 8, border: 'none', boxShadow: 'var(--mui-shadows-4)' }}
-                                />
-                                <Bar dataKey="total" radius={[0, 4, 4, 0]}>
-                                    {data.topInsumos.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                    ))}
-                                    <LabelList dataKey="total" position="right" style={{ fontSize: 12, fontWeight: 700 }} />
-                                </Bar>
-                            </BarChart>
-                        </ResponsiveContainer>
+                        <Box sx={{ flexGrow: 1, minHeight: 0 }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={data.topInsumos} layout="vertical" margin={{ left: 40, right: 40 }}>
+                                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                                    <XAxis type="number" hide />
+                                    <YAxis 
+                                        dataKey="name" 
+                                        type="category" 
+                                        width={120} 
+                                        tick={{ fontSize: 12, fontWeight: 600 }}
+                                    />
+                                    <Tooltip 
+                                        contentStyle={{ borderRadius: 8, border: 'none', boxShadow: 'var(--mui-shadows-4)' }}
+                                    />
+                                    <Bar dataKey="total" radius={[0, 4, 4, 0]}>
+                                        {data.topInsumos.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                        <LabelList dataKey="total" position="right" style={{ fontSize: 12, fontWeight: 700 }} />
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </Box>
                     </Paper>
                 </Grid>
 
                 {/* Estado de Órdenes */}
                 <Grid item xs={12} md={5}>
-                    <Paper sx={{ p: 3, borderRadius: 3, height: 420 }}>
+                    <Paper sx={{ p: 3, borderRadius: 3, height: 420, display: 'flex', flexDirection: 'column' }}>
                         <Typography variant="h6" fontWeight="700" mb={1}>
                             📊 Estado de Órdenes Técnicas
                         </Typography>
-                        <ResponsiveContainer width="100%" height="90%">
-                            <PieChart>
-                                <Pie
-                                    data={data.orderStats}
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius={60}
-                                    outerRadius={100}
-                                    paddingAngle={5}
-                                    dataKey="value"
-                                >
-                                    {data.orderStats.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                    ))}
-                                </Pie>
-                                <Tooltip />
-                                <Legend verticalAlign="bottom" height={36}/>
-                            </PieChart>
-                        </ResponsiveContainer>
+                        <Box sx={{ flexGrow: 1, minHeight: 0 }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={data.orderStats}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={60}
+                                        outerRadius={100}
+                                        paddingAngle={5}
+                                        dataKey="value"
+                                    >
+                                        {data.orderStats.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip />
+                                    <Legend verticalAlign="bottom" height={36}/>
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </Box>
                     </Paper>
                 </Grid>
 
                 {/* Consumo por Área */}
                 <Grid item xs={12}>
-                    <Paper sx={{ p: 3, borderRadius: 3, height: 420 }}>
+                    <Paper sx={{ p: 3, borderRadius: 3, height: 420, display: 'flex', flexDirection: 'column' }}>
                         <Typography variant="h6" fontWeight="700" mb={2}>
                             🏢 Áreas con Mayor Consumo de Insumos
                         </Typography>
-                        <ResponsiveContainer width="100%" height="80%">
-                            <BarChart data={data.consumoPorArea} margin={{ bottom: 30, left: 10, right: 10 }}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                <XAxis 
-                                    dataKey="name" 
-                                    tick={{ fontSize: 11, fontWeight: 700 }} 
-                                    interval={0} 
-                                    angle={-10} 
-                                    textAnchor="end"
-                                />
-                                <YAxis />
-                                <Tooltip 
-                                    cursor={{fill: 'transparent'}}
-                                    contentStyle={{ borderRadius: 8, border: 'none', boxShadow: 'var(--mui-shadows-4)' }}
-                                />
-                                <Bar dataKey="value" name="Entregas" radius={[4, 4, 0, 0]}>
-                                    {data.consumoPorArea.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                    ))}
-                                    <LabelList dataKey="value" position="top" style={{ fontSize: 12, fontWeight: 800 }} />
-                                </Bar>
-                            </BarChart>
-                        </ResponsiveContainer>
+                        <Box sx={{ flexGrow: 1, minHeight: 0 }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={data.consumoPorArea} margin={{ bottom: 30, left: 10, right: 10 }}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                    <XAxis 
+                                        dataKey="name" 
+                                        tick={{ fontSize: 11, fontWeight: 700 }} 
+                                        interval={0} 
+                                        angle={-10} 
+                                        textAnchor="end"
+                                    />
+                                    <YAxis />
+                                    <Tooltip 
+                                        cursor={{fill: 'transparent'}}
+                                        contentStyle={{ borderRadius: 8, border: 'none', boxShadow: 'var(--mui-shadows-4)' }}
+                                    />
+                                    <Bar dataKey="value" name="Entregas" radius={[4, 4, 0, 0]}>
+                                        {data.consumoPorArea.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                        <LabelList dataKey="value" position="top" style={{ fontSize: 12, fontWeight: 800 }} />
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </Box>
                     </Paper>
                 </Grid>
             </Grid>
