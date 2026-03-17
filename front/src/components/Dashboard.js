@@ -118,7 +118,7 @@ const Dashboard = () => {
                             🏆 Top 5 Insumos más Usados (Total Entregas)
                         </Typography>
                         <Box sx={{ flexGrow: 1, minHeight: 0 }}>
-                            <ResponsiveContainer width="100%" height="100%">
+                            <ResponsiveContainer width="100%" height="100%" debounce={50}>
                                 <BarChart data={data.topInsumos} layout="vertical" margin={{ left: 40, right: 40 }}>
                                     <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                                     <XAxis type="number" hide />
@@ -150,7 +150,7 @@ const Dashboard = () => {
                             📊 Estado de Órdenes Técnicas
                         </Typography>
                         <Box sx={{ flexGrow: 1, minHeight: 0 }}>
-                            <ResponsiveContainer width="100%" height="100%">
+                            <ResponsiveContainer width="100%" height="100%" debounce={50}>
                                 <PieChart>
                                     <Pie
                                         data={data.orderStats}
@@ -180,7 +180,7 @@ const Dashboard = () => {
                             🏢 Áreas con Mayor Consumo de Insumos
                         </Typography>
                         <Box sx={{ flexGrow: 1, minHeight: 0 }}>
-                            <ResponsiveContainer width="100%" height="100%">
+                            <ResponsiveContainer width="100%" height="100%" debounce={50}>
                                 <BarChart data={data.consumoPorArea} margin={{ bottom: 30, left: 10, right: 10 }}>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                     <XAxis 
