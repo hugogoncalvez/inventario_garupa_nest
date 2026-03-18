@@ -100,7 +100,16 @@ function Row(props) {
                                             <TableCell>{itemRow.tipo}</TableCell>
                                             <TableCell>{itemRow.color}</TableCell>
                                             <TableCell align="center">
-                                                <Box sx={{ bgcolor: 'grey.100', display: 'inline-block', px: 1, borderRadius: 1, fontWeight: 600 }}>
+                                                <Box sx={{ 
+                                                    bgcolor: 'primary.main', 
+                                                    color: '#fff', 
+                                                    px: 1.5, 
+                                                    py: 0.5,
+                                                    borderRadius: 1, 
+                                                    fontWeight: 800, 
+                                                    display: 'inline-block',
+                                                    minWidth: 30
+                                                }}>
                                                     {itemRow.consumido}
                                                 </Box>
                                             </TableCell>

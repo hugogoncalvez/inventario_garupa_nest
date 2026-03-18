@@ -115,9 +115,30 @@ function Row(props) {
                                             <TableCell>{`${itemRow.impresoraModelo} (${itemRow.impresoraMarca})`}</TableCell>
                                             <TableCell>{`${itemRow.cartuchoModelo} (${itemRow.cartuchoColor})`}</TableCell>
                                             <TableCell>{itemRow.insumoGranelNombre}</TableCell>
-                                            <TableCell align="center">{itemRow.cartuchos}</TableCell>
                                             <TableCell align="center">
-                                                <Box sx={{ bgcolor: 'grey.100', px: 1, borderRadius: 1, fontWeight: 600, display: 'inline-block' }}>
+                                                <Box sx={{ 
+                                                    bgcolor: 'primary.main', 
+                                                    color: '#fff', 
+                                                    px: 1, 
+                                                    py: 0.5,
+                                                    borderRadius: 1, 
+                                                    fontWeight: 700, 
+                                                    display: 'inline-block',
+                                                    minWidth: 24
+                                                }}>
+                                                    {itemRow.cartuchos}
+                                                </Box>
+                                            </TableCell>
+                                            <TableCell align="center">
+                                                <Box sx={{ 
+                                                    bgcolor: 'success.main', 
+                                                    color: '#fff', 
+                                                    px: 1.5, 
+                                                    py: 0.5,
+                                                    borderRadius: 1, 
+                                                    fontWeight: 800, 
+                                                    display: 'inline-block' 
+                                                }}>
                                                     {`${itemRow.insumo.toLocaleString()} ${itemRow.unidadMedida}`}
                                                 </Box>
                                             </TableCell>
