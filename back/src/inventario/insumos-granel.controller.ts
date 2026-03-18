@@ -1,13 +1,46 @@
 import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { movimientos_tinta_tipo_movimiento } from '@prisma/client';
 
 @Controller('insumos-granel')
 export class InsumosGranelController {
     constructor(private readonly prisma: PrismaService) { }
 
     @Get()
-    findAll() {
-        return this.prisma.insumos_granel.findMany();
+    async findAll() {
+        const insumos = await this.prisma.insumos_granel.findMany({
+            include: {
+                movimientos_tinta: {
+                    where: {
+                        tipo_movimiento: movimientos_tinta_tipo_movimiento.RECARGA_O_RELLENO
+                    },
+                    include: {
+                        impresoras: {
+                            include: {
+                                areas: true
+                            }
+                        }
+                    }
+                }
+            },
+            orderBy: { nombre: 'asc' },
+        });
+
+        // Mapear para devolver áreas únicas de uso
+        return insumos.map(i => {
+            const areasSet = new Set<string>();
+            i.movimientos_tinta.forEach(m => {
+                const areaNombre = m.impresoras?.areas?.area;
+                if (areaNombre) areasSet.add(areaNombre);
+            });
+
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { movimientos_tinta, ...data } = i;
+            return {
+                ...data,
+                areas_uso: Array.from(areasSet)
+            };
+        });
     }
 
     @Get(':id')

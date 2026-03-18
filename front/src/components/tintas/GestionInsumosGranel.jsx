@@ -235,6 +235,7 @@ export const GestionInsumosGranel = () => {
                                     <TableRow>
                                         <StyledTableCell>Insumo</StyledTableCell>
                                         <StyledTableCell align='center'>Unidad</StyledTableCell>
+                                        <StyledTableCell align='center'>Áreas de Uso</StyledTableCell>
                                         <StyledTableCell align='center'>Stock Actual</StyledTableCell>
                                         <StyledTableCell align='center'>Estado</StyledTableCell>
                                         <StyledTableCell align='center'>Acciones</StyledTableCell>
@@ -248,6 +249,17 @@ export const GestionInsumosGranel = () => {
                                                 <Typography variant="caption" color="text.secondary">{insumo.sku || 'Sin SKU'}</Typography>
                                             </StyledTableCell>
                                             <StyledTableCell align='center'>{insumo.unidad_medida}</StyledTableCell>
+                                            <StyledTableCell align='center'>
+                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, justifyContent: 'center', maxWidth: 180, margin: '0 auto' }}>
+                                                    {insumo.areas_uso?.length > 0 ? (
+                                                        insumo.areas_uso.map((area, idx) => (
+                                                            <Chip key={idx} label={area} size="small" variant="outlined" sx={{ fontSize: '10px', height: '18px' }} />
+                                                        ))
+                                                    ) : (
+                                                        <Typography variant="caption" sx={{ opacity: 0.5 }}>Sin registro</Typography>
+                                                    )}
+                                                </Box>
+                                            </StyledTableCell>
                                             <StyledTableCell align='center'>
                                                 <Typography variant="body2" fontWeight="800">
                                                     {parseFloat(insumo.stock_actual).toLocaleString('es-AR')}
