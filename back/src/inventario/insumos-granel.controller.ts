@@ -1,6 +1,5 @@
 import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { movimientos_tinta_tipo_movimiento } from '@prisma/client';
 
 @Controller('insumos-granel')
 export class InsumosGranelController {
@@ -10,9 +9,9 @@ export class InsumosGranelController {
     async findAll() {
         const insumos = await this.prisma.insumos_granel.findMany({
             include: {
-                movimientos_tinta: {
+                movimientos_insumo_granel: {
                     where: {
-                        tipo_movimiento: movimientos_tinta_tipo_movimiento.RECARGA_O_RELLENO
+                        tipo_movimiento: "RECARGA_O_RELLENO"
                     },
                     include: {
                         impresoras: {
@@ -29,13 +28,13 @@ export class InsumosGranelController {
         // Mapear para devolver áreas únicas de uso
         return insumos.map(i => {
             const areasSet = new Set<string>();
-            i.movimientos_tinta.forEach(m => {
+            i.movimientos_insumo_granel.forEach(m => {
                 const areaNombre = m.impresoras?.areas?.area;
                 if (areaNombre) areasSet.add(areaNombre);
             });
 
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { movimientos_tinta, ...data } = i;
+            const { movimientos_insumo_granel, ...data } = i;
             return {
                 ...data,
                 areas_uso: Array.from(areasSet)
