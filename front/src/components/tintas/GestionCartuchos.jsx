@@ -244,6 +244,7 @@ const GestionCartuchos = () => {
                                 <StyledTableCell>Modelo</StyledTableCell>
                                 <StyledTableCell align='center'>Color</StyledTableCell>
                                 <StyledTableCell align='center'>Tipo</StyledTableCell>
+                                <StyledTableCell align='center'>Áreas de Uso</StyledTableCell>
                                 <StyledTableCell align='center'>Stock</StyledTableCell>
                                 <StyledTableCell align='center'>Mínimo</StyledTableCell>
                                 <StyledTableCell align='center'>Acciones</StyledTableCell>
@@ -272,6 +273,17 @@ const GestionCartuchos = () => {
                                         </Stack>
                                     </StyledTableCell>
                                     <StyledTableCell align='center'>{cartucho.tipo}</StyledTableCell>
+                                    <StyledTableCell align='center'>
+                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, justifyContent: 'center', maxWidth: 200, margin: '0 auto' }}>
+                                            {cartucho.areas_uso?.length > 0 ? (
+                                                cartucho.areas_uso.map((area, idx) => (
+                                                    <Chip key={idx} label={area} size="small" variant="outlined" sx={{ fontSize: '10px', height: '18px' }} />
+                                                ))
+                                            ) : (
+                                                <Typography variant="caption" sx={{ opacity: 0.5 }}>Sin registro</Typography>
+                                            )}
+                                        </Box>
+                                    </StyledTableCell>
                                     <StyledTableCell align='center'>
                                         <Chip 
                                             label={cartucho.stock_unidades} 

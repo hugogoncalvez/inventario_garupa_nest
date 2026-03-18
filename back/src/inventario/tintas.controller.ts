@@ -13,11 +13,38 @@ export class TintasController {
     // --- Cartuchos ---
     @Get('cartuchos')
     async getCartuchos() {
-        return this.prisma.cartuchos.findMany({
+        const cartuchos = await this.prisma.cartuchos.findMany({
             include: {
                 insumos_granel: true,
+                movimientos_tinta: {
+                    include: {
+                        impresoras: {
+                            include: {
+                                areas: true
+                            }
+                        }
+                    }
+                }
             },
             orderBy: { modelo: 'asc' },
+        });
+
+        return cartuchos.map(c => {
+            const areasSet = new Set<string>();
+            c.movimientos_tinta.forEach(m => {
+                // Filtramos por entregas (manejando tanto el valor enum como el valor real mapeado)
+                if (m.tipo_movimiento === 'ENTREGA_A__REA' || m.tipo_movimiento as any === 'ENTREGA A ÁREA') {
+                    const areaNombre = m.impresoras?.areas?.area;
+                    if (areaNombre) areasSet.add(areaNombre);
+                }
+            });
+
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { movimientos_tinta, ...data } = c;
+            return {
+                ...data,
+                areas_uso: Array.from(areasSet)
+            };
         });
     }
 
