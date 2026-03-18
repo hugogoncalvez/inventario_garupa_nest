@@ -48,17 +48,46 @@ export class InventarioController {
     }
 
     @Post('create')
-    create(@Body() data: any) {
+    create(@Body() body: any) {
+        const { num_inventario, num_pc, tipo, descripcion, marca, num_serie, observaciones, area, usuario, resp_area, estado } = body;
         return this.prisma.inventarios.create({
-            data,
+            data: {
+                num_inventario,
+                num_pc,
+                tipo,
+                descripcion,
+                marca,
+                num_serie,
+                observaciones,
+                area,
+                usuario,
+                resp_area,
+                estado,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
         });
     }
 
     @Put(':id')
-    update(@Param('id') id: string, @Body() data: any) {
+    update(@Param('id') id: string, @Body() body: any) {
+        const { num_inventario, num_pc, tipo, descripcion, marca, num_serie, observaciones, area, usuario, resp_area, estado } = body;
         return this.prisma.inventarios.update({
             where: { id: Number(id) },
-            data,
+            data: {
+                num_inventario,
+                num_pc,
+                tipo,
+                descripcion,
+                marca,
+                num_serie,
+                observaciones,
+                area,
+                usuario,
+                resp_area,
+                estado,
+                updatedAt: new Date(),
+            },
         });
     }
 

@@ -11,17 +11,28 @@ export class AreasController {
     }
 
     @Post('create')
-    create(@Body() data: any) {
+    create(@Body() body: any) {
+        const { area, responsable } = body;
         return this.prisma.areas.create({
-            data,
+            data: {
+                area,
+                responsable,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
         });
     }
 
     @Put(':id')
-    update(@Param('id') id: string, @Body() data: any) {
+    update(@Param('id') id: string, @Body() body: any) {
+        const { area, responsable } = body;
         return this.prisma.areas.update({
             where: { id: Number(id) },
-            data,
+            data: {
+                area,
+                responsable,
+                updatedAt: new Date(),
+            },
         });
     }
 

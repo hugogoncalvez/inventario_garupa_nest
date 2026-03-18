@@ -11,17 +11,26 @@ export class TiposController {
     }
 
     @Post('create')
-    create(@Body() data: any) {
+    create(@Body() body: any) {
+        const { tipo } = body;
         return this.prisma.tipos.create({
-            data,
+            data: {
+                tipo,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
         });
     }
 
     @Put(':id')
-    update(@Param('id') id: string, @Body() data: any) {
+    update(@Param('id') id: string, @Body() body: any) {
+        const { tipo } = body;
         return this.prisma.tipos.update({
             where: { id: Number(id) },
-            data,
+            data: {
+                tipo,
+                updatedAt: new Date(),
+            },
         });
     }
 

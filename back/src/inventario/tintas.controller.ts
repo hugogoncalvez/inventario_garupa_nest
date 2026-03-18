@@ -60,11 +60,17 @@ export class TintasController {
 
     @Post('cartuchos')
     async createCartucho(@Body() body: any) {
-        const { insumo_granel_id, ...data } = body;
+        const { modelo, sku, color, tipo, es_recargable, insumo_granel_id, stock_unidades, stock_minimo_unidades } = body;
         return this.prisma.cartuchos.create({
             data: {
-                ...data,
+                modelo,
+                sku,
+                color,
+                tipo,
+                es_recargable: !!es_recargable,
                 insumo_granel_id: insumo_granel_id ? Number(insumo_granel_id) : null,
+                stock_unidades: Number(stock_unidades || 0),
+                stock_minimo_unidades: Number(stock_minimo_unidades || 0),
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
@@ -73,12 +79,18 @@ export class TintasController {
 
     @Put('cartuchos/:id')
     async updateCartucho(@Param('id') id: string, @Body() body: any) {
-        const { insumo_granel_id, ...data } = body;
+        const { modelo, sku, color, tipo, es_recargable, insumo_granel_id, stock_unidades, stock_minimo_unidades } = body;
         return this.prisma.cartuchos.update({
             where: { id: Number(id) },
             data: {
-                ...data,
+                modelo,
+                sku,
+                color,
+                tipo,
+                es_recargable: !!es_recargable,
                 insumo_granel_id: insumo_granel_id ? Number(insumo_granel_id) : null,
+                stock_unidades: Number(stock_unidades || 0),
+                stock_minimo_unidades: Number(stock_minimo_unidades || 0),
                 updatedAt: new Date(),
             },
         });
@@ -114,10 +126,11 @@ export class TintasController {
 
     @Post('impresoras')
     async createImpresora(@Body() body: any) {
-        const { area_id, ...data } = body;
+        const { modelo, marca, area_id } = body;
         return this.prisma.impresoras.create({
             data: {
-                ...data,
+                modelo,
+                marca,
                 area_id: area_id ? Number(area_id) : null,
                 createdAt: new Date(),
                 updatedAt: new Date(),
@@ -127,11 +140,12 @@ export class TintasController {
 
     @Put('impresoras/:id')
     async updateImpresora(@Param('id') id: string, @Body() body: any) {
-        const { area_id, ...data } = body;
+        const { modelo, marca, area_id } = body;
         return this.prisma.impresoras.update({
             where: { id: Number(id) },
             data: {
-                ...data,
+                modelo,
+                marca,
                 area_id: area_id ? Number(area_id) : null,
                 updatedAt: new Date(),
             },
