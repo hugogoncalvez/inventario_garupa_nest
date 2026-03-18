@@ -63,7 +63,16 @@ function Row(props) {
                     {row.area}
                 </StyledTableCell>
                 <StyledTableCell align="center">
-                    <Chip label={row.totalArea} color="primary" size="small" sx={{ fontWeight: 700 }} />
+                    <Chip 
+                        label={row.totalArea} 
+                        size="small" 
+                        sx={{ 
+                            fontWeight: 800, 
+                            bgcolor: 'primary.main', 
+                            color: '#fff',
+                            minWidth: 40
+                        }} 
+                    />
                 </StyledTableCell>
             </StyledTableRow>
             <TableRow>

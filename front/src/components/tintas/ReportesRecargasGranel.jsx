@@ -63,10 +63,30 @@ function Row(props) {
                     {row.area}
                 </StyledTableCell>
                 <StyledTableCell align="center">
-                    <Chip label={`${row.totalCartuchos} unidades`} size="small" color="primary" variant="outlined" sx={{ fontWeight: 700 }} />
+                    <Chip 
+                        label={`${row.totalCartuchos} unidades`} 
+                        size="small" 
+                        variant="filled" 
+                        sx={{ 
+                            fontWeight: 800, 
+                            bgcolor: 'primary.main', 
+                            color: '#fff',
+                            minWidth: 80 
+                        }} 
+                    />
                 </StyledTableCell>
                 <StyledTableCell align="center">
-                    <Chip label={`${row.totalInsumo.toLocaleString()} ${row.unidadMedida}`} size="small" color="success" variant="filled" sx={{ fontWeight: 700, color: 'white' }} />
+                    <Chip 
+                        label={`${row.totalInsumo.toLocaleString()} ${row.unidadMedida}`} 
+                        size="small" 
+                        variant="filled" 
+                        sx={{ 
+                            fontWeight: 800, 
+                            bgcolor: 'success.main', 
+                            color: '#fff',
+                            minWidth: 80 
+                        }} 
+                    />
                 </StyledTableCell>
             </StyledTableRow>
             <TableRow>

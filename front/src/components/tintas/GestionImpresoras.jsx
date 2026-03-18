@@ -144,6 +144,12 @@ export const GestionImpresoras = () => {
         });
     };
 
+    const clearForm = () => {
+        setForm({ id: '', modelo: '', marca: '', area_id: '' });
+        setIsUpdate(false);
+        setErrors({});
+    };
+
     const handleEditClick = (row) => {
         setForm({
             id: row.id,

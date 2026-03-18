@@ -150,10 +150,28 @@ export const ReportesCompras = () => {
                                         <StyledTableCell sx={{ fontWeight: 600 }}>{new Date(row.fecha).toLocaleDateString()}</StyledTableCell>
                                         <StyledTableCell>{row.producto}</StyledTableCell>
                                         <StyledTableCell>
-                                            <Chip label={row.tipo} size="small" variant="outlined" color={row.tipo === 'Insumo' ? 'primary' : 'info'} />
+                                            <Chip 
+                                                label={row.tipo} 
+                                                size="small" 
+                                                variant="filled" 
+                                                sx={{ 
+                                                    fontWeight: 700, 
+                                                    bgcolor: row.tipo === 'Insumo' ? 'primary.main' : 'info.main', 
+                                                    color: '#fff' 
+                                                }} 
+                                            />
                                         </StyledTableCell>
                                         <StyledTableCell align='center'>
-                                            <Box sx={{ bgcolor: 'success.light', color: 'white', px: 1, borderRadius: 1, fontWeight: 700, display: 'inline-block' }}>
+                                            <Box sx={{ 
+                                                bgcolor: 'success.main', 
+                                                color: '#fff', 
+                                                px: 1.5, 
+                                                py: 0.5,
+                                                borderRadius: 1, 
+                                                fontWeight: 800, 
+                                                display: 'inline-block',
+                                                minWidth: 40
+                                            }}>
                                                 {row.cantidad}
                                             </Box>
                                         </StyledTableCell>
