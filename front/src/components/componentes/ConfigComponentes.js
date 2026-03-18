@@ -13,7 +13,7 @@ import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import DevicesIcon from '@mui/icons-material/Devices';
-import ConfirmDialog from '../dialogs/ShowConfirm';
+import Swal from 'sweetalert2';
 
 // Estilos optimizados
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -42,8 +42,6 @@ export const ConfigComponentes = () => {
     const [form, setForm] = useState({ id: '', tipo: '' });
     const [isUpdate, setIsUpdate] = useState(false);
     const [errors, setErrors] = useState({});
-    const [openConfirm, setOpenConfirm] = useState(false);
-    const [idToDelete, setIdToDelete] = useState('');
     
     const [filter, setFilter] = useState('');
     const [page, setPage] = useState(0);
@@ -82,14 +80,56 @@ export const ConfigComponentes = () => {
         try {
             if (isUpdate) {
                 await api.put(`${URI}/tipos/${form.id}`, form);
+                Swal.fire({
+                    title: '¡Actualizado!',
+                    text: 'El tipo de equipo ha sido modificado.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
             } else {
                 await api.post(`${URI}/tipos/create`, form);
+                Swal.fire({
+                    title: '¡Guardado!',
+                    text: 'Nuevo tipo de equipo registrado.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
             }
             clearForm();
             getTipos();
         } catch (error) {
-            console.error("Error al guardar:", error);
+            Swal.fire('Error', 'No se pudo guardar el tipo de equipo.', 'error');
         }
+    };
+
+    const handleDelete = (id) => {
+        Swal.fire({
+            title: '¿Eliminar tipo?',
+            text: "Asegúrese de que no haya equipos de este tipo registrados.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: 'var(--mui-palette-error-main)',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    await api.delete(`${URI}/tipos/${id}`);
+                    getTipos();
+                    Swal.fire({
+                        title: '¡Eliminado!',
+                        text: 'El tipo ha sido borrado.',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                } catch (error) {
+                    Swal.fire('Error', 'No se pudo eliminar el tipo. Verifique si está en uso.', 'error');
+                }
+            }
+        });
     };
 
     const clearForm = () => {
@@ -109,11 +149,6 @@ export const ConfigComponentes = () => {
             <Typography variant="h4" fontWeight="800" color="primary" mb={4}>
                 Tipos de Equipamiento
             </Typography>
-
-            <ConfirmDialog open={openConfirm} onClose={(v) => {
-                setOpenConfirm(false);
-                v && api.delete(`${URI}/tipos/${idToDelete}`).then(getTipos);
-            }} />
 
             <Grid container spacing={3}>
                 <Grid size={{ xs: 12, md: 4 }}>
@@ -186,7 +221,7 @@ export const ConfigComponentes = () => {
                                             <StyledTableCell align='center'>
                                                 <Stack direction="row" spacing={0.5} justifyContent="center">
                                                     <Tooltip title="Editar"><IconButton size="small" color="primary" onClick={() => handleEditClick(row)}><EditIcon fontSize="small" /></IconButton></Tooltip>
-                                                    <Tooltip title="Eliminar"><IconButton size="small" color="error" onClick={() => { setIdToDelete(row.id); setOpenConfirm(true); }}><DeleteForeverIcon fontSize="small" /></IconButton></Tooltip>
+                                                    <Tooltip title="Eliminar"><IconButton size="small" color="error" onClick={() => handleDelete(row.id)}><DeleteForeverIcon fontSize="small" /></IconButton></Tooltip>
                                                 </Stack>
                                             </StyledTableCell>
                                         </StyledTableRow>

@@ -17,7 +17,6 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import Swal from 'sweetalert2';
 import useAuth from '../../hooks/useAuth';
-import ConfirmDialog from '../dialogs/ShowConfirm';
 import ModalRegistrarCompraInsumoGranel from './ModalRegistrarCompraInsumoGranel';
 
 // Estilos de la tabla optimizados
@@ -57,8 +56,6 @@ export const GestionInsumosGranel = () => {
     const [isUpdate, setIsUpdate] = useState(false);
     
     // UI State
-    const [openConfirm, setOpenConfirm] = useState(false);
-    const [idToDelete, setIdToDelete] = useState('');
     const [openCompraModal, setOpenCompraModal] = useState(false);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -95,14 +92,27 @@ export const GestionInsumosGranel = () => {
             
             if (isUpdate) {
                 await api.put(`${URI}/insumos-granel/${form.id}`, data);
+                Swal.fire({
+                    title: '¡Actualizado!',
+                    text: 'El insumo a granel ha sido modificado.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
             } else {
                 await api.post(`${URI}/insumos-granel`, data);
+                Swal.fire({
+                    title: '¡Guardado!',
+                    text: 'Nuevo insumo a granel registrado con éxito.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
             }
             clearForm();
             getInsumosGranel();
-            Swal.fire('¡Éxito!', 'Insumo guardado correctamente.', 'success');
         } catch (err) {
-            Swal.fire('Error', 'No se pudo guardar el insumo.', 'error');
+            Swal.fire('Error', 'No se pudo guardar el insumo a granel.', 'error');
         }
     };
 
@@ -112,17 +122,31 @@ export const GestionInsumosGranel = () => {
     };
 
     const handleDeleteClick = (id) => {
-        setIdToDelete(id);
-        setOpenConfirm(true);
-    };
-
-    const handleConfirmClose = async (confirm) => {
-        setOpenConfirm(false);
-        if (confirm && idToDelete) {
-            await api.delete(`${URI}/insumos-granel/${idToDelete}`, { data: { usuario_id: auth.id } });
-            getInsumosGranel();
-        }
-        setIdToDelete('');
+        Swal.fire({
+            title: '¿Eliminar insumo?',
+            text: "Esta acción no se puede deshacer y afectará el historial.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: 'var(--mui-palette-error-main)',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    await api.delete(`${URI}/insumos-granel/${id}`, { data: { usuario_id: auth.id } });
+                    getInsumosGranel();
+                    Swal.fire({
+                        title: '¡Eliminado!',
+                        text: 'El insumo ha sido removido del inventario.',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                } catch (error) {
+                    Swal.fire('Error', 'No se pudo eliminar el insumo. Verifique si tiene cartuchos vinculados.', 'error');
+                }
+            }
+        });
     };
 
     const clearForm = () => {
@@ -133,17 +157,32 @@ export const GestionInsumosGranel = () => {
     const handleAdjustStock = async (insumo) => {
         const { value: nueva } = await Swal.fire({
             title: `Ajustar: ${insumo.nombre}`,
+            text: `Unidad: ${insumo.unidad_medida}`,
             input: 'number',
             inputValue: insumo.stock_actual,
-            showCancelButton: true
+            showCancelButton: true,
+            confirmButtonText: 'Ajustar',
+            cancelButtonText: 'Cancelar'
         });
-        if (nueva) {
-            await api.post(`${URI}/insumos-granel/movimientos/ajuste`, {
-                insumo_granel_id: insumo.id,
-                nueva_cantidad: parseFloat(nueva),
-                usuario_id: auth.id
-            });
-            getInsumosGranel();
+        
+        if (nueva !== undefined && nueva !== null) {
+            try {
+                await api.post(`${URI}/insumos-granel/movimientos/ajuste`, {
+                    insumo_granel_id: insumo.id,
+                    nueva_cantidad: parseFloat(nueva),
+                    usuario_id: auth.id
+                });
+                getInsumosGranel();
+                Swal.fire({
+                    title: '¡Ajustado!',
+                    text: 'El stock a granel ha sido corregido.',
+                    icon: 'success',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            } catch (error) {
+                Swal.fire('Error', 'No se pudo ajustar el stock a granel.', 'error');
+            }
         }
     };
 
@@ -190,7 +229,6 @@ export const GestionInsumosGranel = () => {
                 </Stack>
             </Box>
 
-            <ConfirmDialog open={openConfirm} onClose={handleConfirmClose} />
             <ModalRegistrarCompraInsumoGranel open={openCompraModal} onClose={() => setOpenCompraModal(false)} onCompraExitosa={getInsumosGranel} />
 
             <Grid container spacing={3}>

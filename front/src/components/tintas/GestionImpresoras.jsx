@@ -12,9 +12,9 @@ import EditIcon from '@mui/icons-material/Edit';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import PrintIcon from '@mui/icons-material/Print';
-import ConfirmDialog from '../dialogs/ShowConfirm';
+import Swal from 'sweetalert2';
 
-// Estilos optimizados
+// ... (estilos y resto de imports)
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
         backgroundColor: 'var(--mui-palette-primary-main)',
@@ -42,8 +42,6 @@ export const GestionImpresoras = () => {
     const [form, setForm] = useState({ id: '', modelo: '', marca: '', area_id: '' });
     const [isUpdate, setIsUpdate] = useState(false);
     const [errors, setErrors] = useState({});
-    const [openConfirm, setOpenConfirm] = useState(false);
-    const [idToDelete, setIdToDelete] = useState('');
     
     const [filters, setFilters] = useState({ modelo: '', marca: '', areaName: '' });
     const [page, setPage] = useState(0);
@@ -93,20 +91,57 @@ export const GestionImpresoras = () => {
         try {
             if (isUpdate) {
                 await api.put(`${URI}/tintas/impresoras/${form.id}`, form);
+                Swal.fire({
+                    title: '¡Actualizado!',
+                    text: 'Los datos de la impresora se han guardado correctamente.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
             } else {
                 await api.post(`${URI}/tintas/impresoras`, form);
+                Swal.fire({
+                    title: '¡Guardado!',
+                    text: 'La nueva impresora ha sido registrada en el sistema.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
             }
             clearForm();
             getImpresoras();
         } catch (error) {
-            console.error("Error al guardar:", error);
+            Swal.fire('Error', 'No se pudieron guardar los cambios en la impresora.', 'error');
         }
     };
 
-    const clearForm = () => {
-        setForm({ id: '', modelo: '', marca: '', area_id: '' });
-        setIsUpdate(false);
-        setErrors({});
+    const handleDelete = (id) => {
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: "Se eliminará permanentemente este equipo del sistema.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: 'var(--mui-palette-error-main)',
+            cancelButtonColor: 'var(--mui-palette-secondary-main)',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    await api.delete(`${URI}/tintas/impresoras/${id}`);
+                    getImpresoras();
+                    Swal.fire({
+                        title: '¡Eliminado!',
+                        text: 'La impresora ha sido dada de baja.',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                } catch (error) {
+                    Swal.fire('Error', 'No se pudo eliminar la impresora.', 'error');
+                }
+            }
+        });
     };
 
     const handleEditClick = (row) => {
@@ -125,11 +160,6 @@ export const GestionImpresoras = () => {
             <Typography variant="h4" fontWeight="800" color="primary" mb={4}>
                 Gestión de Impresoras
             </Typography>
-
-            <ConfirmDialog open={openConfirm} onClose={(v) => {
-                setOpenConfirm(false);
-                v && api.delete(`${URI}/tintas/impresoras/${idToDelete}`).then(getImpresoras);
-            }} />
 
             <Grid container spacing={3}>
                 <Grid size={{ xs: 12, md: 4 }}>
@@ -240,7 +270,7 @@ export const GestionImpresoras = () => {
                                             <StyledTableCell align='center'>
                                                 <Stack direction="row" spacing={0.5} justifyContent="center">
                                                     <Tooltip title="Editar"><IconButton size="small" color="primary" onClick={() => handleEditClick(row)}><EditIcon fontSize="small" /></IconButton></Tooltip>
-                                                    <Tooltip title="Eliminar"><IconButton size="small" color="error" onClick={() => { setIdToDelete(row.id); setOpenConfirm(true); }}><DeleteForeverIcon fontSize="small" /></IconButton></Tooltip>
+                                                    <Tooltip title="Eliminar"><IconButton size="small" color="error" onClick={() => handleDelete(row.id)}><DeleteForeverIcon fontSize="small" /></IconButton></Tooltip>
                                                 </Stack>
                                             </StyledTableCell>
                                         </StyledTableRow>

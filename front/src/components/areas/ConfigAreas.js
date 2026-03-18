@@ -13,7 +13,7 @@ import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import AddLocationAltIcon from '@mui/icons-material/AddLocationAlt';
-import ConfirmDialog from '../dialogs/ShowConfirm';
+import Swal from 'sweetalert2';
 
 // Estilos optimizados
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -42,8 +42,6 @@ export const ConfigAreas = () => {
     const [form, setForm] = useState({ id: '', area: '', responsable: '' });
     const [isUpdate, setIsUpdate] = useState(false);
     const [errors, setErrors] = useState({});
-    const [openConfirm, setOpenConfirm] = useState(false);
-    const [idToDelete, setIdToDelete] = useState('');
     
     const [filters, setFilters] = useState({ area: '', responsable: '' });
     const [page, setPage] = useState(0);
@@ -84,14 +82,56 @@ export const ConfigAreas = () => {
         try {
             if (isUpdate) {
                 await api.put(`${URI}/areas/${form.id}`, form);
+                Swal.fire({
+                    title: '¡Actualizada!',
+                    text: 'El área ha sido modificada correctamente.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
             } else {
                 await api.post(`${URI}/areas/create`, form);
+                Swal.fire({
+                    title: '¡Guardada!',
+                    text: 'La nueva área ha sido registrada.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
             }
             clearForm();
             getAreas();
         } catch (error) {
-            console.error("Error al guardar:", error);
+            Swal.fire('Error', 'No se pudo procesar la solicitud del área.', 'error');
         }
+    };
+
+    const handleDelete = (id) => {
+        Swal.fire({
+            title: '¿Eliminar área?',
+            text: "Esta acción podría afectar el historial de equipos vinculados.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: 'var(--mui-palette-error-main)',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    await api.delete(`${URI}/areas/${id}`);
+                    getAreas();
+                    Swal.fire({
+                        title: '¡Eliminada!',
+                        text: 'El área ha sido borrada del sistema.',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                } catch (error) {
+                    Swal.fire('Error', 'No se pudo eliminar el área. Verifique si tiene impresoras vinculadas.', 'error');
+                }
+            }
+        });
     };
 
     const clearForm = () => {
@@ -111,11 +151,6 @@ export const ConfigAreas = () => {
             <Typography variant="h4" fontWeight="800" color="primary" mb={4}>
                 Áreas Municipales
             </Typography>
-
-            <ConfirmDialog open={openConfirm} onClose={(v) => {
-                setOpenConfirm(false);
-                v && api.delete(`${URI}/areas/${idToDelete}`).then(getAreas);
-            }} />
 
             <Grid container spacing={3}>
                 <Grid size={{ xs: 12, md: 4 }}>
@@ -203,7 +238,7 @@ export const ConfigAreas = () => {
                                             <StyledTableCell align='center'>
                                                 <Stack direction="row" spacing={0.5} justifyContent="center">
                                                     <Tooltip title="Editar"><IconButton size="small" color="primary" onClick={() => handleEditClick(row)}><EditIcon fontSize="small" /></IconButton></Tooltip>
-                                                    <Tooltip title="Eliminar"><IconButton size="small" color="error" onClick={() => { setIdToDelete(row.id); setOpenConfirm(true); }}><DeleteForeverIcon fontSize="small" /></IconButton></Tooltip>
+                                                    <Tooltip title="Eliminar"><IconButton size="small" color="error" onClick={() => handleDelete(row.id)}><DeleteForeverIcon fontSize="small" /></IconButton></Tooltip>
                                                 </Stack>
                                             </StyledTableCell>
                                         </StyledTableRow>
