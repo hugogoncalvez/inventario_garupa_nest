@@ -11,7 +11,7 @@ export class InsumosGranelController {
             include: {
                 movimientos_insumo_granel: {
                     where: {
-                        tipo_movimiento: "RECARGA_O_RELLENO"
+                        tipo_movimiento: "RECARGA"
                     },
                     include: {
                         impresoras: {
