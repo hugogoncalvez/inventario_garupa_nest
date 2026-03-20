@@ -11,3 +11,17 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* SweetAlert2 Dark Mode */
+.swal2-dark .swal2-popup {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+}
+
+.swal2-dark .swal2-html-container {
+  color: #94a3b8 !important;
+}
+
+.swal2-dark .swal2-loader {
+  border-color: #60a5fa transparent #60a5fa transparent !important;
+}

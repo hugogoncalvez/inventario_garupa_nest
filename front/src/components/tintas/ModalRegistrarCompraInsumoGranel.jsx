@@ -105,10 +105,10 @@ export default function ModalRegistrarCompraInsumoGranel({ open, onClose, onComp
             <DialogContent sx={{ pt: 3 }}>
                 <Box sx={{ p: 2.5, bgcolor: 'var(--mui-palette-action-hover)', borderRadius: 2, border: '1px solid var(--mui-palette-divider)' }}>
                     <Grid container spacing={2} alignItems="center">
-                        <Grid size={{ xs: 12, md: 8 }}>
+                        <Grid item xs={12} sm={7} md={8}>
                             <TextField
                                 select
-                                label="Insumo a Granel"
+                                label="Seleccionar Insumo a Granel"
                                 value={selectedInsumoGranelId}
                                 onChange={(e) => setSelectedInsumoGranelId(e.target.value)}
                                 fullWidth
@@ -124,7 +124,7 @@ export default function ModalRegistrarCompraInsumoGranel({ open, onClose, onComp
                                 ))}
                             </TextField>
                         </Grid>
-                        <Grid size={{ xs: 8, md: 3 }}>
+                        <Grid item xs={8} sm={3} md={3}>
                             <TextField
                                 label="Cantidad"
                                 type="number"
@@ -135,8 +135,12 @@ export default function ModalRegistrarCompraInsumoGranel({ open, onClose, onComp
                                 slotProps={{ input: { min: 0.001, step: 0.001 } }}
                             />
                         </Grid>
-                        <Grid size={{ xs: 4, md: 1 }} display="flex" justifyContent="center">
-                            <IconButton onClick={handleAddToLista} color="primary" sx={{ bgcolor: 'var(--mui-palette-background-paper)', boxShadow: 'var(--mui-shadows-1)' }}>
+                        <Grid item xs={4} sm={2} md={1} display="flex" justifyContent="center">
+                            <IconButton 
+                                onClick={handleAddToLista} 
+                                color="primary" 
+                                sx={{ bgcolor: 'var(--mui-palette-background-paper)', boxShadow: 'var(--mui-shadows-1)' }}
+                            >
                                 <AddCircleOutlineIcon />
                             </IconButton>
                         </Grid>
@@ -154,7 +158,7 @@ export default function ModalRegistrarCompraInsumoGranel({ open, onClose, onComp
                         <TableHead>
                             <TableRow>
                                 <TableCell sx={{ fontWeight: 700, bgcolor: 'var(--mui-palette-background-paper)' }}>Insumo</TableCell>
-                                <TableCell align="right" sx={{ fontWeight: 700, bgcolor: 'var(--mui-palette-background-paper)' }}>Cantidad</TableCell>
+                                <TableCell align="right" sx={{ fontWeight: 700, bgcolor: 'var(--mui-palette-background-paper)' }}>Cant.</TableCell>
                                 <TableCell align="center" sx={{ fontWeight: 700, bgcolor: 'var(--mui-palette-background-paper)' }}>Acción</TableCell>
                             </TableRow>
                         </TableHead>

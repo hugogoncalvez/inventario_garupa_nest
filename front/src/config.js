@@ -9,22 +9,65 @@ let isBannerVisible = false;
 let wakeUpTimer = null;
 let activeRequests = 0;
 
+/**
+ * Detecta si el tema actual es oscuro
+ */
+export function isDarkMode() {
+    return document.documentElement.getAttribute('data-mode') === 'dark' ||
+           document.documentElement.getAttribute('data-theme') === 'dark' ||
+           window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+
+/**
+ * Obtiene los colores según el tema actual
+ */
+export function getThemeColors() {
+    if (isDarkMode()) {
+        return {
+            background: '#1e293b',
+            color: '#f8fafc',
+            backdrop: 'rgba(0, 0, 0, 0.6)',
+            iconColor: '#60a5fa'
+        };
+    }
+    return {
+        background: '#ffffff',
+        color: '#0f172a',
+        backdrop: 'rgba(37, 99, 235, 0.3)',
+        iconColor: '#2563eb'
+    };
+}
+
 function showWakeUpBanner() {
     if (isBannerVisible) return;
     isBannerVisible = true;
-    
+
+    const colors = getThemeColors();
+
     Swal.fire({
-        title: 'Despertando el servidor...',
-        html: 'La instancia gratuita de Render se "duerme" por inactividad.<br><b>Estamos reconectando (puede tardar 30-60 seg).</b>',
+        title: 'Despertando servidor...',
+        html: `
+            <div style="text-align: center; padding: 8px;">
+                <p style="margin: 0; color: ${colors.color}; opacity: 0.8;">
+                    El servidor gratuito está inactivo
+                </p>
+                <p style="margin: 8px 0 0 0; font-weight: 600;">
+                    Reconectando... (30-60 seg)
+                </p>
+            </div>
+        `,
         allowOutsideClick: false,
         allowEscapeKey: false,
         showConfirmButton: false,
         didOpen: () => {
             Swal.showLoading();
         },
-        background: '#fff',
-        color: '#1976d2',
-        backdrop: 'rgba(25, 118, 210, 0.4)'
+        background: colors.background,
+        color: colors.color,
+        backdrop: colors.backdrop,
+        customClass: {
+            popup: isDarkMode() ? 'swal2-dark' : ''
+        }
     });
 }
 
@@ -98,7 +141,16 @@ api.interceptors.response.use(
             }
             
             closeBanner();
-            Swal.fire('Error', 'El servidor no pudo despertar.', 'error');
+            const colors = getThemeColors();
+            Swal.fire({
+                title: 'Error de conexión',
+                text: 'El servidor no pudo despertar. Intenta recargar la página.',
+                icon: 'error',
+                confirmButtonText: 'Entendido',
+                background: colors.background,
+                color: colors.color,
+                confirmButtonColor: isDarkMode() ? '#60a5fa' : '#2563eb'
+            });
         }
 
         return Promise.reject(error);

@@ -2,7 +2,7 @@ import './App.css';
 import React, { Suspense, lazy, useEffect, useRef } from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
-import { startHeartbeat, startBotHeartbeat } from './config.js';
+import { startHeartbeat, startBotHeartbeat, isDarkMode, getThemeColors } from './config.js';
 import useAuth from './hooks/useAuth';
 import Swal from 'sweetalert2';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -81,11 +81,15 @@ function App() {
     const handleAutoLogout = () => {
       setAuth(null);
       navigate('/');
+      const colors = getThemeColors();
       Swal.fire({
         title: 'Sesión expirada',
-        text: 'Se ha cerrado la sesión por inactividad para ahorrar recursos del servidor.',
+        text: 'Se cerró la sesión por inactividad.',
         icon: 'info',
-        confirmButtonText: 'Entendido'
+        confirmButtonText: 'Entendido',
+        background: colors.background,
+        color: colors.color,
+        confirmButtonColor: isDarkMode() ? '#60a5fa' : '#2563eb'
       });
     };
 
