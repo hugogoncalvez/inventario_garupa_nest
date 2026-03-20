@@ -4,8 +4,8 @@ import { styled } from '@mui/material/styles';
 import Grid from "@mui/material/Grid";
 import {
     Typography, Table, TableBody, TableCell, tableCellClasses, TableContainer,
-    TableHead, TableRow, Paper, Box, IconButton, Button, Tooltip,    TextField, MenuItem, Container, Card, CardContent, 
-    Stack, Chip, TablePagination, Divider 
+    TableHead, TableRow, Paper, Box, IconButton, Button, Tooltip, TextField, MenuItem, Container, Card, CardContent,
+    Stack, Chip, TablePagination, Divider
 } from '@mui/material';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
@@ -44,7 +44,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 export const GestionInsumosGranel = () => {
     const { auth } = useAuth();
     const [insumosGranel, setInsumosGranel] = useState([]);
-    
+
     // Form State
     const [form, setForm] = useState({
         id: '',
@@ -54,7 +54,7 @@ export const GestionInsumosGranel = () => {
         stock_minimo: 0
     });
     const [isUpdate, setIsUpdate] = useState(false);
-    
+
     // UI State
     const [openCompraModal, setOpenCompraModal] = useState(false);
     const [page, setPage] = useState(0);
@@ -81,15 +81,15 @@ export const GestionInsumosGranel = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!form.nombre.trim()) return;
-        
+
         try {
-            const data = { 
-                nombre: form.nombre.trim(), 
-                sku: form.sku.trim(), 
-                unidad_medida: form.unidad_medida, 
-                stock_minimo: parseFloat(form.stock_minimo) 
+            const data = {
+                nombre: form.nombre.trim(),
+                sku: form.sku.trim(),
+                unidad_medida: form.unidad_medida,
+                stock_minimo: parseFloat(form.stock_minimo)
             };
-            
+
             if (isUpdate) {
                 await api.put(`${URI}/insumos-granel/${form.id}`, data);
                 Swal.fire({
@@ -164,7 +164,7 @@ export const GestionInsumosGranel = () => {
             confirmButtonText: 'Ajustar',
             cancelButtonText: 'Cancelar'
         });
-        
+
         if (nueva !== undefined && nueva !== null) {
             try {
                 await api.post(`${URI}/insumos-granel/movimientos/ajuste`, {
@@ -208,19 +208,19 @@ export const GestionInsumosGranel = () => {
                     Insumos a Granel
                 </Typography>
                 <Stack direction="row" spacing={1}>
-                    <Button 
-                        variant="contained" 
-                        color="success" 
-                        onClick={() => setOpenCompraModal(true)} 
+                    <Button
+                        variant="contained"
+                        color="success"
+                        onClick={() => setOpenCompraModal(true)}
                         startIcon={<ShoppingCartIcon />}
                         sx={{ borderRadius: 2 }}
                     >
-                        Registrar Compra
+                        Compra
                     </Button>
-                    <Button 
-                        variant="contained" 
-                        color="success" 
-                        onClick={handleSendStockSummary} 
+                    <Button
+                        variant="contained"
+                        color="success"
+                        onClick={handleSendStockSummary}
                         startIcon={<WhatsAppIcon />}
                         sx={{ borderRadius: 2, bgcolor: '#25D366', '&:hover': { bgcolor: '#128C7E' } }}
                     >
@@ -304,10 +304,10 @@ export const GestionInsumosGranel = () => {
                                                 </Typography>
                                             </StyledTableCell>
                                             <StyledTableCell align='center'>
-                                                <Chip 
+                                                <Chip
                                                     size="small"
                                                     label={parseFloat(insumo.stock_actual) <= parseFloat(insumo.stock_minimo) ? 'Bajo' : 'OK'}
-                                                    sx={{ 
+                                                    sx={{
                                                         fontWeight: 700,
                                                         bgcolor: parseFloat(insumo.stock_actual) <= parseFloat(insumo.stock_minimo) ? 'var(--mui-palette-error-main)' : 'var(--mui-palette-success-main)',
                                                         color: '#fff'
