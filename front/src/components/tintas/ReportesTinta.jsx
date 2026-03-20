@@ -22,12 +22,11 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import PrintIcon from '@mui/icons-material/Print';
-import { Card, CardContent, Grid, Chip, Tooltip } from '@mui/material';
+import Grid from '@mui/material/Grid';
+import { Card, CardContent, Chip, Tooltip } from '@mui/material';
 
 import ReporteConsumoTintas from '../../pdf/ReporteConsumoTintas';
 import ActaEntregaTintasPdf from '../../pdf/ActaEntregaTintas';
-
-// estilos de la tabla
 
 // estilos de la tabla
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
