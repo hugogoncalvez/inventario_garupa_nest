@@ -63,6 +63,7 @@ export class ReportesController {
                         },
                     },
                     cartuchos: true,
+                    usuarios: true,
                 },
             });
 
@@ -73,10 +74,20 @@ export class ReportesController {
             );
 
             return entregas.map(mov => ({
+                id: mov.id,
                 'impresora.area.area': mov.impresoras?.areas?.area || 'Sin Área',
+                'impresora.area.id': mov.impresoras?.areas?.id || '',
                 'cartucho.modelo': mov.cartuchos?.modelo || 'Desconocido',
                 'cartucho.color': mov.cartuchos?.color || '',
                 'cartucho.tipo': mov.cartuchos?.tipo || '',
+                'cartucho.id': mov.cartucho_id,
+                'impresora.id': mov.impresora_id,
+                'impresora.modelo': mov.impresoras?.modelo || '',
+                'impresora.marca': mov.impresoras?.marca || '',
+                'usuario.id': mov.usuario_id,
+                'usuario.nombre': mov.usuarios?.nombre || '',
+                'usuario.apellido': mov.usuarios?.apellido || '',
+                'usuario.usuario': mov.usuarios?.usuario || '',
                 cantidad: mov.cantidad,
                 fecha: mov.fecha,
             }));

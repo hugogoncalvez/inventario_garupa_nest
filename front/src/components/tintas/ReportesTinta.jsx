@@ -21,9 +21,13 @@ import Collapse from '@mui/material/Collapse';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
-import { Card, CardContent, Grid, Chip } from '@mui/material';
+import PrintIcon from '@mui/icons-material/Print';
+import { Card, CardContent, Grid, Chip, Tooltip } from '@mui/material';
 
 import ReporteConsumoTintas from '../../pdf/ReporteConsumoTintas';
+import ActaEntregaTintasPdf from '../../pdf/ActaEntregaTintas';
+
+// estilos de la tabla
 
 // estilos de la tabla
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -85,37 +89,70 @@ function Row(props) {
                             <Table size="small" aria-label="detalle-consumo">
                                 <TableHead>
                                     <TableRow>
-                                        <TableCell sx={{ fontWeight: 700 }}>Fecha</TableCell>
-                                        <TableCell sx={{ fontWeight: 700 }}>Modelo</TableCell>
-                                        <TableCell sx={{ fontWeight: 700 }}>Tipo</TableCell>
-                                        <TableCell sx={{ fontWeight: 700 }}>Color</TableCell>
-                                        <TableCell align="center" sx={{ fontWeight: 700 }}>Cantidad</TableCell>
+                                    <TableCell sx={{ fontWeight: 700 }}>Fecha</TableCell>
+                                    <TableCell sx={{ fontWeight: 700 }}>Modelo</TableCell>
+                                    <TableCell sx={{ fontWeight: 700 }}>Tipo</TableCell>
+                                    <TableCell sx={{ fontWeight: 700 }}>Color</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 700 }}>Cantidad</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 700 }}>Re-imprimir</TableCell>
                                     </TableRow>
-                                </TableHead>
-                                <TableBody>
+                                    </TableHead>
+                                    <TableBody>
                                     {row.items.sort((a, b) => new Date(b.fecha) - new Date(a.fecha)).map((itemRow, index) => (
-                                        <TableRow key={index} hover>
-                                            <TableCell>{new Date(itemRow.fecha).toLocaleDateString()}</TableCell>
-                                            <TableCell>{itemRow.modelo}</TableCell>
-                                            <TableCell>{itemRow.tipo}</TableCell>
-                                            <TableCell>{itemRow.color}</TableCell>
-                                            <TableCell align="center">
-                                                <Box sx={{ 
-                                                    bgcolor: 'primary.main', 
-                                                    color: '#fff', 
-                                                    px: 1.5, 
-                                                    py: 0.5,
-                                                    borderRadius: 1, 
-                                                    fontWeight: 800, 
-                                                    display: 'inline-block',
-                                                    minWidth: 30
-                                                }}>
-                                                    {itemRow.consumido}
-                                                </Box>
-                                            </TableCell>
-                                        </TableRow>
+                                    <TableRow key={index} hover>
+                                        <TableCell>{new Date(itemRow.fecha).toLocaleDateString()} {new Date(itemRow.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</TableCell>
+                                        <TableCell>{itemRow.modelo}</TableCell>
+                                        <TableCell>{itemRow.tipo}</TableCell>
+                                        <TableCell>{itemRow.color}</TableCell>
+                                        <TableCell align="center">
+                                            <Box sx={{ 
+                                                bgcolor: 'primary.main', 
+                                                color: '#fff', 
+                                                px: 1.5, 
+                                                py: 0.5,
+                                                borderRadius: 1, 
+                                                fontWeight: 800, 
+                                                display: 'inline-block',
+                                                minWidth: 30
+                                            }}>
+                                                {itemRow.consumido}
+                                            </Box>
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <Tooltip title="Re-imprimir Acta de Entrega">
+                                                <IconButton 
+                                                    size="small" 
+                                                    color="info" 
+                                                    onClick={() => {
+                                                        ActaEntregaTintasPdf({
+                                                            items: [{
+                                                                modelo: itemRow.modelo,
+                                                                color: itemRow.color,
+                                                                tipo: itemRow.tipo,
+                                                                cantidad: itemRow.consumido,
+                                                                impresora: {
+                                                                    modelo: itemRow.impresora_modelo,
+                                                                    marca: itemRow.impresora_marca
+                                                                }
+                                                            }],
+                                                            area: { area: row.area },
+                                                            usuario: { 
+                                                                nombre: itemRow.usuario_nombre, 
+                                                                apellido: itemRow.usuario_apellido,
+                                                                usuario: itemRow.usuario_login 
+                                                            },
+                                                            fechaEntrega: new Date(itemRow.fecha)
+                                                        });
+                                                    }}
+                                                >
+                                                    <PrintIcon fontSize="small" />
+                                                </IconButton>
+                                            </Tooltip>
+                                        </TableCell>
+                                    </TableRow>
                                     ))}
-                                </TableBody>
+                                    </TableBody>
+
                             </Table>
                         </Box>
                     </Collapse>
@@ -166,7 +203,13 @@ export const ReportesTinta = () => {
                     color: item['cartucho.color'],
                     tipo: item['cartucho.tipo'],
                     consumido: cantidad,
-                    fecha: item.fecha
+                    fecha: item.fecha,
+                    // Datos para re-impresión
+                    impresora_modelo: item['impresora.modelo'],
+                    impresora_marca: item['impresora.marca'],
+                    usuario_nombre: item['usuario.nombre'],
+                    usuario_apellido: item['usuario.apellido'],
+                    usuario_login: item['usuario.usuario']
                 });
                 acc[areaName].totalArea += cantidad;
                 return acc;

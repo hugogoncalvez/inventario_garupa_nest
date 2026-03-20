@@ -21,9 +21,13 @@ import Collapse from '@mui/material/Collapse';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
-import { Card, CardContent, Grid, Chip } from '@mui/material';
+import PrintIcon from '@mui/icons-material/Print';
+import { Card, CardContent, Grid, Chip, Tooltip } from '@mui/material';
 
 import ReporteRecargasGranelPdf from '../../pdf/ReporteRecargasGranelPdf';
+import ActaRecargaTinta from '../../pdf/ActaRecargaTinta';
+
+// estilos de la tabla
 
 // estilos de la tabla
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -99,53 +103,77 @@ function Row(props) {
                             <Table size="small" aria-label="detalle-recargas">
                                 <TableHead>
                                     <TableRow>
-                                        <TableCell sx={{ fontWeight: 700 }}>Fecha</TableCell>
-                                        <TableCell sx={{ fontWeight: 700 }}>Impresora</TableCell>
-                                        <TableCell sx={{ fontWeight: 700 }}>Cartucho</TableCell>
-                                        <TableCell sx={{ fontWeight: 700 }}>Insumo</TableCell>
-                                        <TableCell align="center" sx={{ fontWeight: 700 }}>Cant. Recargas</TableCell>
-                                        <TableCell align="center" sx={{ fontWeight: 700 }}>Total Insumo</TableCell>
-                                        <TableCell sx={{ fontWeight: 700 }}>Usuario</TableCell>
+                                    <TableCell sx={{ fontWeight: 700 }}>Fecha</TableCell>
+                                    <TableCell sx={{ fontWeight: 700 }}>Impresora</TableCell>
+                                    <TableCell sx={{ fontWeight: 700 }}>Cartucho</TableCell>
+                                    <TableCell sx={{ fontWeight: 700 }}>Insumo</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 700 }}>Cant. Recargas</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 700 }}>Total Insumo</TableCell>
+                                    <TableCell sx={{ fontWeight: 700 }}>Usuario</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 700 }}>Re-imprimir</TableCell>
                                     </TableRow>
-                                </TableHead>
-                                <TableBody>
+                                    </TableHead>
+                                    <TableBody>
                                     {row.items.sort((a, b) => new Date(b.fecha) - new Date(a.fecha)).map((itemRow, index) => (
-                                        <TableRow key={index} hover>
-                                            <TableCell>{new Date(itemRow.fecha).toLocaleDateString()}</TableCell>
-                                            <TableCell>{`${itemRow.impresoraModelo} (${itemRow.impresoraMarca})`}</TableCell>
-                                            <TableCell>{`${itemRow.cartuchoModelo} (${itemRow.cartuchoColor})`}</TableCell>
-                                            <TableCell>{itemRow.insumoGranelNombre}</TableCell>
-                                            <TableCell align="center">
-                                                <Box sx={{ 
-                                                    bgcolor: 'primary.main', 
-                                                    color: '#fff', 
-                                                    px: 1, 
-                                                    py: 0.5,
-                                                    borderRadius: 1, 
-                                                    fontWeight: 700, 
-                                                    display: 'inline-block',
-                                                    minWidth: 24
-                                                }}>
-                                                    {itemRow.cartuchos}
-                                                </Box>
-                                            </TableCell>
-                                            <TableCell align="center">
-                                                <Box sx={{ 
-                                                    bgcolor: 'success.main', 
-                                                    color: '#fff', 
-                                                    px: 1.5, 
-                                                    py: 0.5,
-                                                    borderRadius: 1, 
-                                                    fontWeight: 800, 
-                                                    display: 'inline-block' 
-                                                }}>
-                                                    {`${itemRow.insumo.toLocaleString()} ${itemRow.unidadMedida}`}
-                                                </Box>
-                                            </TableCell>
-                                            <TableCell>{`${itemRow.usuarioNombre || ''} ${itemRow.usuarioApellido || ''}`}</TableCell>
-                                        </TableRow>
+                                    <TableRow key={index} hover>
+                                        <TableCell>{new Date(itemRow.fecha).toLocaleDateString()} {new Date(itemRow.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</TableCell>
+                                        <TableCell>{`${itemRow.impresoraModelo} (${itemRow.impresoraMarca})`}</TableCell>
+                                        <TableCell>{`${itemRow.cartuchoModelo} (${itemRow.cartuchoColor})`}</TableCell>
+                                        <TableCell>{itemRow.insumoGranelNombre}</TableCell>
+                                        <TableCell align="center">
+                                            <Box sx={{ 
+                                                bgcolor: 'primary.main', 
+                                                color: '#fff', 
+                                                px: 1, 
+                                                py: 0.5,
+                                                borderRadius: 1, 
+                                                fontWeight: 700, 
+                                                display: 'inline-block',
+                                                minWidth: 24
+                                            }}>
+                                                {itemRow.cartuchos}
+                                            </Box>
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <Box sx={{ 
+                                                bgcolor: 'success.main', 
+                                                color: '#fff', 
+                                                px: 1.5, 
+                                                py: 0.5,
+                                                borderRadius: 1, 
+                                                fontWeight: 800, 
+                                                display: 'inline-block' 
+                                            }}>
+                                                {`${itemRow.insumo.toLocaleString()} ${itemRow.unidadMedida}`}
+                                            </Box>
+                                        </TableCell>
+                                        <TableCell>{`${itemRow.usuarioNombre || ''} ${itemRow.usuarioApellido || ''}`}</TableCell>
+                                        <TableCell align="center">
+                                            <Tooltip title="Re-imprimir Acta de Recarga">
+                                                <IconButton 
+                                                    size="small" 
+                                                    color="info" 
+                                                    onClick={() => {
+                                                        ActaRecargaTinta({
+                                                            insumoGranel: { nombre: itemRow.insumoGranelNombre, unidad_medida: itemRow.unidadMedida },
+                                                            cartucho: { modelo: itemRow.cartuchoModelo, color: itemRow.cartuchoColor },
+                                                            impresora: { modelo: itemRow.impresoraModelo, marca: itemRow.impresoraMarca },
+                                                            area: { area: row.area },
+                                                            usuario: { nombre: itemRow.usuarioNombre, apellido: itemRow.usuarioApellido },
+                                                            cantidadCartuchos: itemRow.cartuchos,
+                                                            cantidadInsumo: itemRow.insumo,
+                                                            fechaRecarga: new Date(itemRow.fecha)
+                                                        });
+                                                    }}
+                                                >
+                                                    <PrintIcon fontSize="small" />
+                                                </IconButton>
+                                            </Tooltip>
+                                        </TableCell>
+                                    </TableRow>
                                     ))}
-                                </TableBody>
+                                    </TableBody>
+
                             </Table>
                         </Box>
                     </Collapse>
