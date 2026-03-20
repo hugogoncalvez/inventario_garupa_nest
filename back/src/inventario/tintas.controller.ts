@@ -31,11 +31,14 @@ export class TintasController {
 
         return cartuchos.map(c => {
             const areasSet = new Set<string>();
+            const impresorasSet = new Set<number>();
+            
             c.movimientos_tinta.forEach(m => {
-                // Filtramos por entregas (manejando tanto el valor enum como el valor real mapeado)
+                // Filtramos por entregas
                 if (m.tipo_movimiento === 'ENTREGA_A__REA' || m.tipo_movimiento as any === 'ENTREGA A ÁREA') {
                     const areaNombre = m.impresoras?.areas?.area;
                     if (areaNombre) areasSet.add(areaNombre);
+                    if (m.impresora_id) impresorasSet.add(m.impresora_id);
                 }
             });
 
@@ -43,7 +46,8 @@ export class TintasController {
             const { movimientos_tinta, ...data } = c;
             return {
                 ...data,
-                areas_uso: Array.from(areasSet)
+                areas_uso: Array.from(areasSet),
+                impresoras_vinculadas: Array.from(impresorasSet)
             };
         });
     }

@@ -22,6 +22,7 @@ export default function ModalRegistrarEntrega({ open, onClose, onEntregaExitosa 
     const [stagedEntrega, setStagedEntrega] = useState({ impresoraId: '', insumoId: '', cantidad: 1 });
     const [selectedAreaId, setSelectedAreaId] = useState('');
     const [filteredImpresoras, setFilteredImpresoras] = useState([]);
+    const [showAllInsumos, setShowAllInsumos] = useState(false);
     const [listaEntregas, setListaEntregas] = useState([]);
     const [error, setError] = useState('');
 
@@ -44,6 +45,7 @@ export default function ModalRegistrarEntrega({ open, onClose, onEntregaExitosa 
             fetchData();
             setListaEntregas([]);
             setSelectedAreaId('');
+            setShowAllInsumos(false);
             setStagedEntrega({ impresoraId: '', insumoId: '', cantidad: 1 });
             setError('');
         }
@@ -58,8 +60,23 @@ export default function ModalRegistrarEntrega({ open, onClose, onEntregaExitosa 
         }
     }, [selectedAreaId, impresoras]);
 
+    // Lógica de filtrado de insumos
+    const getFilteredInsumos = () => {
+        if (!stagedEntrega.impresoraId || showAllInsumos) return insumos;
+        
+        // Buscar insumos que tengan esta impresora en su historial
+        const sugeridos = insumos.filter(ins => 
+            ins.impresoras_vinculadas?.includes(Number(stagedEntrega.impresoraId))
+        );
+
+        return sugeridos.length > 0 ? sugeridos : insumos;
+    };
+
     const handleStagedChange = (field, value) => {
         setStagedEntrega(prev => ({ ...prev, [field]: value }));
+        if (field === 'impresoraId') {
+            setShowAllInsumos(false); // Resetear al cambiar de impresora
+        }
     };
 
     const handleAddToLista = () => {
@@ -177,13 +194,28 @@ export default function ModalRegistrarEntrega({ open, onClose, onEntregaExitosa 
                         <Grid size={{ xs: 12, md: 4 }}>
                             <TextField 
                                 select 
-                                label="Insumo / Cartucho" 
+                                label={stagedEntrega.impresoraId && !showAllInsumos && getFilteredInsumos().length < insumos.length 
+                                    ? "Sugeridos para este Equipo" 
+                                    : "Insumo / Cartucho"}
                                 value={stagedEntrega.insumoId} 
                                 onChange={(e) => handleStagedChange('insumoId', e.target.value)} 
                                 fullWidth 
                                 size="small"
+                                helperText={stagedEntrega.impresoraId && getFilteredInsumos().length < insumos.length && !showAllInsumos ? (
+                                    <Button 
+                                        size="small" 
+                                        onClick={() => setShowAllInsumos(true)} 
+                                        sx={{ py: 0, fontSize: '0.65rem', minWidth: 0 }}
+                                    >
+                                        Ver todos los insumos
+                                    </Button>
+                                ) : null}
                             >
-                                {insumos.map(ins => <MenuItem key={ins.id} value={ins.id}>{`${ins.modelo} (${ins.color}) - Stock: ${ins.stock_unidades}`}</MenuItem>)}
+                                {getFilteredInsumos().map(ins => (
+                                    <MenuItem key={ins.id} value={ins.id}>
+                                        {`${ins.modelo} (${ins.color}) - Stock: ${ins.stock_unidades}`}
+                                    </MenuItem>
+                                ))}
                             </TextField>
                         </Grid>
                         <Grid size={{ xs: 8, md: 1 }}>
