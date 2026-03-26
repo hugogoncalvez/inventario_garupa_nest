@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -31,6 +31,9 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import AnalyticsIcon from '@mui/icons-material/Analytics';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import Tooltip from '@mui/material/Tooltip';
+import CircularProgress from '@mui/material/CircularProgress';
 
 export default function NavBar() {
     const navigate = useNavigate();
@@ -38,6 +41,49 @@ export default function NavBar() {
     const { setAuth } = useAuth();
     const [openDrawer, setOpenDrawer] = useState(false);
     const { mode, setMode } = useColorScheme();
+    const [botStatus, setBotStatus] = useState('loading'); // loading, ok, error, connecting
+
+    const checkBotStatus = async () => {
+        try {
+            const res = await fetch('https://inventario-whatsapp-bot.onrender.com/health');
+            if (res.ok) {
+                const data = await res.json();
+                setBotStatus(data.status === 'ok' ? 'ok' : 'connecting');
+            } else {
+                setBotStatus('error');
+            }
+        } catch (error) {
+            setBotStatus('error');
+        }
+    };
+
+    useEffect(() => {
+        checkBotStatus();
+        const interval = setInterval(checkBotStatus, 60000); // Verificar cada minuto
+        return () => clearInterval(interval);
+    }, []);
+
+    const getBotStatusIcon = () => {
+        switch (botStatus) {
+            case 'ok':
+                return <WhatsAppIcon sx={{ color: '#25D366' }} />;
+            case 'connecting':
+                return <WhatsAppIcon sx={{ color: '#FFC107' }} />;
+            case 'error':
+                return <WhatsAppIcon sx={{ color: '#F44336' }} />;
+            default:
+                return <CircularProgress size={20} color="inherit" />;
+        }
+    };
+
+    const getBotStatusLabel = () => {
+        switch (botStatus) {
+            case 'ok': return 'Bot de WhatsApp: Conectado';
+            case 'connecting': return 'Bot de WhatsApp: Conectando/Iniciando...';
+            case 'error': return 'Bot de WhatsApp: Desconectado o Error';
+            default: return 'Verificando estado del Bot...';
+        }
+    };
 
     const toggleMode = () => {
         setMode(mode === 'light' ? 'dark' : 'light');
@@ -187,6 +233,24 @@ export default function NavBar() {
                     </Box>
 
                     <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                        <Tooltip title={getBotStatusLabel()}>
+                            <IconButton 
+                                color="inherit" 
+                                onClick={checkBotStatus}
+                                sx={{ 
+                                    opacity: botStatus === 'ok' ? 1 : 0.7,
+                                    animation: botStatus === 'connecting' ? 'pulse 2s infinite' : 'none',
+                                    '@keyframes pulse': {
+                                        '0%': { opacity: 0.5 },
+                                        '50%': { opacity: 1 },
+                                        '100%': { opacity: 0.5 }
+                                    }
+                                }}
+                            >
+                                {getBotStatusIcon()}
+                            </IconButton>
+                        </Tooltip>
+
                         <IconButton color="inherit" onClick={toggleMode} title={`Cambiar a modo ${mode === 'light' ? 'oscuro' : 'claro'}`}>
                             {mode === 'light' ? <DarkModeIcon /> : <LightModeIcon />}
                         </IconButton>
