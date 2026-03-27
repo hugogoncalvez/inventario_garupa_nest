@@ -17,40 +17,109 @@ export class OrdenesController {
     @Get(':id')
     findOne(@Param('id') id: string) {
         return this.prisma.ordendeservicios.findUnique({
-            where: { id: Number(id) }
+            where: { id: Number(id) },
+            include: {
+                repuestos_usados: {
+                    include: {
+                        repuesto: true
+                    }
+                }
+            }
         });
     }
 
     @Post()
-    create(@Body() data: any) {
-        const { id_equipo, problema_reportado, tecnico_asignado, trabajo_realizado, estado } = data;
-        return this.prisma.ordendeservicios.create({
-            data: {
-                id_equipo: String(id_equipo), // Segun schema es VarChar(20)
-                problema_reportado,
-                tecnico_asignado,
-                trabajo_realizado,
-                estado,
-                fecha_recepcion: new Date(),
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            },
+    async create(@Body() data: any) {
+        const { id_equipo, problema_reportado, tecnico_asignado, trabajo_realizado, estado, repuestos } = data;
+        
+        return this.prisma.$transaction(async (tx) => {
+            // 1. Crear la orden
+            const orden = await tx.ordendeservicios.create({
+                data: {
+                    id_equipo: String(id_equipo),
+                    problema_reportado,
+                    tecnico_asignado,
+                    trabajo_realizado,
+                    estado,
+                    fecha_recepcion: new Date(),
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                },
+            });
+
+            // 2. Si hay repuestos, registrarlos y descontar stock
+            if (repuestos && Array.isArray(repuestos)) {
+                for (const r of repuestos) {
+                    await tx.ordenes_repuestos.create({
+                        data: {
+                            orden_id: orden.id,
+                            repuesto_id: r.id,
+                            cantidad: r.cantidad || 1,
+                            fecha: new Date()
+                        }
+                    });
+
+                    await tx.repuestos.update({
+                        where: { id: r.id },
+                        data: {
+                            stock_actual: {
+                                decrement: r.cantidad || 1
+                            }
+                        }
+                    });
+                }
+            }
+
+            return orden;
         });
     }
 
     @Put(':id')
-    update(@Param('id') id: string, @Body() data: any) {
-        const { problema_reportado, tecnico_asignado, trabajo_realizado, estado, fecha_entrega } = data;
-        return this.prisma.ordendeservicios.update({
-            where: { id: Number(id) },
-            data: {
-                problema_reportado,
-                tecnico_asignado,
-                trabajo_realizado,
-                estado,
-                fecha_entrega: fecha_entrega ? new Date(fecha_entrega) : null,
-                updatedAt: new Date(),
-            },
+    async update(@Param('id') id: string, @Body() data: any) {
+        const { problema_reportado, tecnico_asignado, trabajo_realizado, estado, fecha_entrega, repuestos } = data;
+        
+        return this.prisma.$transaction(async (tx) => {
+            // 1. Actualizar la orden
+            const orden = await tx.ordendeservicios.update({
+                where: { id: Number(id) },
+                data: {
+                    problema_reportado,
+                    tecnico_asignado,
+                    trabajo_realizado,
+                    estado,
+                    fecha_entrega: fecha_entrega ? new Date(fecha_entrega) : null,
+                    updatedAt: new Date(),
+                },
+            });
+
+            // 2. Gestionar repuestos nuevos (si se envían)
+            // Nota: Por simplicidad, aquí solo agregamos nuevos repuestos. 
+            // Si el repuesto ya existía en la orden, se podría mejorar la lógica para evitar duplicados.
+            if (repuestos && Array.isArray(repuestos)) {
+                for (const r of repuestos) {
+                    // Solo procesar si es un repuesto nuevo (no estaba ya en la orden)
+                    // Esto se puede refinar según la UI, pero por ahora permitimos añadir más.
+                    await tx.ordenes_repuestos.create({
+                        data: {
+                            orden_id: Number(id),
+                            repuesto_id: r.id,
+                            cantidad: r.cantidad || 1,
+                            fecha: new Date()
+                        }
+                    });
+
+                    await tx.repuestos.update({
+                        where: { id: r.id },
+                        data: {
+                            stock_actual: {
+                                decrement: r.cantidad || 1
+                            }
+                        }
+                    });
+                }
+            }
+
+            return orden;
         });
     }
 

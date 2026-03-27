@@ -129,23 +129,54 @@ model movimientos_tinta {
 }
 
 model ordendeservicios {
-  id                 Int       @id @default(autoincrement())
-  id_equipo          String?   @db.VarChar(20)
-  fecha_recepcion    DateTime? @db.DateTime(0)
-  fecha_entrega      DateTime? @db.DateTime(0)
-  problema_reportado String?   @db.VarChar(255)
-  trabajo_realizado  String?   @db.VarChar(255)
-  tecnico_asignado   String?   @db.VarChar(255)
-  estado             String?   @db.VarChar(255)
-  createdAt          DateTime  @db.DateTime(0)
-  updatedAt          DateTime  @db.DateTime(0)
+  id                 Int                 @id @default(autoincrement())
+  id_equipo          String?             @db.VarChar(20)
+  fecha_recepcion    DateTime?           @db.DateTime(0)
+  fecha_entrega      DateTime?           @db.DateTime(0)
+  problema_reportado String?             @db.VarChar(255)
+  trabajo_realizado  String?             @db.VarChar(255)
+  tecnico_asignado   String?             @db.VarChar(255)
+  estado             String?             @db.VarChar(255)
+  createdAt          DateTime            @default(now()) @db.DateTime(0)
+  updatedAt          DateTime            @default(now()) @db.DateTime(0)
+  repuestos_usados   ordenes_repuestos[]
 }
 
 model tipos {
-  id        Int       @id @default(autoincrement())
-  tipo      String?   @db.VarChar(50)
-  createdAt DateTime? @db.Date
-  updatedAt DateTime? @db.Date
+  id        Int         @id @default(autoincrement())
+  tipo      String?     @db.VarChar(50)
+  createdAt DateTime?   @db.Date
+  updatedAt DateTime?   @db.Date
+  repuestos repuestos[]
+}
+
+model repuestos {
+  id            Int                 @id @default(autoincrement())
+  tipo_id       Int
+  marca         String?             @db.VarChar(100)
+  modelo        String              @db.VarChar(255)
+  descripcion   String?             @db.VarChar(255)
+  stock_actual  Int                 @default(0)
+  stock_minimo  Int                 @default(0)
+  createdAt     DateTime            @default(now()) @db.DateTime(0)
+  updatedAt     DateTime            @default(now()) @db.DateTime(0)
+  tipo_rel      tipos               @relation(fields: [tipo_id], references: [id], map: "fk_repuestos_tipos")
+  ordenes_usado ordenes_repuestos[]
+
+  @@index([tipo_id], map: "fk_repuestos_tipos_idx")
+}
+
+model ordenes_repuestos {
+  id          Int              @id @default(autoincrement())
+  orden_id    Int
+  repuesto_id Int
+  cantidad    Int              @default(1)
+  fecha       DateTime         @default(now()) @db.DateTime(0)
+  orden       ordendeservicios @relation(fields: [orden_id], references: [id], map: "fk_ordenes_repuestos_orden")
+  repuesto    repuestos        @relation(fields: [repuesto_id], references: [id], map: "fk_ordenes_repuestos_repuesto")
+
+  @@index([orden_id], map: "fk_ordenes_repuestos_orden_idx")
+  @@index([repuesto_id], map: "fk_ordenes_repuestos_repuesto_idx")
 }
 
 model usuarios {

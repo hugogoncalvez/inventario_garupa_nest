@@ -1,16 +1,18 @@
 import api, { URI } from '../../config.js';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Grid from "@mui/material/Grid";
 import {
     Button, TextField, Box, Container, Typography, MenuItem,
-    Paper, Stack, Divider} from '@mui/material';
+    Paper, Stack, Divider, CircularProgress} from '@mui/material';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import CancelIcon from '@mui/icons-material/Cancel';
 import BuildIcon from '@mui/icons-material/Build';
 
 const CreateOrden = () => {
     const navigate = useNavigate();
+    const [usuarios, setUsuarios] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     const [form, setForm] = useState({
         id_equipo: '',
@@ -20,6 +22,20 @@ const CreateOrden = () => {
     });
 
     const [errors, setErrors] = useState({});
+
+    useEffect(() => {
+        const fetchUsuarios = async () => {
+            try {
+                const res = await api.get(`${URI}/usuarios`);
+                setUsuarios(res.data);
+            } catch (error) {
+                console.error("Error al cargar usuarios:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchUsuarios();
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -46,14 +62,13 @@ const CreateOrden = () => {
         }
     };
 
-    const estados = [
-        'Recibido',
-        'En Reparación',
-        'Esperando Repuestos',
-        'Reparado',
-        'Entregado',
-        'Sin Solucion (Baja)'
-    ];
+    if (loading) {
+        return (
+            <Box display="flex" justifyContent="center" alignItems="center" height="80vh">
+                <CircularProgress />
+            </Box>
+        );
+    }
 
     return (
         <Container maxWidth="md" sx={{ mt: 9, mb: 4 }}>
@@ -84,17 +99,12 @@ const CreateOrden = () => {
                         </Grid>
                         <Grid size={{ xs: 12, sm: 6 }}>
                             <TextField
-                                select
-                                name="estado"
                                 label="Estado Inicial"
-                                value={form.estado}
-                                onChange={handleChange}
+                                value="Recibido"
+                                disabled
                                 fullWidth
-                            >
-                                {estados.map((option) => (
-                                    <MenuItem key={option} value={option}>{option}</MenuItem>
-                                ))}
-                            </TextField>
+                                helperText="Toda orden nueva nace como Recibida"
+                            />
                         </Grid>
 
                         <Grid size={{ xs: 12 }}>
@@ -114,6 +124,7 @@ const CreateOrden = () => {
 
                         <Grid size={{ xs: 12 }}>
                             <TextField
+                                select
                                 name="tecnico_asignado"
                                 label="Técnico a Cargo"
                                 required
@@ -122,7 +133,14 @@ const CreateOrden = () => {
                                 error={!!errors.tecnico_asignado}
                                 helperText={errors.tecnico_asignado}
                                 fullWidth
-                            />
+                            >
+                                <MenuItem value=""><em>Seleccione un técnico</em></MenuItem>
+                                {usuarios.map((u) => (
+                                    <MenuItem key={u.id} value={`${u.nombre} ${u.apellido}`}>
+                                        {u.nombre} {u.apellido}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
                         </Grid>
 
                         <Grid size={{ xs: 12 }}>
@@ -154,3 +172,4 @@ const CreateOrden = () => {
 };
 
 export default CreateOrden;
+

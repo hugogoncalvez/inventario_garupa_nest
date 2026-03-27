@@ -4,15 +4,21 @@ import { useNavigate, useParams } from "react-router-dom";
 import Grid from "@mui/material/Grid";
 import {
     Button, TextField, Box, Container, Typography, MenuItem,
-    Paper, Stack, Divider, CircularProgress} from '@mui/material';
+    Paper, Stack, Divider, CircularProgress, Autocomplete, Chip, List, ListItem, ListItemText, IconButton} from '@mui/material';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import CancelIcon from '@mui/icons-material/Cancel';
 import EditNoteIcon from '@mui/icons-material/EditNote';
+import DeleteIcon from '@mui/icons-material/Delete';
+import HardwareIcon from '@mui/icons-material/Hardware';
 
 const EditOrden = () => {
     const navigate = useNavigate();
     const { id } = useParams();
     const [loading, setLoading] = useState(true);
+    const [usuarios, setUsuarios] = useState([]);
+    const [repuestosDisponibles, setRepuestosDisponibles] = useState([]);
+    const [repuestosSeleccionados, setRepuestosSeleccionados] = useState([]);
+    const [repuestosYaUsados, setRepuestosYaUsados] = useState([]);
 
     const [form, setForm] = useState({
         id_equipo: '',
@@ -26,22 +32,47 @@ const EditOrden = () => {
     const [errors, setErrors] = useState({});
 
     useEffect(() => {
-        const getOrdenById = async () => {
+        const loadData = async () => {
             try {
-                const res = await api.get(`${URI}/ordenes/${id}`);
-                setForm(res.data);
+                const [resOrd, resRep, resUsers] = await Promise.all([
+                    api.get(`${URI}/ordenes/${id}`),
+                    api.get(`${URI}/repuestos`),
+                    api.get(`${URI}/usuarios`)
+                ]);
+                
+                setForm(resOrd.data);
+                setRepuestosDisponibles(resRep.data);
+                setUsuarios(resUsers.data);
+                
+                // Cargar repuestos ya vinculados a esta orden
+                if (resOrd.data.repuestos_usados) {
+                    setRepuestosYaUsados(resOrd.data.repuestos_usados);
+                }
             } catch (error) {
-                console.error("Error cargando orden:", error);
+                console.error("Error cargando datos:", error);
             } finally {
                 setLoading(false);
             }
         };
-        getOrdenById();
+        loadData();
     }, [id]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setForm(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleAddRepuesto = (event, newValue) => {
+        if (newValue) {
+            // Verificar si ya está en la lista de seleccionados
+            if (!repuestosSeleccionados.find(r => r.id === newValue.id)) {
+                setRepuestosSeleccionados([...repuestosSeleccionados, { ...newValue, cantidad: 1 }]);
+            }
+        }
+    };
+
+    const removeRepuesto = (id) => {
+        setRepuestosSeleccionados(repuestosSeleccionados.filter(r => r.id !== id));
     };
 
     const validate = () => {
@@ -59,7 +90,8 @@ const EditOrden = () => {
         if (validate()) {
             await api.put(`${URI}/ordenes/${id}`, {
                 ...form,
-                fecha_entrega: form.estado === 'Entregado' ? new Date() : null
+                fecha_entrega: form.estado === 'Entregado' ? new Date() : null,
+                repuestos: repuestosSeleccionados // Enviamos los nuevos repuestos a descontar
             });
             navigate('/ordenes');
         }
@@ -137,6 +169,61 @@ const EditOrden = () => {
                             />
                         </Grid>
 
+                        {/* SECCIÓN DE REPUESTOS */}
+                        <Grid size={{ xs: 12 }}>
+                            <Paper variant="outlined" sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 2 }}>
+                                <Box display="flex" alignItems="center" mb={2} gap={1}>
+                                    <HardwareIcon color="primary" fontSize="small" />
+                                    <Typography variant="subtitle1" fontWeight="700">Gestión de Repuestos</Typography>
+                                </Box>
+                                
+                                <Autocomplete
+                                    options={repuestosDisponibles}
+                                    getOptionLabel={(option) => `${option.tipo_rel?.tipo || ''} - ${option.marca} ${option.modelo} (Stock: ${option.stock_actual})`}
+                                    onChange={handleAddRepuesto}
+                                    renderInput={(params) => (
+                                        <TextField {...params} label="Buscar Repuesto para Agregar" size="small" fullWidth sx={{ bgcolor: 'background.paper' }} />
+                                    )}
+                                    noOptionsText="No hay repuestos que coincidan"
+                                    clearOnBlur
+                                    clearOnEscape
+                                />
+
+                                {repuestosSeleccionados.length > 0 && (
+                                    <Box mt={2}>
+                                        <Typography variant="caption" fontWeight="700" color="text.secondary" sx={{ textTransform: 'uppercase' }}>Nuevos repuestos a descontar:</Typography>
+                                        <Stack direction="row" spacing={1} flexWrap="wrap" mt={1} gap={1}>
+                                            {repuestosSeleccionados.map((r) => (
+                                                <Chip 
+                                                    key={r.id} 
+                                                    label={`${r.modelo} (x1)`} 
+                                                    onDelete={() => removeRepuesto(r.id)} 
+                                                    color="primary"
+                                                    variant="filled"
+                                                />
+                                            ))}
+                                        </Stack>
+                                    </Box>
+                                )}
+
+                                {repuestosYaUsados.length > 0 && (
+                                    <Box mt={2}>
+                                        <Typography variant="caption" fontWeight="700" color="text.secondary" sx={{ textTransform: 'uppercase' }}>Repuestos ya utilizados en esta orden:</Typography>
+                                        <List dense sx={{ mt: 1, bgcolor: 'background.paper', borderRadius: 1 }}>
+                                            {repuestosYaUsados.map((ru) => (
+                                                <ListItem key={ru.id} divider>
+                                                    <ListItemText 
+                                                        primary={`${ru.repuesto.marca} ${ru.repuesto.modelo}`} 
+                                                        secondary={`Cantidad: ${ru.cantidad} - Fecha: ${new Date(ru.fecha).toLocaleDateString()}`} 
+                                                    />
+                                                </ListItem>
+                                            ))}
+                                        </List>
+                                    </Box>
+                                )}
+                            </Paper>
+                        </Grid>
+
                         <Grid size={{ xs: 12 }}>
                             <TextField
                                 name="trabajo_realizado"
@@ -152,6 +239,7 @@ const EditOrden = () => {
 
                         <Grid size={{ xs: 12 }}>
                             <TextField
+                                select
                                 name="tecnico_asignado"
                                 label="Técnico Responsable"
                                 required
@@ -159,7 +247,14 @@ const EditOrden = () => {
                                 onChange={handleChange}
                                 error={!!errors.tecnico_asignado}
                                 fullWidth
-                            />
+                            >
+                                <MenuItem value=""><em>Seleccione un técnico</em></MenuItem>
+                                {usuarios.map((u) => (
+                                    <MenuItem key={u.id} value={`${u.nombre} ${u.apellido}`}>
+                                        {u.nombre} {u.apellido}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
                         </Grid>
 
                         <Grid size={{ xs: 12 }}>
@@ -191,3 +286,4 @@ const EditOrden = () => {
 };
 
 export default EditOrden;
+

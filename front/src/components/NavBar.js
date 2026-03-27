@@ -29,6 +29,7 @@ import PrintIcon from '@mui/icons-material/Print';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import AnalyticsIcon from '@mui/icons-material/Analytics';
+import SettingsInputComponentIcon from '@mui/icons-material/SettingsInputComponent';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
@@ -106,6 +107,7 @@ export default function NavBar() {
         { text: 'Órdenes de Servicio', path: '/ordenes', icon: <BuildIcon /> },
         { text: 'Control de Insumos', path: '/tintas/cartuchos', icon: <FactCheckIcon /> },
         { text: 'Insumos a Granel', path: '/insumos-granel', icon: <LocalShippingIcon /> },
+        { text: 'Repuestos / Stock', path: '/repuestos', icon: <SettingsInputComponentIcon /> },
     ];
 
     const reportItems = [
