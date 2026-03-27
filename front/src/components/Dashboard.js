@@ -33,10 +33,10 @@ const KpiCard = ({ title, value, icon, color, onClick }) => (
     >
         <CardActionArea onClick={onClick} sx={{ height: '100%', p: 1 }}>
             <CardContent>
-                <Typography color="text.secondary" variant="overline" fontWeight="700" sx={{ letterSpacing: 1.2, mb: 1, display: 'block' }}>
+                <Typography color="text.secondary" variant="overline" fontWeight="700" sx={{ letterSpacing: 1.2, mb: 2, display: 'block' }}>
                     {title}
                 </Typography>
-                <Box display="flex" justifyContent="space-between" alignItems="flex-end">
+                <Box display="flex" justifyContent="space-between" alignItems="flex-end" sx={{ gap: 2 }}>
                     <Typography variant="h3" fontWeight="900" sx={{ lineHeight: 1 }}>
                         {value}
                     </Typography>
@@ -48,16 +48,11 @@ const KpiCard = ({ title, value, icon, color, onClick }) => (
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        mb: -0.5
+                        mb: -0.5,
+                        ml: 1 // Margen extra para asegurar separación
                     }}>
                         {React.cloneElement(icon, { sx: { fontSize: 48 } })}
                     </Box>
-                </Box>
-                <Box display="flex" alignItems="center" mt={3} sx={{ opacity: 0.7 }}>
-                    <Typography variant="caption" fontWeight="700" sx={{ mr: 0.5, textTransform: 'uppercase' }}>
-                        Ver detalles
-                    </Typography>
-                    <ArrowForwardIosIcon sx={{ fontSize: 10, fontWeight: 800 }} />
                 </Box>
             </CardContent>
         </CardActionArea>
