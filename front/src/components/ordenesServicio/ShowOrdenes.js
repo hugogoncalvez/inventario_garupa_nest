@@ -1,5 +1,5 @@
 import api, { URI } from '../../config.js';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useMemo } from 'react';
 import { styled } from '@mui/material/styles';
 import Grid from "@mui/material/Grid";
@@ -55,6 +55,7 @@ const ShowOrdenes = () => {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         const loadData = async () => {
@@ -65,12 +66,17 @@ const ShowOrdenes = () => {
                 ]);
                 setOrdenes(Array.isArray(resOrd.data) ? resOrd.data : []);
                 setEstados(resEst.data);
+                
+                // Aplicar filtro si viene del dashboard
+                if (location.state && location.state.filtroEstado) {
+                    setEstado(location.state.filtroEstado);
+                }
             } catch (error) {
                 console.error("Error cargando datos:", error);
             }
         };
         loadData();
-    }, []);
+    }, [location.state]);
 
     const getOrdenes = async () => {
         const res = await api.get(`${URI}/ordenes`);
@@ -82,7 +88,7 @@ const ShowOrdenes = () => {
             (numOrden === '' || o.id.toString().includes(numOrden)) &&
             (equipoId === '' || (o.id_equipo && o.id_equipo.toString().includes(equipoId))) &&
             (tecnico === '' || (o.tecnico_asignado && o.tecnico_asignado.toLowerCase().includes(tecnico.toLowerCase()))) &&
-            (estado === '' || o.estado.includes(estado)) &&
+            (estado === '' || (estado === 'Activas' ? !['Entregado', 'Sin Solucion (Baja)'].includes(o.estado) : o.estado.includes(estado))) &&
             (fechaDesde === '' || new Date(o.fecha_recepcion) >= new Date(fechaDesde)) &&
             (fechaHasta === '' || new Date(o.fecha_recepcion) <= new Date(fechaHasta + 'T23:59:59'))
         );

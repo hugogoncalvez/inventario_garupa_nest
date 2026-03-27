@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { 
-    Container, Grid, Paper, Typography, Box, Card, CardContent, 
-    CircularProgress, useTheme, Divider, Stack
+import { useNavigate } from 'react-router-dom';
+import {
+    Container, Grid, Paper, Typography, Box, Card, CardContent,
+    CircularProgress, useTheme, Divider, Stack, CardActionArea
 } from '@mui/material';
-import { 
-    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
+import {
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     PieChart, Pie, Cell, Legend, LabelList
 } from 'recharts';
 import api, { URI } from '../config.js';
@@ -12,31 +13,53 @@ import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
 const COLORS = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#6366f1'];
 
-const KpiCard = ({ title, value, icon, color }) => (
-    <Card sx={{ height: '100%', borderRadius: 3, borderLeft: `6px solid ${color}`, boxShadow: 'var(--mui-shadows-2)' }}>
-        <CardContent>
-            <Box display="flex" justifyContent="space-between" alignItems="center">
-                <Box>
-                    <Typography color="text.secondary" variant="overline" fontWeight="700">
-                        {title}
-                    </Typography>
-                    <Typography variant="h4" fontWeight="800">
-                        {value}
-                    </Typography>
+const KpiCard = ({ title, value, icon, color, onClick }) => (
+    <Card
+        sx={{
+            height: '100%',
+            borderRadius: 3,
+            borderLeft: `6px solid ${color}`,
+            boxShadow: 'var(--mui-shadows-2)',
+            transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+            '&:hover': {
+                transform: 'translateY(-5px)',
+                boxShadow: 'var(--mui-shadows-8)',
+            }
+        }}
+    >
+        <CardActionArea onClick={onClick} sx={{ height: '100%', p: 1 }}>
+            <CardContent>
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                    <Box>
+                        <Typography color="text.secondary" variant="overline" fontWeight="700">
+                            {title}
+                        </Typography>
+                        <Typography variant="h4" fontWeight="800">
+                            {value}
+                        </Typography>
+                    </Box>
+                    <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: `${color}15`, color: color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {icon}
+                    </Box>
                 </Box>
-                <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: `${color}15`, color: color }}>
-                    {icon}
+                <Box display="flex" alignItems="center" mt={2} sx={{ opacity: 0.6 }}>
+                    <Typography variant="caption" fontWeight="600" sx={{ mr: 0.5 }}>
+                        Ver detalles
+                    </Typography>
+                    <ArrowForwardIosIcon sx={{ fontSize: 10 }} />
                 </Box>
-            </Box>
-        </CardContent>
+            </CardContent>
+        </CardActionArea>
     </Card>
 );
 
 const Dashboard = () => {
     const theme = useTheme();
+    const navigate = useNavigate();
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isMounted, setIsMounted] = useState(false);
@@ -71,7 +94,7 @@ const Dashboard = () => {
     if (!data) return <Typography>Error al cargar datos del dashboard.</Typography>;
 
     return (
-        <Container maxWidth="xl" sx={{ mt: 9, mb: 4 }}>
+        <Container maxWidth="xl" sx={{ mt: 6, mb: 4 }}>
             <Typography variant="h4" fontWeight="800" color="primary" mb={4}>
                 Panel de Control
             </Typography>
@@ -79,35 +102,39 @@ const Dashboard = () => {
             {/* KPIs */}
             <Grid container spacing={3} mb={4} justifyContent="center">
                 <Grid item xs={12} sm={6} md={3}>
-                    <KpiCard 
-                        title="Stock Crítico" 
-                        value={data.kpis.stockCritico} 
-                        icon={<ErrorOutlineIcon fontSize="large" />} 
+                    <KpiCard
+                        title="Stock Crítico"
+                        value={data.kpis.stockCritico}
+                        icon={<ErrorOutlineIcon fontSize="large" />}
                         color={theme.palette.error.main}
+                        onClick={() => navigate('/tintas/cartuchos', { state: { filtroStock: 'Bajo' } })}
                     />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
-                    <KpiCard 
-                        title="Órdenes Activas" 
-                        value={data.kpis.ordenesActivas} 
-                        icon={<AssignmentIcon fontSize="large" />} 
+                    <KpiCard
+                        title="Órdenes Activas"
+                        value={data.kpis.ordenesActivas}
+                        icon={<AssignmentIcon fontSize="large" />}
                         color={theme.palette.warning.main}
+                        onClick={() => navigate('/ordenes', { state: { filtroEstado: 'Activas' } })}
                     />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
-                    <KpiCard 
-                        title="Insumos Totales" 
-                        value={data.kpis.totalInsumos} 
-                        icon={<InventoryIcon fontSize="large" />} 
+                    <KpiCard
+                        title="Insumos Totales"
+                        value={data.kpis.totalInsumos}
+                        icon={<InventoryIcon fontSize="large" />}
                         color={theme.palette.primary.main}
+                        onClick={() => navigate('/tintas/cartuchos')}
                     />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
-                    <KpiCard 
-                        title="Entregas del Mes" 
-                        value={data.kpis.consumoMensual} 
-                        icon={<ShowChartIcon fontSize="large" />} 
+                    <KpiCard
+                        title="Entregas del Mes"
+                        value={data.kpis.consumoMensual}
+                        icon={<ShowChartIcon fontSize="large" />}
                         color={theme.palette.success.main}
+                        onClick={() => navigate('/tintas/reportes-tinta')}
                     />
                 </Grid>
             </Grid>
@@ -126,13 +153,13 @@ const Dashboard = () => {
                                     <BarChart data={data.topInsumos} layout="vertical" margin={{ left: 40, right: 40 }}>
                                         <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                                         <XAxis type="number" hide />
-                                        <YAxis 
-                                            dataKey="name" 
-                                            type="category" 
-                                            width={120} 
+                                        <YAxis
+                                            dataKey="name"
+                                            type="category"
+                                            width={120}
                                             tick={{ fontSize: 12, fontWeight: 600 }}
                                         />
-                                        <Tooltip 
+                                        <Tooltip
                                             contentStyle={{ borderRadius: 8, border: 'none', boxShadow: 'var(--mui-shadows-4)' }}
                                         />
                                         <Bar dataKey="total" radius={[0, 4, 4, 0]}>
@@ -172,7 +199,7 @@ const Dashboard = () => {
                                             ))}
                                         </Pie>
                                         <Tooltip />
-                                        <Legend verticalAlign="bottom" height={36}/>
+                                        <Legend verticalAlign="bottom" height={36} />
                                     </PieChart>
                                 </ResponsiveContainer>
                             )}
@@ -191,16 +218,16 @@ const Dashboard = () => {
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={data.consumoPorArea} margin={{ bottom: 30, left: 10, right: 10 }}>
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                        <XAxis 
-                                            dataKey="name" 
-                                            tick={{ fontSize: 11, fontWeight: 700 }} 
-                                            interval={0} 
-                                            angle={-10} 
+                                        <XAxis
+                                            dataKey="name"
+                                            tick={{ fontSize: 11, fontWeight: 700 }}
+                                            interval={0}
+                                            angle={-10}
                                             textAnchor="end"
                                         />
                                         <YAxis />
-                                        <Tooltip 
-                                            cursor={{fill: 'transparent'}}
+                                        <Tooltip
+                                            cursor={{ fill: 'transparent' }}
                                             contentStyle={{ borderRadius: 8, border: 'none', boxShadow: 'var(--mui-shadows-4)' }}
                                         />
                                         <Bar dataKey="value" name="Entregas" radius={[4, 4, 0, 0]}>

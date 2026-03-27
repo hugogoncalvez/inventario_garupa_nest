@@ -1,5 +1,5 @@
 import api, { URI } from '../../config.js';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useMemo } from 'react';
 import { styled } from '@mui/material/styles';
 import Grid from "@mui/material/Grid";
@@ -52,6 +52,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 const GestionCartuchos = () => {
     const [cartuchos, setCartuchos] = useState([]);
     const navigate = useNavigate();
+    const location = useLocation();
     const { auth } = useAuth();
 
     const [openEntregaModal, setOpenEntregaModal] = useState(false);
@@ -68,7 +69,10 @@ const GestionCartuchos = () => {
 
     useEffect(() => {
         getCartuchos();
-    }, []);
+        if (location.state && location.state.filtroStock) {
+            setFiltroStock(location.state.filtroStock);
+        }
+    }, [location.state]);
 
     const filteredCartuchos = useMemo(() => {
         return cartuchos.filter(c => {
