@@ -21,36 +21,43 @@ const KpiCard = ({ title, value, icon, color, onClick }) => (
     <Card
         sx={{
             height: '100%',
-            borderRadius: 3,
+            borderRadius: 4,
             borderLeft: `6px solid ${color}`,
             boxShadow: 'var(--mui-shadows-2)',
-            transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             '&:hover': {
-                transform: 'translateY(-5px)',
-                boxShadow: 'var(--mui-shadows-8)',
+                transform: 'translateY(-8px)',
+                boxShadow: 'var(--mui-shadows-10)',
             }
         }}
     >
         <CardActionArea onClick={onClick} sx={{ height: '100%', p: 1 }}>
             <CardContent>
-                <Box display="flex" justifyContent="space-between" alignItems="center">
-                    <Box>
-                        <Typography color="text.secondary" variant="overline" fontWeight="700">
-                            {title}
-                        </Typography>
-                        <Typography variant="h4" fontWeight="800">
-                            {value}
-                        </Typography>
-                    </Box>
-                    <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: `${color}15`, color: color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        {icon}
+                <Typography color="text.secondary" variant="overline" fontWeight="700" sx={{ letterSpacing: 1.2, mb: 1, display: 'block' }}>
+                    {title}
+                </Typography>
+                <Box display="flex" justifyContent="space-between" alignItems="flex-end">
+                    <Typography variant="h3" fontWeight="900" sx={{ lineHeight: 1 }}>
+                        {value}
+                    </Typography>
+                    <Box sx={{
+                        p: 1.5,
+                        borderRadius: 3,
+                        bgcolor: `${color}15`,
+                        color: color,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        mb: -0.5
+                    }}>
+                        {React.cloneElement(icon, { sx: { fontSize: 48 } })}
                     </Box>
                 </Box>
-                <Box display="flex" alignItems="center" mt={2} sx={{ opacity: 0.6 }}>
-                    <Typography variant="caption" fontWeight="600" sx={{ mr: 0.5 }}>
+                <Box display="flex" alignItems="center" mt={3} sx={{ opacity: 0.7 }}>
+                    <Typography variant="caption" fontWeight="700" sx={{ mr: 0.5, textTransform: 'uppercase' }}>
                         Ver detalles
                     </Typography>
-                    <ArrowForwardIosIcon sx={{ fontSize: 10 }} />
+                    <ArrowForwardIosIcon sx={{ fontSize: 10, fontWeight: 800 }} />
                 </Box>
             </CardContent>
         </CardActionArea>
@@ -105,7 +112,7 @@ const Dashboard = () => {
                     <KpiCard
                         title="Stock Crítico"
                         value={data.kpis.stockCritico}
-                        icon={<ErrorOutlineIcon fontSize="large" />}
+                        icon={<ErrorOutlineIcon />}
                         color={theme.palette.error.main}
                         onClick={() => navigate('/tintas/cartuchos', { state: { filtroStock: 'Bajo' } })}
                     />
@@ -114,7 +121,7 @@ const Dashboard = () => {
                     <KpiCard
                         title="Órdenes Activas"
                         value={data.kpis.ordenesActivas}
-                        icon={<AssignmentIcon fontSize="large" />}
+                        icon={<AssignmentIcon />}
                         color={theme.palette.warning.main}
                         onClick={() => navigate('/ordenes', { state: { filtroEstado: 'Activas' } })}
                     />
@@ -123,7 +130,7 @@ const Dashboard = () => {
                     <KpiCard
                         title="Insumos Totales"
                         value={data.kpis.totalInsumos}
-                        icon={<InventoryIcon fontSize="large" />}
+                        icon={<InventoryIcon />}
                         color={theme.palette.primary.main}
                         onClick={() => navigate('/tintas/cartuchos')}
                     />
@@ -132,9 +139,9 @@ const Dashboard = () => {
                     <KpiCard
                         title="Entregas del Mes"
                         value={data.kpis.consumoMensual}
-                        icon={<ShowChartIcon fontSize="large" />}
+                        icon={<ShowChartIcon />}
                         color={theme.palette.success.main}
-                        onClick={() => navigate('/tintas/reportes-tinta')}
+                        onClick={() => navigate('/tintas/reportes')}
                     />
                 </Grid>
             </Grid>
