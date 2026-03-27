@@ -250,31 +250,31 @@ const GestionRepuestos = () => {
                 />
             </Paper>
 
-            {/* Modal Creación/Edición Rediseñado */}
+            {/* Modal Creación/Edición Rediseñado con Estilo de Órdenes */}
             <Dialog 
                 open={openModal} 
                 onClose={() => setOpenModal(false)} 
                 fullWidth 
                 maxWidth="sm"
                 PaperProps={{
-                    sx: { borderRadius: 3, p: 1 }
+                    sx: { borderRadius: 3 }
                 }}
             >
-                <DialogTitle>
+                <DialogTitle sx={{ p: 3, pb: 2 }}>
                     <Box display="flex" alignItems="center" gap={2}>
-                        <SettingsInputComponentIcon color="primary" sx={{ fontSize: 32 }} />
-                        <Typography variant="h5" fontWeight="700" color="primary">
+                        <SettingsInputComponentIcon color="primary" sx={{ fontSize: 40 }} />
+                        <Typography variant="h4" fontWeight="700" color="primary">
                             {editMode ? 'Editar Repuesto' : 'Nuevo Repuesto'}
                         </Typography>
                     </Box>
                 </DialogTitle>
                 
-                <Divider sx={{ mx: 3, mb: 1 }} />
+                <Divider sx={{ mx: 3 }} />
 
-                <DialogContent>
-                    <Grid container spacing={2.5} sx={{ mt: 0.5 }}>
-                        <Grid item xs={12}>
-                            <FormControl fullWidth size="small">
+                <DialogContent sx={{ p: 3, mt: 1 }}>
+                    <Grid container spacing={3}>
+                        <Grid size={{ xs: 12, sm: 6 }}>
+                            <FormControl fullWidth>
                                 <InputLabel>Tipo de Componente</InputLabel>
                                 <Select 
                                     value={currentRepuesto.tipo_id} 
@@ -285,51 +285,50 @@ const GestionRepuestos = () => {
                                 </Select>
                             </FormControl>
                         </Grid>
-                        <Grid item xs={12} sm={6}>
+                        <Grid size={{ xs: 12, sm: 6 }}>
                             <TextField 
                                 label="Marca" 
                                 fullWidth 
-                                size="small" 
                                 value={currentRepuesto.marca} 
                                 onChange={(e) => setCurrentRepuesto({...currentRepuesto, marca: e.target.value})} 
                             />
                         </Grid>
-                        <Grid item xs={12} sm={6}>
+                        
+                        <Grid size={{ xs: 12 }}>
                             <TextField 
-                                label="Modelo" 
+                                label="Modelo del Repuesto" 
                                 fullWidth 
-                                size="small" 
                                 value={currentRepuesto.modelo} 
                                 onChange={(e) => setCurrentRepuesto({...currentRepuesto, modelo: e.target.value})} 
                             />
                         </Grid>
-                        <Grid item xs={12}>
+
+                        <Grid size={{ xs: 12 }}>
                             <TextField 
-                                label="Descripción" 
+                                label="Descripción / Observaciones Técnicas" 
                                 fullWidth 
-                                size="small" 
                                 multiline 
-                                rows={2} 
+                                rows={3} 
                                 value={currentRepuesto.descripcion} 
                                 onChange={(e) => setCurrentRepuesto({...currentRepuesto, descripcion: e.target.value})} 
+                                helperText="Detalles adicionales del componente"
                             />
                         </Grid>
-                        <Grid item xs={12} sm={6}>
+
+                        <Grid size={{ xs: 12, sm: 6 }}>
                             <TextField 
                                 label="Stock Actual" 
                                 type="number" 
                                 fullWidth 
-                                size="small" 
                                 value={currentRepuesto.stock_actual} 
                                 onChange={(e) => setCurrentRepuesto({...currentRepuesto, stock_actual: e.target.value})} 
                             />
                         </Grid>
-                        <Grid item xs={12} sm={6}>
+                        <Grid size={{ xs: 12, sm: 6 }}>
                             <TextField 
                                 label="Stock Mínimo" 
                                 type="number" 
                                 fullWidth 
-                                size="small" 
                                 value={currentRepuesto.stock_minimo} 
                                 onChange={(e) => setCurrentRepuesto({...currentRepuesto, stock_minimo: e.target.value})} 
                             />
@@ -342,18 +341,22 @@ const GestionRepuestos = () => {
                         <Button 
                             variant="outlined" 
                             color="error" 
+                            size="large"
                             onClick={() => setOpenModal(false)}
                             startIcon={<CancelIcon />}
+                            sx={{ borderRadius: 2 }}
                         >
                             Cancelar
                         </Button>
                         <Button 
                             onClick={handleSave} 
                             variant="contained" 
+                            size="large"
                             color="primary"
                             startIcon={<SaveOutlinedIcon />}
+                            sx={{ borderRadius: 2 }}
                         >
-                            {editMode ? 'Actualizar' : 'Guardar Repuesto'}
+                            {editMode ? 'Actualizar Repuesto' : 'Guardar Repuesto'}
                         </Button>
                     </Stack>
                 </DialogActions>
