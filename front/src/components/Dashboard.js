@@ -31,28 +31,39 @@ const KpiCard = ({ title, value, icon, color, onClick }) => (
             }
         }}
     >
-        <CardActionArea onClick={onClick} sx={{ height: '100%', p: 1 }}>
-            <CardContent>
-                <Typography color="text.secondary" variant="overline" fontWeight="700" sx={{ letterSpacing: 1.2, mb: 2, display: 'block' }}>
-                    {title}
-                </Typography>
-                <Box display="flex" justifyContent="space-between" alignItems="flex-end" sx={{ gap: 2 }}>
-                    <Typography variant="h3" fontWeight="900" sx={{ lineHeight: 1 }}>
+        <CardActionArea onClick={onClick} sx={{ height: '100%' }}>
+            <CardContent sx={{ 
+                height: '100%', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                p: 2.5,
+                '&:last-child': { pb: 2.5 } // Corregir padding extra de MUI
+            }}>
+                <Box display="flex" alignItems="center" mb={2} sx={{ color: color }}>
+                    <Box sx={{ 
+                        display: 'flex', 
+                        p: 0.5, 
+                        borderRadius: 1, 
+                        bgcolor: `${color}15`, 
+                        mr: 1 
+                    }}>
+                        {React.cloneElement(icon, { sx: { fontSize: 20 } })}
+                    </Box>
+                    <Typography color="text.secondary" variant="overline" fontWeight="700" sx={{ letterSpacing: 1, lineHeight: 1 }}>
+                        {title}
+                    </Typography>
+                </Box>
+                
+                <Box sx={{ 
+                    flexGrow: 1, 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    py: 1
+                }}>
+                    <Typography variant="h2" fontWeight="900" color="text.primary" sx={{ lineHeight: 1 }}>
                         {value}
                     </Typography>
-                    <Box sx={{
-                        p: 1.5,
-                        borderRadius: 3,
-                        bgcolor: `${color}15`,
-                        color: color,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        mb: -0.5,
-                        ml: 1 // Margen extra para asegurar separación
-                    }}>
-                        {React.cloneElement(icon, { sx: { fontSize: 48 } })}
-                    </Box>
                 </Box>
             </CardContent>
         </CardActionArea>
