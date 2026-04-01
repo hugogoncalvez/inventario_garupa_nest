@@ -176,10 +176,21 @@ const ShowInventario = () => {
                 bgcolor: 'background.paper', // Fondo del contenedor de la tabla
             }
         },
+        muiTableHeadProps: {
+            sx: {
+                bgcolor: 'background.paper',
+            },
+        },
+        muiTableHeadRowProps: {
+            sx: {
+                bgcolor: 'background.paper',
+                boxShadow: 'none',
+            },
+        },
         muiTableHeadCellProps: {
             sx: {
                 bgcolor: (theme) => theme.palette.mode === 'dark' 
-                    ? alpha(theme.palette.primary.main, 0.2) 
+                    ? '#1e293b' // Un gris azulado oscuro sólido (palette.background.paper)
                     : alpha(theme.palette.primary.main, 0.05),
                 color: 'text.primary',
                 fontWeight: 800,
@@ -190,7 +201,13 @@ const ShowInventario = () => {
                     color: 'text.primary',
                 },
                 '& .MuiSvgIcon-root': {
-                    color: (theme) => alpha(theme.palette.text.primary, 0.8),
+                    color: (theme) => theme.palette.text.primary,
+                },
+                '& .Mui-TableHeadCell-Content-Labels': {
+                    color: 'text.primary',
+                },
+                '& .Mui-TableHeadCell-Content-Wrapper': {
+                    color: 'text.primary',
                 },
             },
         },
