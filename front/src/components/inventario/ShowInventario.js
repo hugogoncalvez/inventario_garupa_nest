@@ -66,7 +66,15 @@ const ShowInventario = () => {
                 accessorKey: 'num_inventario',
                 header: 'Inv. Nº',
                 size: 100,
-                Cell: ({ cell }) => <Box sx={{ fontWeight: 700, color: 'primary.main' }}>{cell.getValue()}</Box>,
+                Cell: ({ cell }) => (
+                    <Box sx={{ 
+                        fontWeight: 800, 
+                        color: 'primary.main',
+                        fontSize: '0.9rem' 
+                    }}>
+                        {cell.getValue()}
+                    </Box>
+                ),
             },
             {
                 accessorKey: 'num_pc',
@@ -105,24 +113,24 @@ const ShowInventario = () => {
                 filterVariant: 'select',
                 Cell: ({ cell }) => {
                     const est = cell.getValue()?.toLowerCase() || '';
-                    let bgcolor = 'grey.500';
-                    if (est.includes('nuevo') || est.includes('bueno')) bgcolor = 'success.main';
-                    else if (est.includes('utilizado') || est.includes('regular')) bgcolor = 'warning.main';
-                    else if (est.includes('baja') || est.includes('malo')) bgcolor = 'error.main';
+                    let colorKey = 'grey';
+                    if (est.includes('nuevo') || est.includes('bueno')) colorKey = 'success';
+                    else if (est.includes('utilizado') || est.includes('regular')) colorKey = 'warning';
+                    else if (est.includes('baja') || est.includes('malo')) colorKey = 'error';
 
                     return (
                         <Box sx={{
-                            bgcolor: (theme) => alpha(theme.palette[bgcolor.split('.')[0]].main, 0.2),
-                            color: bgcolor,
-                            border: 1,
-                            borderColor: bgcolor,
+                            bgcolor: (theme) => alpha(theme.palette[colorKey].main, 0.15),
+                            color: (theme) => theme.palette[colorKey].main,
+                            border: '1px solid',
+                            borderColor: (theme) => alpha(theme.palette[colorKey].main, 0.4),
                             px: 1,
                             py: 0.25,
-                            borderRadius: 1,
-                            fontSize: '0.7rem',
-                            fontWeight: 700,
+                            borderRadius: '6px',
+                            fontSize: '0.65rem',
+                            fontWeight: 800,
                             display: 'inline-block',
-                            minWidth: 70,
+                            minWidth: 75,
                             textAlign: 'center',
                             textTransform: 'uppercase'
                         }}>
@@ -152,51 +160,69 @@ const ShowInventario = () => {
         onRowSelectionChange: setRowSelection,
         state: { rowSelection },
         
-        // --- MEJORAS DE ESTILO PARA MODO CLARO/OSCURO ---
+        // --- CONFIGURACIÓN DE TEMA BLINDADA ---
         muiTablePaperProps: {
             elevation: 0,
             sx: {
                 borderRadius: '16px',
                 border: '1px solid',
                 borderColor: 'divider',
-                bgcolor: 'background.paper',
+                bgcolor: 'background.paper', // Fondo del contenedor principal
+                backgroundImage: 'none',
             },
+        },
+        muiTableContainerProps: {
+            sx: {
+                bgcolor: 'background.paper', // Fondo del contenedor de la tabla
+            }
         },
         muiTableHeadCellProps: {
             sx: {
-                bgcolor: (theme) => alpha(theme.palette.primary.main, 0.05),
+                bgcolor: (theme) => alpha(theme.palette.primary.main, 0.1),
                 color: 'text.primary',
-                fontWeight: 700,
-                fontSize: '0.85rem',
+                fontWeight: 800,
                 borderBottom: '2px solid',
                 borderColor: 'divider',
             },
         },
         muiTableBodyCellProps: {
             sx: {
-                fontSize: '0.85rem',
-                color: 'text.primary',
+                bgcolor: 'background.paper', // FORZAMOS FONDO DE CADA CELDA
+                color: 'text.primary',      // FORZAMOS COLOR DE TEXTO
                 borderBottom: '1px solid',
-                borderColor: (theme) => alpha(theme.palette.divider, 0.5),
+                borderColor: 'divider',
+                py: 1,
             },
         },
         muiTableBodyRowProps: {
             sx: {
-                '&:hover': {
-                    bgcolor: (theme) => alpha(theme.palette.primary.main, 0.02),
+                bgcolor: 'background.paper',
+                '&:hover td': {
+                    bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08), // Hover sutil
                 },
             },
         },
         muiTopToolbarProps: {
             sx: {
                 bgcolor: 'background.paper',
-                borderRadius: '16px 16px 0 0',
+                borderBottom: '1px solid',
+                borderColor: 'divider',
             },
         },
         muiBottomToolbarProps: {
             sx: {
                 bgcolor: 'background.paper',
-                borderRadius: '0 0 16px 16px',
+                borderTop: '1px solid',
+                borderColor: 'divider',
+            },
+        },
+        muiSearchTextFieldProps: {
+            size: 'small',
+            variant: 'outlined',
+            sx: {
+                '& .MuiOutlinedInput-root': {
+                    borderRadius: '10px',
+                },
             },
         },
 
@@ -228,11 +254,7 @@ const ShowInventario = () => {
                     variant="contained"
                     onClick={() => navigate('/inventario/create')}
                     startIcon={<AddCircleOutlineIcon />}
-                    sx={{ 
-                        borderRadius: 2,
-                        boxShadow: 'none',
-                        '&:hover': { boxShadow: 'none' }
-                    }}
+                    sx={{ borderRadius: '10px' }}
                 >
                     Nuevo Item
                 </Button>
@@ -247,14 +269,19 @@ const ShowInventario = () => {
     return (
         <Container maxWidth="xl" sx={{ mt: 11, mb: 4 }}>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-                <Typography variant="h4" fontWeight="800" color="primary" sx={{ letterSpacing: '-0.5px' }}>
+                <Typography variant="h4" fontWeight="900" color="primary" sx={{ letterSpacing: '-1px' }}>
                     Inventario Inteligente
                 </Typography>
             </Box>
 
             <ConfirmDialog open={open} onClose={handleClose} />
 
-            <MaterialReactTable table={table} />
+            <Box sx={{ 
+                width: '100%', 
+                '& .MuiPaper-root': { bgcolor: 'background.paper' } // Doble refuerzo
+            }}>
+                <MaterialReactTable table={table} />
+            </Box>
 
             <Box mt={3} display="flex" gap={2} flexWrap="wrap">
                 <Button
@@ -263,7 +290,7 @@ const ShowInventario = () => {
                     disabled={selectedRowsData.length === 0}
                     onClick={() => ActaEntrega(selectedRowsData)}
                     startIcon={<PictureAsPdfIcon />}
-                    sx={{ borderRadius: 2 }}
+                    sx={{ borderRadius: '10px' }}
                 >
                     Acta Entrega ({selectedRowsData.length})
                 </Button>
@@ -273,7 +300,7 @@ const ShowInventario = () => {
                     disabled={selectedRowsData.length === 0}
                     onClick={() => ActaDevolucion(selectedRowsData)}
                     startIcon={<PictureAsPdfIcon />}
-                    sx={{ borderRadius: 2 }}
+                    sx={{ borderRadius: '10px' }}
                 >
                     Acta Devolución ({selectedRowsData.length})
                 </Button>
@@ -283,7 +310,7 @@ const ShowInventario = () => {
                     disabled={inventario.length === 0}
                     onClick={() => Auditoria(table.getFilteredRowModel().rows.map(r => r.original))}
                     startIcon={<PictureAsPdfIcon />}
-                    sx={{ borderRadius: 2 }}
+                    sx={{ borderRadius: '10px' }}
                 >
                     Auditoría (Filtrados)
                 </Button>
