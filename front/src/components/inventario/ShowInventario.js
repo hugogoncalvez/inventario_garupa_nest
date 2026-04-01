@@ -167,54 +167,37 @@ const ShowInventario = () => {
                 borderRadius: '16px',
                 border: '1px solid',
                 borderColor: 'divider',
-                bgcolor: 'background.paper', // Fondo del contenedor principal
+                bgcolor: 'background.paper',
                 backgroundImage: 'none',
             },
         },
         muiTableContainerProps: {
-            sx: {
-                bgcolor: 'background.paper', // Fondo del contenedor de la tabla
-            }
+            sx: { bgcolor: 'background.paper' }
         },
         muiTableHeadProps: {
-            sx: {
-                bgcolor: 'background.paper',
-            },
+            sx: { bgcolor: 'background.paper' },
         },
         muiTableHeadRowProps: {
-            sx: {
-                bgcolor: 'background.paper',
-                boxShadow: 'none',
-            },
+            sx: { bgcolor: 'background.paper', boxShadow: 'none' },
         },
         muiTableHeadCellProps: {
             sx: {
                 bgcolor: (theme) => theme.palette.mode === 'dark' 
-                    ? '#1e293b' // Un gris azulado oscuro sólido (palette.background.paper)
+                    ? '#1e293b' 
                     : alpha(theme.palette.primary.main, 0.05),
                 color: 'text.primary',
                 fontWeight: 800,
                 fontSize: '0.85rem',
                 borderBottom: '2px solid',
                 borderColor: (theme) => theme.palette.primary.main,
-                '& .MuiButtonBase-root': {
-                    color: 'text.primary',
-                },
-                '& .MuiSvgIcon-root': {
-                    color: (theme) => theme.palette.text.primary,
-                },
-                '& .Mui-TableHeadCell-Content-Labels': {
-                    color: 'text.primary',
-                },
-                '& .Mui-TableHeadCell-Content-Wrapper': {
-                    color: 'text.primary',
-                },
+                '& .MuiButtonBase-root': { color: 'primary.main' }, // Iconos de ordenar/menu en azul
+                '& .MuiSvgIcon-root': { color: 'primary.main' },
             },
         },
         muiTableBodyCellProps: {
             sx: {
-                bgcolor: 'background.paper', // FORZAMOS FONDO DE CADA CELDA
-                color: 'text.primary',      // FORZAMOS COLOR DE TEXTO
+                bgcolor: 'background.paper',
+                color: 'text.primary',
                 borderBottom: '1px solid',
                 borderColor: 'divider',
                 py: 1,
@@ -224,15 +207,33 @@ const ShowInventario = () => {
             sx: {
                 bgcolor: 'background.paper',
                 '&:hover td': {
-                    bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08), // Hover sutil
+                    bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08),
                 },
             },
+        },
+        // Estilo para Checkboxes
+        muiSelectCheckboxProps: {
+            color: 'primary',
+            sx: {
+                color: (theme) => alpha(theme.palette.text.primary, 0.3),
+                '&.Mui-checked': { color: 'primary.main' },
+            },
+        },
+        // Estilo para los Menús Flotantes (Filtros, Opciones de Columna)
+        muiColumnActionsButtonProps: {
+            sx: { color: 'primary.main' }
+        },
+        muiFilterTextFieldProps: {
+            size: 'small',
+            variant: 'outlined',
+            sx: { bgcolor: 'background.paper' }
         },
         muiTopToolbarProps: {
             sx: {
                 bgcolor: 'background.paper',
                 borderBottom: '1px solid',
                 borderColor: 'divider',
+                '& .MuiSvgIcon-root': { color: 'text.secondary' }, // Iconos de búsqueda/filtros
             },
         },
         muiBottomToolbarProps: {
@@ -240,15 +241,17 @@ const ShowInventario = () => {
                 bgcolor: 'background.paper',
                 borderTop: '1px solid',
                 borderColor: 'divider',
+                '& .MuiTypography-root': { color: 'text.primary' },
+                '& .MuiSvgIcon-root': { color: 'text.primary' },
+                '& .MuiButtonBase-root': { color: 'text.primary' },
             },
         },
         muiSearchTextFieldProps: {
             size: 'small',
             variant: 'outlined',
             sx: {
-                '& .MuiOutlinedInput-root': {
-                    borderRadius: '10px',
-                },
+                '& .MuiOutlinedInput-root': { borderRadius: '10px' },
+                '& .MuiInputBase-input': { color: 'text.primary' },
             },
         },
 
