@@ -178,11 +178,20 @@ const ShowInventario = () => {
         },
         muiTableHeadCellProps: {
             sx: {
-                bgcolor: (theme) => alpha(theme.palette.primary.main, 0.1),
+                bgcolor: (theme) => theme.palette.mode === 'dark' 
+                    ? alpha(theme.palette.primary.main, 0.2) 
+                    : alpha(theme.palette.primary.main, 0.05),
                 color: 'text.primary',
                 fontWeight: 800,
+                fontSize: '0.85rem',
                 borderBottom: '2px solid',
-                borderColor: 'divider',
+                borderColor: (theme) => theme.palette.primary.main,
+                '& .MuiButtonBase-root': {
+                    color: 'text.primary',
+                },
+                '& .MuiSvgIcon-root': {
+                    color: (theme) => alpha(theme.palette.text.primary, 0.8),
+                },
             },
         },
         muiTableBodyCellProps: {
