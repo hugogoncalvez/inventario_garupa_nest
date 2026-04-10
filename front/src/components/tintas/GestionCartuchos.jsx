@@ -1,4 +1,4 @@
-import api, { URI } from '../../config.js';
+import api, { URI, showLoading, showSuccess, showError, MySwal } from '../../config.js';
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useMemo } from 'react';
 import { styled } from '@mui/material/styles';
@@ -19,7 +19,6 @@ import ClearAllIcon from '@mui/icons-material/ClearAll';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
-import Swal from 'sweetalert2';
 
 import ModalRegistrarEntrega from './ModalRegistrarEntrega';
 import ModalRegistrarCompra from './ModalRegistrarCompra';
@@ -104,26 +103,29 @@ const GestionCartuchos = () => {
     };
 
     const handleDelete = (id) => {
-        Swal.fire({
+        MySwal().fire({
             title: '¿Estás seguro?',
             text: "¡No podrás revertir esta acción!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: 'var(--mui-palette-primary-main)',
-            cancelButtonColor: 'var(--mui-palette-error-main)',
             confirmButtonText: 'Sí, ¡bórralo!',
             cancelButtonText: 'Cancelar'
         }).then(async (result) => {
             if (result.isConfirmed) {
-                await api.delete(`${URI}/tintas/cartuchos/${id}`, { data: { usuario_id: auth.id } });
-                getCartuchos();
-                Swal.fire('¡Eliminado!', 'El insumo ha sido eliminado.', 'success');
+                showLoading('Eliminando...');
+                try {
+                    await api.delete(`${URI}/tintas/cartuchos/${id}`, { data: { usuario_id: auth.id } });
+                    getCartuchos();
+                    showSuccess('¡Eliminado!', 'El insumo ha sido eliminado.');
+                } catch (error) {
+                    showError('Error', 'No se pudo eliminar el insumo.');
+                }
             }
         });
     };
 
     const handleAdjustStockUnidades = async (cartucho) => {
-        const { value: nuevaCantidad } = await Swal.fire({
+        const { value: nuevaCantidad } = await MySwal().fire({
             title: `Ajustar stock: ${cartucho.modelo}`,
             input: 'number',
             inputValue: cartucho.stock_unidades,
@@ -133,6 +135,7 @@ const GestionCartuchos = () => {
         });
 
         if (nuevaCantidad !== undefined && nuevaCantidad !== null) {
+            showLoading('Ajustando stock...');
             try {
                 await api.post(`${URI}/tintas/movimientos/ajuste`, {
                     cartucho_id: cartucho.id,
@@ -140,9 +143,9 @@ const GestionCartuchos = () => {
                     usuario_id: auth.id
                 });
                 getCartuchos();
-                Swal.fire('¡Ajustado!', 'Stock corregido.', 'success');
+                showSuccess('¡Ajustado!', 'Stock corregido correctamente.');
             } catch (err) {
-                Swal.fire('Error', 'No se pudo ajustar el stock.', 'error');
+                showError('Error', 'No se pudo ajustar el stock.');
             }
         }
     };
@@ -155,17 +158,12 @@ const GestionCartuchos = () => {
     };
 
     const handleSendStockSummary = async () => {
+        showLoading('Enviando resumen por WhatsApp...');
         try {
             await api.post(`${URI}/tintas/whatsapp/resumen-stock`);
-            Swal.fire({
-                title: '¡Enviado!',
-                text: 'El resumen de stock se ha enviado al grupo de WhatsApp.',
-                icon: 'success',
-                timer: 2000,
-                showConfirmButton: false
-            });
+            showSuccess('¡Enviado!', 'El resumen de stock se ha enviado al grupo de WhatsApp.');
         } catch (error) {
-            Swal.fire('Error', 'No se pudo enviar el resumen por WhatsApp.', 'error');
+            showError('Error', 'No se pudo enviar el resumen por WhatsApp.');
         }
     };
 

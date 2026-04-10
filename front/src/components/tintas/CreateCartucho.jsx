@@ -1,4 +1,4 @@
-import api, { URI } from '../../config.js';
+import api, { URI, showLoading, showSuccess, showError } from '../../config.js';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Typography, Container, Paper, Box, Divider } from '@mui/material';
@@ -26,7 +26,7 @@ export const CreateCartucho = () => {
                 const res = await api.get(`${URI}/insumos-granel`);
                 setInsumosGranel(res.data);
             } catch (err) {
-                setError("Error al cargar los insumos a granel.");
+                console.error("Error al cargar los insumos a granel.");
             }
         };
         fetchInsumosGranel();
@@ -38,19 +38,20 @@ export const CreateCartucho = () => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        setError('');
 
         const { modelo, color, esRecargable, selectedInsumoGranelId } = cartuchoData;
 
         if (!modelo.trim() || !color.trim()) {
-            setError('El modelo y el color son obligatorios.');
+            showError('Datos incompletos', 'El modelo y el color son obligatorios.');
             return;
         }
 
         if (esRecargable && !selectedInsumoGranelId) {
-            setError('Seleccione un insumo a granel para la recarga.');
+            showError('Insumo faltante', 'Seleccione un insumo a granel para la recarga.');
             return;
         }
+
+        showLoading('Registrando nuevo insumo...');
 
         try {
             await api.post(`${URI}/tintas/cartuchos`, {
@@ -63,9 +64,10 @@ export const CreateCartucho = () => {
                 es_recargable: cartuchoData.esRecargable,
                 insumo_granel_id: cartuchoData.esRecargable ? cartuchoData.selectedInsumoGranelId : null
             });
+            showSuccess('¡Creado!', 'El insumo se registró correctamente.');
             navigate('/tintas/cartuchos');
         } catch (err) {
-            setError(err.response?.data?.message || "Error al crear el insumo.");
+            showError('Error', err.response?.data?.message || "No se pudo registrar el insumo.");
         }
     };
 

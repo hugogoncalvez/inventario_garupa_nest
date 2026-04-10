@@ -1,4 +1,4 @@
-import api, { URI } from '../../config.js';
+import api, { URI, showLoading, showSuccess, showError } from '../../config.js';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from "react-router-dom";
 import { Typography, Container, Paper, Box, Divider, CircularProgress } from '@mui/material';
@@ -28,7 +28,7 @@ export const EditCartucho = () => {
             const res = await api.get(`${URI}/insumos-granel`);
             setInsumosGranel(res.data);
         } catch (err) {
-            setError(prev => `${prev} Error granel.`);
+            console.error("Error granel:", err);
         }
     }, []);
 
@@ -65,19 +65,20 @@ export const EditCartucho = () => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        setError('');
 
         const { modelo, color, esRecargable, selectedInsumoGranelId } = cartuchoData;
 
         if (!modelo.trim() || !color.trim()) {
-            setError('El modelo y el color son obligatorios.');
+            showError('Datos incompletos', 'El modelo y el color son obligatorios.');
             return;
         }
 
         if (esRecargable && !selectedInsumoGranelId) {
-            setError('Seleccione un insumo a granel para la recarga.');
+            showError('Insumo faltante', 'Seleccione un insumo a granel para la recarga.');
             return;
         }
+
+        showLoading('Actualizando insumo...');
 
         try {
             await api.put(`${URI}/tintas/cartuchos/${id}`, {
@@ -89,9 +90,10 @@ export const EditCartucho = () => {
                 es_recargable: cartuchoData.esRecargable,
                 insumo_granel_id: cartuchoData.esRecargable ? cartuchoData.selectedInsumoGranelId : null
             });
+            showSuccess('¡Actualizado!', 'Los cambios se guardaron correctamente.');
             navigate('/tintas/cartuchos');
         } catch (err) {
-            setError(err.response?.data?.message || "Error al actualizar.");
+            showError('Error', err.response?.data?.message || "No se pudo actualizar el insumo.");
         }
     };
 

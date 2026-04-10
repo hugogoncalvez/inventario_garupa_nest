@@ -1,4 +1,4 @@
-import api, { URI } from '../../config.js';
+import api, { URI, showLoading, showSuccess, showError, MySwal } from '../../config.js';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { styled } from '@mui/material/styles';
 import Grid from "@mui/material/Grid";
@@ -13,7 +13,6 @@ import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import AddLocationAltIcon from '@mui/icons-material/AddLocationAlt';
-import Swal from 'sweetalert2';
 
 // Estilos optimizados
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -79,56 +78,40 @@ export const ConfigAreas = () => {
         e.preventDefault();
         if (!validate()) return;
 
+        showLoading(isUpdate ? 'Actualizando área...' : 'Guardando área...');
+
         try {
             if (isUpdate) {
                 await api.put(`${URI}/areas/${form.id}`, form);
-                Swal.fire({
-                    title: '¡Actualizada!',
-                    text: 'El área ha sido modificada correctamente.',
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
+                showSuccess('¡Actualizada!', 'El área ha sido modificada correctamente.');
             } else {
                 await api.post(`${URI}/areas/create`, form);
-                Swal.fire({
-                    title: '¡Guardada!',
-                    text: 'La nueva área ha sido registrada.',
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
+                showSuccess('¡Guardada!', 'La nueva área ha sido registrada.');
             }
             clearForm();
             getAreas();
         } catch (error) {
-            Swal.fire('Error', 'No se pudo procesar la solicitud del área.', 'error');
+            showError('Error', 'No se pudo procesar la solicitud del área.');
         }
     };
 
     const handleDelete = (id) => {
-        Swal.fire({
+        MySwal().fire({
             title: '¿Eliminar área?',
             text: "Esta acción podría afectar el historial de equipos vinculados.",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: 'var(--mui-palette-error-main)',
             confirmButtonText: 'Sí, eliminar',
             cancelButtonText: 'Cancelar'
         }).then(async (result) => {
             if (result.isConfirmed) {
+                showLoading('Eliminando...');
                 try {
                     await api.delete(`${URI}/areas/${id}`);
                     getAreas();
-                    Swal.fire({
-                        title: '¡Eliminada!',
-                        text: 'El área ha sido borrada del sistema.',
-                        icon: 'success',
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
+                    showSuccess('¡Eliminada!', 'El área ha sido borrada del sistema.');
                 } catch (error) {
-                    Swal.fire('Error', 'No se pudo eliminar el área. Verifique si tiene impresoras vinculadas.', 'error');
+                    showError('Error', 'No se pudo eliminar el área. Verifique si tiene impresoras vinculadas.');
                 }
             }
         });

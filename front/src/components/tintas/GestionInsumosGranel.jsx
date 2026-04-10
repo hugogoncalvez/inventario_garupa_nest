@@ -1,4 +1,4 @@
-import api, { URI } from '../../config.js';
+import api, { URI, showLoading, showSuccess, showError, MySwal } from '../../config.js';
 import React, { useState, useEffect } from 'react';
 import { styled } from '@mui/material/styles';
 import Grid from "@mui/material/Grid";
@@ -15,7 +15,6 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
-import Swal from 'sweetalert2';
 import useAuth from '../../hooks/useAuth';
 import ModalRegistrarCompraInsumoGranel from './ModalRegistrarCompraInsumoGranel';
 
@@ -82,68 +81,56 @@ export const GestionInsumosGranel = () => {
         e.preventDefault();
         if (!form.nombre.trim()) return;
 
+        showLoading(isUpdate ? 'Actualizando insumo...' : 'Guardando insumo...');
+
         try {
             const data = {
                 nombre: form.nombre.trim(),
-                sku: form.sku.trim(),
+                sku: form.sku.trim() || null,
                 unidad_medida: form.unidad_medida,
-                stock_minimo: parseFloat(form.stock_minimo)
+                stock_minimo: parseFloat(form.stock_minimo) || 0
             };
 
             if (isUpdate) {
                 await api.put(`${URI}/insumos-granel/${form.id}`, data);
-                Swal.fire({
-                    title: '¡Actualizado!',
-                    text: 'El insumo a granel ha sido modificado.',
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
+                showSuccess('¡Actualizado!', 'El insumo a granel ha sido modificado.');
             } else {
                 await api.post(`${URI}/insumos-granel`, data);
-                Swal.fire({
-                    title: '¡Guardado!',
-                    text: 'Nuevo insumo a granel registrado con éxito.',
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
+                showSuccess('¡Guardado!', 'Nuevo insumo a granel registrado con éxito.');
             }
             clearForm();
             getInsumosGranel();
         } catch (err) {
-            Swal.fire('Error', 'No se pudo guardar el insumo a granel.', 'error');
+            showError('Error', 'No se pudo guardar el insumo a granel.');
         }
     };
 
     const handleEditClick = (insumo) => {
-        setForm({ ...insumo });
+        setForm({ 
+            ...insumo,
+            sku: insumo.sku || '',
+            stock_minimo: insumo.stock_minimo || 0
+        });
         setIsUpdate(true);
     };
 
     const handleDeleteClick = (id) => {
-        Swal.fire({
+        MySwal().fire({
             title: '¿Eliminar insumo?',
             text: "Esta acción no se puede deshacer y afectará el historial.",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: 'var(--mui-palette-error-main)',
             confirmButtonText: 'Sí, eliminar',
             cancelButtonText: 'Cancelar'
         }).then(async (result) => {
             if (result.isConfirmed) {
+                showLoading('Eliminando...');
                 try {
                     await api.delete(`${URI}/insumos-granel/${id}`, { data: { usuario_id: auth.id } });
                     getInsumosGranel();
-                    Swal.fire({
-                        title: '¡Eliminado!',
-                        text: 'El insumo ha sido removido del inventario.',
-                        icon: 'success',
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
+                    showSuccess('¡Eliminado!', 'El insumo ha sido removido del inventario.');
                 } catch (error) {
-                    Swal.fire('Error', 'No se pudo eliminar el insumo. Verifique si tiene cartuchos vinculados.', 'error');
+                    showError('Error', 'No se pudo eliminar el insumo. Verifique si tiene cartuchos vinculados.');
                 }
             }
         });
@@ -155,7 +142,7 @@ export const GestionInsumosGranel = () => {
     };
 
     const handleAdjustStock = async (insumo) => {
-        const { value: nueva } = await Swal.fire({
+        const { value: nueva } = await MySwal().fire({
             title: `Ajustar: ${insumo.nombre}`,
             text: `Unidad: ${insumo.unidad_medida}`,
             input: 'number',
@@ -166,6 +153,7 @@ export const GestionInsumosGranel = () => {
         });
 
         if (nueva !== undefined && nueva !== null) {
+            showLoading('Ajustando stock...');
             try {
                 await api.post(`${URI}/insumos-granel/movimientos/ajuste`, {
                     insumo_granel_id: insumo.id,
@@ -173,31 +161,20 @@ export const GestionInsumosGranel = () => {
                     usuario_id: auth.id
                 });
                 getInsumosGranel();
-                Swal.fire({
-                    title: '¡Ajustado!',
-                    text: 'El stock a granel ha sido corregido.',
-                    icon: 'success',
-                    timer: 1500,
-                    showConfirmButton: false
-                });
+                showSuccess('¡Ajustado!', 'El stock a granel ha sido corregido.');
             } catch (error) {
-                Swal.fire('Error', 'No se pudo ajustar el stock a granel.', 'error');
+                showError('Error', 'No se pudo ajustar el stock a granel.');
             }
         }
     };
 
     const handleSendStockSummary = async () => {
+        showLoading('Enviando resumen por WhatsApp...');
         try {
             await api.post(`${URI}/tintas/whatsapp/resumen-stock`);
-            Swal.fire({
-                title: '¡Enviado!',
-                text: 'El resumen de stock se ha enviado al grupo de WhatsApp.',
-                icon: 'success',
-                timer: 2000,
-                showConfirmButton: false
-            });
+            showSuccess('¡Enviado!', 'El resumen de stock se ha enviado al grupo de WhatsApp.');
         } catch (error) {
-            Swal.fire('Error', 'No se pudo enviar el resumen por WhatsApp.', 'error');
+            showError('Error', 'No se pudo enviar el resumen por WhatsApp.');
         }
     };
 

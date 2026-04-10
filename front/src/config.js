@@ -10,65 +10,90 @@ let wakeUpTimer = null;
 let activeRequests = 0;
 
 /**
- * Detecta si el tema actual es oscuro
+ * Detecta si el tema actual es oscuro (MUI v7 usa data-mui-color-scheme)
  */
 export function isDarkMode() {
-    return document.documentElement.getAttribute('data-mode') === 'dark' ||
-           document.documentElement.getAttribute('data-theme') === 'dark' ||
+    return document.documentElement.getAttribute('data-mui-color-scheme') === 'dark' ||
            window.matchMedia('(prefers-color-scheme: dark)').matches;
 }
 
 /**
- * Obtiene los colores según el tema actual
+ * Obtiene los colores según el tema actual para SweetAlert2
  */
 export function getThemeColors() {
-    if (isDarkMode()) {
-        return {
-            background: '#1e293b',
-            color: '#f8fafc',
-            backdrop: 'rgba(0, 0, 0, 0.6)',
-            iconColor: '#60a5fa'
-        };
-    }
+    const isDark = isDarkMode();
     return {
-        background: '#ffffff',
-        color: '#0f172a',
-        backdrop: 'rgba(37, 99, 235, 0.3)',
-        iconColor: '#2563eb'
+        background: isDark ? '#1e293b' : '#ffffff',
+        color: isDark ? '#f8fafc' : '#0f172a',
+        backdrop: isDark ? 'rgba(0, 0, 0, 0.7)' : 'rgba(37, 99, 235, 0.2)',
+        confirmButtonColor: isDark ? '#60a5fa' : '#2563eb',
+        cancelButtonColor: isDark ? '#475569' : '#64748b',
     };
 }
+
+/**
+ * Instancia de SweetAlert2 que hereda el tema actual automáticamente
+ */
+export const MySwal = () => {
+    const colors = getThemeColors();
+    return Swal.mixin({
+        background: colors.background,
+        color: colors.color,
+        backdrop: colors.backdrop,
+        confirmButtonColor: colors.confirmButtonColor,
+        cancelButtonColor: colors.cancelButtonColor,
+        customClass: {
+            popup: 'rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700',
+            confirmButton: 'px-6 py-2 font-bold rounded-lg',
+            cancelButton: 'px-6 py-2 font-bold rounded-lg',
+        }
+    });
+};
+
+/**
+ * Muestra un aviso de carga no cancelable
+ */
+export const showLoading = (message = 'Procesando...') => {
+    return MySwal().fire({
+        title: message,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+};
+
+/**
+ * Muestra un mensaje de éxito que desaparece solo
+ */
+export const showSuccess = (title, message = '') => {
+    return MySwal().fire({
+        icon: 'success',
+        title,
+        text: message,
+        timer: 2000,
+        showConfirmButton: false
+    });
+};
+
+/**
+ * Muestra un mensaje de error
+ */
+export const showError = (title, message = 'Ocurrió un error inesperado.') => {
+    return MySwal().fire({
+        icon: 'error',
+        title,
+        text: message,
+        confirmButtonText: 'Entendido'
+    });
+};
 
 function showWakeUpBanner() {
     if (isBannerVisible) return;
     isBannerVisible = true;
 
-    const colors = getThemeColors();
-
-    Swal.fire({
-        title: 'Despertando servidor...',
-        html: `
-            <div style="text-align: center; padding: 8px;">
-                <p style="margin: 0; color: ${colors.color}; opacity: 0.8;">
-                    El servidor gratuito está inactivo
-                </p>
-                <p style="margin: 8px 0 0 0; font-weight: 600;">
-                    Reconectando... (30-60 seg)
-                </p>
-            </div>
-        `,
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        showConfirmButton: false,
-        didOpen: () => {
-            Swal.showLoading();
-        },
-        background: colors.background,
-        color: colors.color,
-        backdrop: colors.backdrop,
-        customClass: {
-            popup: isDarkMode() ? 'swal2-dark' : ''
-        }
-    });
+    showLoading('Despertando servidor...');
 }
 
 function closeBanner() {

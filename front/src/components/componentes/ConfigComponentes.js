@@ -1,4 +1,4 @@
-import api, { URI } from '../../config.js';
+import api, { URI, showLoading, showSuccess, showError, MySwal } from '../../config.js';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { styled } from '@mui/material/styles';
 import Grid from "@mui/material/Grid";
@@ -13,7 +13,6 @@ import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import DevicesIcon from '@mui/icons-material/Devices';
-import Swal from 'sweetalert2';
 
 // Estilos optimizados
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -77,56 +76,40 @@ export const ConfigComponentes = () => {
         e.preventDefault();
         if (!validate()) return;
 
+        showLoading(isUpdate ? 'Actualizando tipo de equipo...' : 'Guardando tipo de equipo...');
+
         try {
             if (isUpdate) {
                 await api.put(`${URI}/tipos/${form.id}`, form);
-                Swal.fire({
-                    title: '¡Actualizado!',
-                    text: 'El tipo de equipo ha sido modificado.',
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
+                showSuccess('¡Actualizado!', 'El tipo de equipo ha sido modificado.');
             } else {
                 await api.post(`${URI}/tipos/create`, form);
-                Swal.fire({
-                    title: '¡Guardado!',
-                    text: 'Nuevo tipo de equipo registrado.',
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
+                showSuccess('¡Guardado!', 'Nuevo tipo de equipo registrado.');
             }
             clearForm();
             getTipos();
         } catch (error) {
-            Swal.fire('Error', 'No se pudo guardar el tipo de equipo.', 'error');
+            showError('Error', 'No se pudo guardar el tipo de equipo.');
         }
     };
 
     const handleDelete = (id) => {
-        Swal.fire({
+        MySwal().fire({
             title: '¿Eliminar tipo?',
             text: "Asegúrese de que no haya equipos de este tipo registrados.",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: 'var(--mui-palette-error-main)',
             confirmButtonText: 'Sí, eliminar',
             cancelButtonText: 'Cancelar'
         }).then(async (result) => {
             if (result.isConfirmed) {
+                showLoading('Eliminando...');
                 try {
                     await api.delete(`${URI}/tipos/${id}`);
                     getTipos();
-                    Swal.fire({
-                        title: '¡Eliminado!',
-                        text: 'El tipo ha sido borrado.',
-                        icon: 'success',
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
+                    showSuccess('¡Eliminado!', 'El tipo ha sido borrado.');
                 } catch (error) {
-                    Swal.fire('Error', 'No se pudo eliminar el tipo. Verifique si está en uso.', 'error');
+                    showError('Error', 'No se pudo eliminar el tipo. Verifique si está en uso.');
                 }
             }
         });
