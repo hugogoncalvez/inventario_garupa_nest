@@ -120,7 +120,7 @@ const ReporteConsumoTintas = (reporteData, fechaDesde, fechaHasta) => {
 
         const granTotal = resumenData.reduce((acc, curr) => acc + curr.total, 0);
         content.push({
-            text: `Gran Total de Insumos Entregados: ${granTotal} unidades`,
+            text: `Total de Insumos Entregados: ${granTotal} unidades`,
             fontSize: 14,
             bold: true,
             margin: [0, 20, 0, 0],
@@ -149,7 +149,7 @@ const ReporteConsumoTintas = (reporteData, fechaDesde, fechaHasta) => {
         footer: function (currentPage, pageCount) {
             return { text: `Página ${currentPage.toString()} de ${pageCount}`, alignment: 'center', margin: [0, 30, 0, 0] };
         },
-        content: content, 
+        content: content,
         styles: {
             tableHeader: {
                 bold: true,
