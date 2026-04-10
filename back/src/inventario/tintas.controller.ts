@@ -68,7 +68,7 @@ export class TintasController {
         return this.prisma.cartuchos.create({
             data: {
                 modelo,
-                sku,
+                sku: sku?.trim() === '' ? null : sku,
                 color,
                 tipo,
                 es_recargable: !!es_recargable,
@@ -84,19 +84,32 @@ export class TintasController {
     @Put('cartuchos/:id')
     async updateCartucho(@Param('id') id: string, @Body() body: any) {
         const { modelo, sku, color, tipo, es_recargable, insumo_granel_id, stock_unidades, stock_minimo_unidades } = body;
+        
+        const updateData: any = {
+            updatedAt: new Date(),
+        };
+
+        if (modelo !== undefined) updateData.modelo = modelo;
+        if (sku !== undefined) updateData.sku = sku?.trim() === '' ? null : sku;
+        if (color !== undefined) updateData.color = color;
+        if (tipo !== undefined) updateData.tipo = tipo;
+        if (es_recargable !== undefined) updateData.es_recargable = !!es_recargable;
+        
+        if (insumo_granel_id !== undefined) {
+            updateData.insumo_granel_id = insumo_granel_id ? Number(insumo_granel_id) : null;
+        }
+
+        if (stock_unidades !== undefined) {
+            updateData.stock_unidades = Number(stock_unidades);
+        }
+
+        if (stock_minimo_unidades !== undefined) {
+            updateData.stock_minimo_unidades = Number(stock_minimo_unidades);
+        }
+
         return this.prisma.cartuchos.update({
             where: { id: Number(id) },
-            data: {
-                modelo,
-                sku,
-                color,
-                tipo,
-                es_recargable: !!es_recargable,
-                insumo_granel_id: insumo_granel_id ? Number(insumo_granel_id) : null,
-                stock_unidades: Number(stock_unidades || 0),
-                stock_minimo_unidades: Number(stock_minimo_unidades || 0),
-                updatedAt: new Date(),
-            },
+            data: updateData,
         });
     }
 
