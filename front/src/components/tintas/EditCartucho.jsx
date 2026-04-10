@@ -82,10 +82,10 @@ export const EditCartucho = () => {
         try {
             await api.put(`${URI}/tintas/cartuchos/${id}`, {
                 modelo: cartuchoData.modelo.trim(),
-                sku: cartuchoData.sku.trim(),
+                sku: cartuchoData.sku.trim() || null,
                 color: cartuchoData.color.trim(),
                 tipo: cartuchoData.tipo,
-                stock_minimo_unidades: parseInt(cartuchoData.stockMinimoUnidades),
+                stock_minimo_unidades: parseInt(cartuchoData.stockMinimoUnidades) || 0,
                 es_recargable: cartuchoData.esRecargable,
                 insumo_granel_id: cartuchoData.esRecargable ? cartuchoData.selectedInsumoGranelId : null
             });

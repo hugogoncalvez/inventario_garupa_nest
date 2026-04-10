@@ -55,7 +55,7 @@ export class InsumosGranelController {
         return this.prisma.insumos_granel.create({
             data: {
                 nombre,
-                sku,
+                sku: sku?.trim() === '' ? null : sku,
                 unidad_medida,
                 stock_minimo: Number(stock_minimo),
                 createdAt: new Date(),
@@ -71,7 +71,7 @@ export class InsumosGranelController {
             where: { id: Number(id) },
             data: {
                 nombre,
-                sku,
+                sku: sku?.trim() === '' ? null : sku,
                 unidad_medida,
                 stock_minimo: Number(stock_minimo),
                 updatedAt: new Date(),
