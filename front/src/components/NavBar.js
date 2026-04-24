@@ -106,6 +106,7 @@ export default function NavBar() {
         { text: 'Inventario', path: '/inventario', icon: <Inventory2OutlinedIcon /> },
         { text: 'Órdenes de Servicio', path: '/ordenes', icon: <BuildIcon /> },
         { text: 'Control de Insumos', path: '/tintas/cartuchos', icon: <FactCheckIcon /> },
+        { text: 'Pedidos de Insumos', path: '/tintas/pedidos', icon: <AssignmentIcon /> },
         { text: 'Insumos a Granel', path: '/insumos-granel', icon: <LocalShippingIcon /> },
         { text: 'Repuestos / Stock', path: '/repuestos', icon: <SettingsInputComponentIcon /> },
     ];

@@ -10,6 +10,7 @@ import { DashboardController } from "./dashboard.controller";
 import { WhatsAppService } from "./whatsapp.service";
 import { RepuestosController } from "./repuestos.controller";
 import { UsuariosController } from "./usuarios.controller";
+import { PedidosController } from "./pedidos.controller";
 
 @Module({
     controllers: [
@@ -23,7 +24,8 @@ import { UsuariosController } from "./usuarios.controller";
         OrdenesController,
         DashboardController,
         RepuestosController,
-        UsuariosController
+        UsuariosController,
+        PedidosController
     ],
     providers: [WhatsAppService]
 })

@@ -31,6 +31,7 @@ model cartuchos {
   insumos_granel            insumos_granel?             @relation(fields: [insumo_granel_id], references: [id], map: "fk_cartuchos_insumo_granel_id")
   movimientos_insumo_granel movimientos_insumo_granel[]
   movimientos_tinta         movimientos_tinta[]
+  pedidos_items             pedidos_items[]
 
   @@index([insumo_granel_id], map: "fk_cartuchos_insumo_granel_id")
 }
@@ -189,8 +190,45 @@ model usuarios {
   updatedAt                 DateTime?                   @db.Date
   movimientos_insumo_granel movimientos_insumo_granel[]
   movimientos_tinta         movimientos_tinta[]
+  pedidos                   pedidos[]
 
   @@index([id], map: "id")
+}
+
+model pedidos {
+  id              Int             @id @default(autoincrement())
+  fecha           DateTime        @default(now()) @db.DateTime(0)
+  estado          pedidos_estado  @default(PENDIENTE)
+  usuario_id      Int
+  observaciones   String?         @db.VarChar(255)
+  createdAt       DateTime        @default(now()) @db.DateTime(0)
+  updatedAt       DateTime        @default(now()) @db.DateTime(0)
+  usuarios        usuarios        @relation(fields: [usuario_id], references: [id], map: "fk_pedidos_usuarios")
+  items           pedidos_items[]
+
+  @@index([usuario_id], map: "fk_pedidos_usuarios_idx")
+}
+
+model pedidos_items {
+  id                Int       @id @default(autoincrement())
+  pedido_id         Int
+  cartucho_id       Int
+  cantidad_pedida   Int
+  cantidad_recibida Int       @default(0)
+  createdAt         DateTime  @default(now()) @db.DateTime(0)
+  updatedAt         DateTime  @default(now()) @db.DateTime(0)
+  pedido            pedidos   @relation(fields: [pedido_id], references: [id], map: "fk_items_pedido")
+  cartuchos         cartuchos @relation(fields: [cartucho_id], references: [id], map: "fk_items_cartucho")
+
+  @@index([pedido_id], map: "fk_items_pedido_idx")
+  @@index([cartucho_id], map: "fk_items_cartucho_idx")
+}
+
+enum pedidos_estado {
+  PENDIENTE
+  PARCIAL
+  RECIBIDO
+  CANCELADO
 }
 
 enum insumos_granel_unidad_medida {
