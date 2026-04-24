@@ -119,6 +119,25 @@ export class InsumosGranelController {
     async registerPurchase(@Body() body: any) {
         const { usuario_id, items } = body;
 
+        // Validación anti-duplicados: Buscar si ya existe un movimiento idéntico en los últimos 5 segundos
+        const fiveSecondsAgo = new Date(Date.now() - 5000);
+        
+        if (items.length > 0) {
+            const duplicate = await this.prisma.movimientos_insumo_granel.findFirst({
+                where: {
+                    usuario_id: Number(usuario_id),
+                    insumo_granel_id: Number(items[0].insumo_granel_id),
+                    cantidad_usada: Number(items[0].cantidad),
+                    tipo_movimiento: 'COMPRA',
+                    createdAt: { gte: fiveSecondsAgo }
+                }
+            });
+
+            if (duplicate) {
+                return { success: true, message: 'Registro de compra a granel duplicado detectado y omitido.' };
+            }
+        }
+
         return this.prisma.$transaction(async (tx) => {
             for (const item of items) {
                 await tx.movimientos_insumo_granel.create({

@@ -126,7 +126,7 @@ export default function ModalCrearPedido({ open, onClose, onPedidoExitoso }) {
             <DialogContent sx={{ pt: 3 }}>
                 <Box sx={{ p: 2.5, bgcolor: 'var(--mui-palette-action-hover)', borderRadius: 2, border: '1px solid var(--mui-palette-divider)', mb: 3 }}>
                     <Grid container spacing={2} alignItems="center">
-                        <Grid item xs={12} md={8}>
+                        <Grid size={{ xs: 12, md: 8 }}>
                             <TextField
                                 select
                                 label="Seleccionar Insumo / Cartucho"
@@ -143,7 +143,7 @@ export default function ModalCrearPedido({ open, onClose, onPedidoExitoso }) {
                                 ))}
                             </TextField>
                         </Grid>
-                        <Grid item xs={8} md={3}>
+                        <Grid size={{ xs: 8, md: 3 }}>
                             <TextField
                                 label="Cant."
                                 type="number"
@@ -155,7 +155,7 @@ export default function ModalCrearPedido({ open, onClose, onPedidoExitoso }) {
                                 slotProps={{ input: { min: 1 } }} 
                             />
                         </Grid>
-                        <Grid item xs={4} md={1} display="flex" justifyContent="center">
+                        <Grid size={{ xs: 4, md: 1 }} display="flex" justifyContent="center">
                             <IconButton onClick={handleAddToLista} color="secondary" disabled={loading} sx={{ bgcolor: 'var(--mui-palette-background-paper)', boxShadow: 'var(--mui-shadows-1)' }}>
                                 <AddCircleOutlineIcon />
                             </IconButton>

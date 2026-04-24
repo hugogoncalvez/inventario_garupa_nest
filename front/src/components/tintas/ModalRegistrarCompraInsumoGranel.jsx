@@ -19,6 +19,7 @@ export default function ModalRegistrarCompraInsumoGranel({ open, onClose, onComp
     const [cantidad, setCantidad] = useState('');
     const [listaCompras, setListaCompras] = useState([]);
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (open) {
@@ -27,6 +28,7 @@ export default function ModalRegistrarCompraInsumoGranel({ open, onClose, onComp
             setError('');
             setSelectedInsumoGranelId('');
             setCantidad('');
+            setLoading(false);
         }
     }, [open]);
 
@@ -68,7 +70,15 @@ export default function ModalRegistrarCompraInsumoGranel({ open, onClose, onComp
     };
 
     const handleSubmit = async () => {
-        if (listaCompras.length === 0) return;
+        if (listaCompras.length === 0 || loading) return;
+
+        if (!window.navigator.onLine) {
+            setError("No tienes conexión a internet.");
+            return;
+        }
+
+        setLoading(true);
+        setError('');
 
         try {
             const payload = {
@@ -84,6 +94,7 @@ export default function ModalRegistrarCompraInsumoGranel({ open, onClose, onComp
             onClose();
         } catch (err) {
             setError(err.response?.data?.message || "Error al registrar la compra.");
+            setLoading(false);
         }
     };
 
@@ -105,7 +116,7 @@ export default function ModalRegistrarCompraInsumoGranel({ open, onClose, onComp
             <DialogContent sx={{ pt: 3 }}>
                 <Box sx={{ p: 2.5, bgcolor: 'var(--mui-palette-action-hover)', borderRadius: 2, border: '1px solid var(--mui-palette-divider)' }}>
                     <Grid container spacing={2} alignItems="center">
-                        <Grid item xs={12} sm={7} md={8}>
+                        <Grid size={{ xs: 12, md: 8 }}>
                             <TextField
                                 select
                                 label="Seleccionar Insumo a Granel"
@@ -113,6 +124,7 @@ export default function ModalRegistrarCompraInsumoGranel({ open, onClose, onComp
                                 onChange={(e) => setSelectedInsumoGranelId(e.target.value)}
                                 fullWidth
                                 size="small"
+                                disabled={loading}
                             >
                                 <MenuItem value="">
                                     <em>Seleccione un Insumo</em>
@@ -124,7 +136,7 @@ export default function ModalRegistrarCompraInsumoGranel({ open, onClose, onComp
                                 ))}
                             </TextField>
                         </Grid>
-                        <Grid item xs={8} sm={3} md={3}>
+                        <Grid size={{ xs: 8, md: 3 }}>
                             <TextField
                                 label="Cantidad"
                                 type="number"
@@ -133,13 +145,15 @@ export default function ModalRegistrarCompraInsumoGranel({ open, onClose, onComp
                                 fullWidth
                                 size="small"
                                 slotProps={{ input: { min: 0.001, step: 0.001 } }}
+                                disabled={loading}
                             />
                         </Grid>
-                        <Grid item xs={4} sm={2} md={1} display="flex" justifyContent="center">
+                        <Grid size={{ xs: 4, md: 1 }} display="flex" justifyContent="center">
                             <IconButton 
                                 onClick={handleAddToLista} 
                                 color="primary" 
                                 sx={{ bgcolor: 'var(--mui-palette-background-paper)', boxShadow: 'var(--mui-shadows-1)' }}
+                                disabled={loading}
                             >
                                 <AddCircleOutlineIcon />
                             </IconButton>
@@ -177,7 +191,7 @@ export default function ModalRegistrarCompraInsumoGranel({ open, onClose, onComp
                                             <Typography variant="body2" fontWeight="800">{item.cantidad}</Typography>
                                         </TableCell>
                                         <TableCell align="center">
-                                            <IconButton size="small" onClick={() => handleRemoveFromLista(item.rowId)} color="error">
+                                            <IconButton size="small" onClick={() => handleRemoveFromLista(item.rowId)} color="error" disabled={loading}>
                                                 <DeleteIcon fontSize="small" />
                                             </IconButton>
                                         </TableCell>
@@ -189,15 +203,15 @@ export default function ModalRegistrarCompraInsumoGranel({ open, onClose, onComp
                 </TableContainer>
             </DialogContent>
             <DialogActions sx={{ p: 2.5, bgcolor: 'var(--mui-palette-background-default)' }}>
-                <Button onClick={onClose} color="inherit" sx={{ fontWeight: 600 }}>Cancelar</Button>
+                <Button onClick={onClose} color="inherit" sx={{ fontWeight: 600 }} disabled={loading}>Cancelar</Button>
                 <Button 
                     onClick={handleSubmit} 
                     variant="contained" 
                     color="success"
-                    disabled={listaCompras.length === 0}
+                    disabled={listaCompras.length === 0 || loading}
                     sx={{ px: 4, borderRadius: 2, fontWeight: 700 }}
                 >
-                    Registrar Compra
+                    {loading ? 'Registrando...' : 'Registrar Compra'}
                 </Button>
             </DialogActions>
         </Dialog>
