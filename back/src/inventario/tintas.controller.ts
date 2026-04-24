@@ -210,6 +210,25 @@ export class TintasController {
     async registerPurchase(@Body() body: any) {
         const { usuario_id, items } = body;
 
+        // Validación anti-duplicados: Buscar si ya existe un movimiento idéntico en los últimos 5 segundos
+        const fiveSecondsAgo = new Date(Date.now() - 5000);
+        
+        if (items.length > 0) {
+            const duplicate = await this.prisma.movimientos_tinta.findFirst({
+                where: {
+                    usuario_id: Number(usuario_id),
+                    cartucho_id: Number(items[0].cartucho_id),
+                    cantidad: Number(items[0].cantidad),
+                    tipo_movimiento: movimientos_tinta_tipo_movimiento.COMPRA,
+                    createdAt: { gte: fiveSecondsAgo }
+                }
+            });
+
+            if (duplicate) {
+                return { success: true, message: 'Registro de compra duplicado detectado y omitido.' };
+            }
+        }
+
         return this.prisma.$transaction(async (tx) => {
             for (const item of items) {
                 await tx.movimientos_tinta.create({
@@ -239,6 +258,27 @@ export class TintasController {
     @Post('movimientos/entrega')
     async registerEntrega(@Body() body: any) {
         const { usuario_id, items } = body;
+
+        // Validación anti-duplicados: Buscar si ya existe un movimiento idéntico en los últimos 5 segundos
+        const fiveSecondsAgo = new Date(Date.now() - 5000);
+        
+        // Verificamos el primer item (usualmente suficiente para detectar el doble clic de una lista)
+        if (items.length > 0) {
+            const duplicate = await this.prisma.movimientos_tinta.findFirst({
+                where: {
+                    usuario_id: Number(usuario_id),
+                    cartucho_id: Number(items[0].cartucho_id),
+                    impresora_id: Number(items[0].impresora_id),
+                    cantidad: Number(items[0].cantidad),
+                    tipo_movimiento: movimientos_tinta_tipo_movimiento.ENTREGA_A__REA,
+                    createdAt: { gte: fiveSecondsAgo }
+                }
+            });
+
+            if (duplicate) {
+                return { success: true, message: 'Registro duplicado detectado y omitido.' };
+            }
+        }
 
         const results = await this.prisma.$transaction(async (tx) => {
             const updatedItems: any[] = [];

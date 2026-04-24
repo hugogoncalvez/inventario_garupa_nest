@@ -25,6 +25,7 @@ export default function ModalRegistrarEntrega({ open, onClose, onEntregaExitosa 
     const [showAllInsumos, setShowAllInsumos] = useState(false);
     const [listaEntregas, setListaEntregas] = useState([]);
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (open) {
@@ -48,6 +49,7 @@ export default function ModalRegistrarEntrega({ open, onClose, onEntregaExitosa 
             setShowAllInsumos(false);
             setStagedEntrega({ impresoraId: '', insumoId: '', cantidad: 1 });
             setError('');
+            setLoading(false);
         }
     }, [open]);
 
@@ -116,7 +118,16 @@ export default function ModalRegistrarEntrega({ open, onClose, onEntregaExitosa 
     };
 
     const handleSubmit = async () => {
-        if (listaEntregas.length === 0) return;
+        if (listaEntregas.length === 0 || loading) return;
+
+        // Verificación instantánea de conexión
+        if (!window.navigator.onLine) {
+            setError("No tienes conexión a internet. Revisa tu red antes de intentar registrar.");
+            return;
+        }
+
+        setLoading(true);
+        setError('');
 
         try {
             const payload = {
@@ -148,6 +159,7 @@ export default function ModalRegistrarEntrega({ open, onClose, onEntregaExitosa 
             onClose();
         } catch (err) {
             setError(err.response?.data?.message || "Error al registrar.");
+            setLoading(false);
         }
     };
 
@@ -174,6 +186,7 @@ export default function ModalRegistrarEntrega({ open, onClose, onEntregaExitosa 
                                 onChange={(e) => setSelectedAreaId(e.target.value)} 
                                 fullWidth 
                                 size="small"
+                                disabled={loading}
                             >
                                 {areas.map(area => <MenuItem key={area.id} value={area.id}>{area.area}</MenuItem>)}
                             </TextField>
@@ -186,7 +199,7 @@ export default function ModalRegistrarEntrega({ open, onClose, onEntregaExitosa 
                                 onChange={(e) => handleStagedChange('impresoraId', e.target.value)} 
                                 fullWidth 
                                 size="small"
-                                disabled={!selectedAreaId}
+                                disabled={!selectedAreaId || loading}
                             >
                                 {filteredImpresoras.map(imp => <MenuItem key={imp.id} value={imp.id}>{imp.modelo} - {imp.marca}</MenuItem>)}
                             </TextField>
@@ -201,11 +214,13 @@ export default function ModalRegistrarEntrega({ open, onClose, onEntregaExitosa 
                                 onChange={(e) => handleStagedChange('insumoId', e.target.value)} 
                                 fullWidth 
                                 size="small"
+                                disabled={loading}
                                 helperText={stagedEntrega.impresoraId && getFilteredInsumos().length < insumos.length && !showAllInsumos ? (
                                     <Button 
                                         size="small" 
                                         onClick={() => setShowAllInsumos(true)} 
                                         sx={{ py: 0, fontSize: '0.65rem', minWidth: 0 }}
+                                        disabled={loading}
                                     >
                                         Ver todos los insumos
                                     </Button>
@@ -227,13 +242,14 @@ export default function ModalRegistrarEntrega({ open, onClose, onEntregaExitosa 
                                 fullWidth 
                                 size="small"
                                 slotProps={{ input: { min: 1 } }} 
+                                disabled={loading}
                             />
                         </Grid>
                         <Grid size={{ xs: 4, md: 1 }} display="flex" justifyContent="center">
                             <IconButton 
                                 onClick={handleAddToLista} 
                                 color="primary" 
-                                disabled={!selectedAreaId}
+                                disabled={!selectedAreaId || loading}
                                 sx={{ bgcolor: 'var(--mui-palette-background-paper)', boxShadow: 'var(--mui-shadows-1)' }}
                             >
                                 <AddCircleOutlineIcon />
@@ -264,7 +280,7 @@ export default function ModalRegistrarEntrega({ open, onClose, onEntregaExitosa 
                                         <TableCell>{item.display.impresora}</TableCell>
                                         <TableCell align="right"><Typography variant="body2" fontWeight="800">{item.cantidad}</Typography></TableCell>
                                         <TableCell align="center">
-                                            <IconButton size="small" onClick={() => handleRemoveFromLista(item.rowId)} color="error"><DeleteIcon fontSize="small" /></IconButton>
+                                            <IconButton size="small" onClick={() => handleRemoveFromLista(item.rowId)} color="error" disabled={loading}><DeleteIcon fontSize="small" /></IconButton>
                                         </TableCell>
                                     </TableRow>
                                 ))
@@ -274,15 +290,15 @@ export default function ModalRegistrarEntrega({ open, onClose, onEntregaExitosa 
                 </TableContainer>
             </DialogContent>
             <DialogActions sx={{ p: 2.5, bgcolor: 'var(--mui-palette-background-default)' }}>
-                <Button onClick={onClose} color="inherit" sx={{ fontWeight: 600 }}>Cancelar</Button>
+                <Button onClick={onClose} color="inherit" sx={{ fontWeight: 600 }} disabled={loading}>Cancelar</Button>
                 <Button 
                     onClick={handleSubmit} 
                     variant="contained" 
                     color="info" 
-                    disabled={listaEntregas.length === 0}
+                    disabled={listaEntregas.length === 0 || loading}
                     sx={{ px: 4, borderRadius: 2, fontWeight: 700 }}
                 >
-                    Generar Acta y Registrar
+                    {loading ? 'Registrando...' : 'Generar Acta y Registrar'}
                 </Button>
             </DialogActions>
         </Dialog>

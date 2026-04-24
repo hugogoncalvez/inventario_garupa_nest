@@ -19,6 +19,7 @@ export default function ModalRegistrarCompra({ open, onClose, onCompraExitosa })
     const [cantidad, setCantidad] = useState('');
     const [listaCompras, setListaCompras] = useState([]);
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (open) {
@@ -27,6 +28,7 @@ export default function ModalRegistrarCompra({ open, onClose, onCompraExitosa })
             setError('');
             setCantidad('');
             setSelectedInsumoId('');
+            setLoading(false);
         }
     }, [open]);
 
@@ -68,7 +70,16 @@ export default function ModalRegistrarCompra({ open, onClose, onCompraExitosa })
     };
 
     const handleSubmit = async () => {
-        if (listaCompras.length === 0) return;
+        if (listaCompras.length === 0 || loading) return;
+
+        // Verificación instantánea de conexión
+        if (!window.navigator.onLine) {
+            setError("No tienes conexión a internet. Revisa tu red antes de intentar registrar la compra.");
+            return;
+        }
+
+        setLoading(true);
+        setError('');
 
         try {
             const payload = {
@@ -84,6 +95,7 @@ export default function ModalRegistrarCompra({ open, onClose, onCompraExitosa })
             onClose();
         } catch (err) {
             setError(err.response?.data?.message || "Error al registrar la compra.");
+            setLoading(false);
         }
     };
 
@@ -113,6 +125,7 @@ export default function ModalRegistrarCompra({ open, onClose, onCompraExitosa })
                                 onChange={(e) => setSelectedInsumoId(e.target.value)}
                                 fullWidth
                                 size="small"
+                                disabled={loading}
                             >
                                 {insumos.map((insumo) => (
                                     <MenuItem key={insumo.id} value={insumo.id}>
@@ -130,10 +143,11 @@ export default function ModalRegistrarCompra({ open, onClose, onCompraExitosa })
                                 fullWidth
                                 size="small"
                                 slotProps={{ input: { min: 1 } }}
+                                disabled={loading}
                             />
                         </Grid>
                         <Grid size={{ xs: 4, sm: 2, md: 1 }} display="flex" justifyContent="center">
-                            <IconButton onClick={handleAddToLista} color="primary" sx={{ bgcolor: 'var(--mui-palette-background-paper)', boxShadow: 'var(--mui-shadows-1)' }}>
+                            <IconButton onClick={handleAddToLista} color="primary" disabled={loading} sx={{ bgcolor: 'var(--mui-palette-background-paper)', boxShadow: 'var(--mui-shadows-1)' }}>
                                 <AddCircleOutlineIcon />
                             </IconButton>
                         </Grid>
@@ -170,7 +184,7 @@ export default function ModalRegistrarCompra({ open, onClose, onCompraExitosa })
                                             <Typography variant="body2" fontWeight="800">{item.cantidad}</Typography>
                                         </TableCell>
                                         <TableCell align="center">
-                                            <IconButton size="small" onClick={() => handleRemoveFromLista(item.rowId)} color="error">
+                                            <IconButton size="small" onClick={() => handleRemoveFromLista(item.rowId)} color="error" disabled={loading}>
                                                 <DeleteIcon fontSize="small" />
                                             </IconButton>
                                         </TableCell>
@@ -182,15 +196,15 @@ export default function ModalRegistrarCompra({ open, onClose, onCompraExitosa })
                 </TableContainer>
             </DialogContent>
             <DialogActions sx={{ p: 2.5, bgcolor: 'var(--mui-palette-background-default)' }}>
-                <Button onClick={onClose} color="inherit" sx={{ fontWeight: 600 }}>Cancelar</Button>
+                <Button onClick={onClose} color="inherit" sx={{ fontWeight: 600 }} disabled={loading}>Cancelar</Button>
                 <Button 
                     onClick={handleSubmit} 
                     variant="contained" 
                     color="primary"
-                    disabled={listaCompras.length === 0}
+                    disabled={listaCompras.length === 0 || loading}
                     sx={{ px: 4, borderRadius: 2, fontWeight: 700 }}
                 >
-                    Finalizar Compra
+                    {loading ? 'Finalizando...' : 'Finalizar Compra'}
                 </Button>
             </DialogActions>
         </Dialog>
