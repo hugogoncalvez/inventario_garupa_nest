@@ -126,10 +126,10 @@ export default function ModalCrearPedido({ open, onClose, onPedidoExitoso }) {
             <DialogContent sx={{ pt: 3 }}>
                 <Box sx={{ p: 2.5, bgcolor: 'var(--mui-palette-action-hover)', borderRadius: 2, border: '1px solid var(--mui-palette-divider)', mb: 3 }}>
                     <Grid container spacing={2} alignItems="center">
-                        <Grid item xs={12} sm={7}>
+                        <Grid item xs={12} md={8}>
                             <TextField
                                 select
-                                label="Insumo / Cartucho"
+                                label="Seleccionar Insumo / Cartucho"
                                 value={selectedInsumoId}
                                 onChange={(e) => setSelectedInsumoId(e.target.value)}
                                 fullWidth
@@ -143,18 +143,19 @@ export default function ModalCrearPedido({ open, onClose, onPedidoExitoso }) {
                                 ))}
                             </TextField>
                         </Grid>
-                        <Grid item xs={8} sm={3}>
+                        <Grid item xs={8} md={3}>
                             <TextField
-                                label="Cantidad"
+                                label="Cant."
                                 type="number"
                                 value={cantidad}
                                 onChange={(e) => setCantidad(e.target.value)}
                                 fullWidth
                                 size="small"
                                 disabled={loading}
+                                slotProps={{ input: { min: 1 } }} 
                             />
                         </Grid>
-                        <Grid item xs={4} sm={2} display="flex" justifyContent="center">
+                        <Grid item xs={4} md={1} display="flex" justifyContent="center">
                             <IconButton onClick={handleAddToLista} color="secondary" disabled={loading} sx={{ bgcolor: 'var(--mui-palette-background-paper)', boxShadow: 'var(--mui-shadows-1)' }}>
                                 <AddCircleOutlineIcon />
                             </IconButton>

@@ -13,7 +13,22 @@ export class PrismaService
     }
 
     async onModuleInit() {
-        console.log('--- PRISMA SERVICE INICIALIZADO (CONEXIÓN BAJO DEMANDA) ---');
+        console.log('--- INICIANDO CONEXIÓN A BASE DE DATOS ---');
+        let retries = 5;
+        while (retries > 0) {
+            try {
+                await this.$connect();
+                console.log('✅ BASE DE DATOS CONECTADA EXITOSAMENTE');
+                break;
+            } catch (err) {
+                retries--;
+                console.error(`❌ Error al conectar a la DB. Reintentos restantes: ${retries}`);
+                console.error(`Motivo: ${err.message}`);
+                if (retries === 0) throw err;
+                // Esperar 2 segundos antes de reintentar
+                await new Promise(res => setTimeout(res, 2000));
+            }
+        }
     }
 
     async onModuleDestroy() {
