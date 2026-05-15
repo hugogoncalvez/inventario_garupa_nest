@@ -1,4 +1,4 @@
-import api, { URI } from '../../config.js';
+import api, { URI, MySwal, showSuccess, showError } from '../../config.js';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { styled } from '@mui/material/styles';
 import Grid from "@mui/material/Grid";
@@ -12,7 +12,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import PrintIcon from '@mui/icons-material/Print';
-import Swal from 'sweetalert2';
+// import Swal from 'sweetalert2'; // Eliminado a favor de MySwal
 
 // ... (estilos y resto de imports)
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -91,32 +91,20 @@ export const GestionImpresoras = () => {
         try {
             if (isUpdate) {
                 await api.put(`${URI}/tintas/impresoras/${form.id}`, form);
-                Swal.fire({
-                    title: '¡Actualizado!',
-                    text: 'Los datos de la impresora se han guardado correctamente.',
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
+                showSuccess('¡Actualizado!', 'Los datos de la impresora se han guardado correctamente.');
             } else {
                 await api.post(`${URI}/tintas/impresoras`, form);
-                Swal.fire({
-                    title: '¡Guardado!',
-                    text: 'La nueva impresora ha sido registrada en el sistema.',
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
+                showSuccess('¡Guardado!', 'La nueva impresora ha sido registrada en el sistema.');
             }
             clearForm();
             getImpresoras();
         } catch (error) {
-            Swal.fire('Error', 'No se pudieron guardar los cambios en la impresora.', 'error');
+            showError('Error', 'No se pudieron guardar los cambios en la impresora.');
         }
     };
 
     const handleDelete = (id) => {
-        Swal.fire({
+        MySwal().fire({
             title: '¿Estás seguro?',
             text: "Se eliminará permanentemente este equipo del sistema.",
             icon: 'warning',
@@ -130,15 +118,9 @@ export const GestionImpresoras = () => {
                 try {
                     await api.delete(`${URI}/tintas/impresoras/${id}`);
                     getImpresoras();
-                    Swal.fire({
-                        title: '¡Eliminado!',
-                        text: 'La impresora ha sido dada de baja.',
-                        icon: 'success',
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
+                    showSuccess('¡Eliminado!', 'La impresora ha sido dada de baja.');
                 } catch (error) {
-                    Swal.fire('Error', 'No se pudo eliminar la impresora.', 'error');
+                    showError('Error', 'No se pudo eliminar la impresora.');
                 }
             }
         });

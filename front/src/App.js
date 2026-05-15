@@ -2,9 +2,9 @@ import './App.css';
 import React, { Suspense, lazy, useEffect, useRef } from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
-import { startHeartbeat, startBotHeartbeat, isDarkMode, getThemeColors } from './config.js';
+import { startHeartbeat, startBotHeartbeat, isDarkMode, getThemeColors, MySwal } from './config.js';
 import useAuth from './hooks/useAuth';
-import Swal from 'sweetalert2';
+// import Swal from 'sweetalert2';
 import CssBaseline from '@mui/material/CssBaseline';
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript';
 import theme from './theme';
@@ -84,14 +84,11 @@ function App() {
       setAuth(null);
       navigate('/');
       const colors = getThemeColors();
-      Swal.fire({
+      MySwal().fire({
         title: 'Sesión expirada',
         text: 'Se cerró la sesión por inactividad.',
         icon: 'info',
         confirmButtonText: 'Entendido',
-        background: colors.background,
-        color: colors.color,
-        confirmButtonColor: isDarkMode() ? '#60a5fa' : '#2563eb'
       });
     };
 

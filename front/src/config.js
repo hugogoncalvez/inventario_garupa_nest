@@ -167,14 +167,11 @@ api.interceptors.response.use(
             
             closeBanner();
             const colors = getThemeColors();
-            Swal.fire({
+            MySwal().fire({
                 title: 'Error de conexión',
                 text: 'El servidor no pudo despertar. Intenta recargar la página.',
                 icon: 'error',
                 confirmButtonText: 'Entendido',
-                background: colors.background,
-                color: colors.color,
-                confirmButtonColor: isDarkMode() ? '#60a5fa' : '#2563eb'
             });
         }
 

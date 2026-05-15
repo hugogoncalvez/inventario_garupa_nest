@@ -1,4 +1,4 @@
-import api, { URI } from '../../config.js';
+import api, { URI, MySwal, showSuccess, showError } from '../../config.js';
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo } from 'react';
 import { styled } from '@mui/material/styles';
@@ -17,7 +17,7 @@ import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import SettingsInputComponentIcon from '@mui/icons-material/SettingsInputComponent';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import CancelIcon from '@mui/icons-material/Cancel';
-import Swal from 'sweetalert2';
+// import Swal from 'sweetalert2'; // Eliminado a favor de MySwal
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
@@ -85,37 +85,39 @@ const GestionRepuestos = () => {
         try {
             if (editMode) {
                 await api.put(`${URI}/repuestos/${currentRepuesto.id}`, currentRepuesto);
-                Swal.fire('¡Actualizado!', 'Repuesto actualizado correctamente.', 'success');
+                showSuccess('¡Actualizado!', 'Repuesto actualizado correctamente.');
             } else {
                 await api.post(`${URI}/repuestos`, currentRepuesto);
-                Swal.fire('¡Guardado!', 'Nuevo repuesto añadido al stock.', 'success');
+                showSuccess('¡Guardado!', 'Nuevo repuesto añadido al stock.');
             }
             setOpenModal(false);
             loadData();
         } catch (error) {
-            Swal.fire('Error', 'No se pudo guardar el repuesto.', 'error');
+            showError('Error', 'No se pudo guardar el repuesto.');
         }
     };
 
     const handleDelete = (id) => {
-        Swal.fire({
+        MySwal().fire({
             title: '¿Estás seguro?',
             text: "Se eliminará el registro del stock.",
             icon: 'warning',
             showCancelButton: true,
+            confirmButtonColor: 'var(--mui-palette-error-main)',
+            cancelButtonColor: 'var(--mui-palette-secondary-main)',
             confirmButtonText: 'Sí, eliminar',
             cancelButtonText: 'Cancelar'
         }).then(async (result) => {
             if (result.isConfirmed) {
                 await api.delete(`${URI}/repuestos/${id}`);
                 loadData();
-                Swal.fire('Eliminado', 'Registro borrado.', 'success');
+                showSuccess('Eliminado', 'Registro borrado.');
             }
         });
     };
 
     const handleAjusteStock = async (repuesto) => {
-        const { value: nuevaCantidad } = await Swal.fire({
+        const { value: nuevaCantidad } = await MySwal().fire({
             title: `Ajustar stock: ${repuesto.modelo}`,
             input: 'number',
             inputValue: repuesto.stock_actual,
@@ -126,7 +128,7 @@ const GestionRepuestos = () => {
         if (nuevaCantidad !== undefined) {
             await api.post(`${URI}/repuestos/ajuste`, { id: repuesto.id, nueva_cantidad: parseInt(nuevaCantidad) });
             loadData();
-            Swal.fire('Ajustado', 'Stock corregido.', 'success');
+            showSuccess('Ajustado', 'Stock corregido.');
         }
     };
 
