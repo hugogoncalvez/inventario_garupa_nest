@@ -28,6 +28,7 @@ supabase
 
 # TiDB
 TiDB
+ca.pem
 
 # Bot de WhatsApp (Local)
 nodeW/

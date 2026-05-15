@@ -63,25 +63,51 @@ export class PedidosController {
     // Recibir un pedido (Actualizar cantidades recibidas y mover a stock real)
     @Post(':id/recibir')
     async recibirPedido(@Param('id') id: string, @Body() body: any) {
-        const { items_recibidos, usuario_id } = body; // items_recibidos: [{ item_id, cantidad }]
+        const { items_recibidos, usuario_id } = body; 
 
-        return this.prisma.$transaction(async (tx) => {
-            for (const rec of items_recibidos) {
-                // 1. Actualizar el ítem del pedido
-                const itemPedido = await tx.pedidos_items.update({
-                    where: { id: Number(rec.item_id) },
-                    data: {
-                        cantidad_recibida: { increment: Number(rec.cantidad) },
-                    },
-                });
+        const pedidoId = Number(id);
+        const userId = Number(usuario_id);
 
-                // 2. Registrar el movimiento de COMPRA real si se recibió algo
-                if (Number(rec.cantidad) > 0) {
+        console.log(`📦 Intentando recibir pedido ID: ${pedidoId}`);
+        console.log(`👤 Usuario solicitante ID: ${userId}`);
+
+        if (isNaN(pedidoId)) {
+            console.error('❌ ID de pedido no válido');
+            throw new Error('ID de pedido no válido');
+        }
+
+        if (!items_recibidos || !Array.isArray(items_recibidos) || items_recibidos.length === 0) {
+            console.error('❌ No se enviaron items para recibir');
+            throw new Error('No se enviaron items para recibir');
+        }
+
+        try {
+            return await this.prisma.$transaction(async (tx) => {
+                for (const rec of items_recibidos) {
+                    const itemId = Number(rec.item_id);
+                    const cantidad = Number(rec.cantidad);
+
+                    if (isNaN(itemId) || isNaN(cantidad) || cantidad <= 0) {
+                        console.warn(`⚠️ Item o cantidad no válida ignorada: item_id=${rec.item_id}, cantidad=${rec.cantidad}`);
+                        continue;
+                    }
+
+                    console.log(`🔄 Procesando recepción: ItemPedido ${itemId} -> Cantidad: ${cantidad}`);
+                    
+                    // 1. Actualizar el ítem del pedido
+                    const itemPedido = await tx.pedidos_items.update({
+                        where: { id: itemId },
+                        data: {
+                            cantidad_recibida: { increment: cantidad },
+                        },
+                    });
+
+                    // 2. Registrar el movimiento de COMPRA real
                     await tx.movimientos_tinta.create({
                         data: {
                             cartucho_id: itemPedido.cartucho_id,
-                            cantidad: Number(rec.cantidad),
-                            usuario_id: Number(usuario_id),
+                            cantidad: cantidad,
+                            usuario_id: isNaN(userId) ? null : userId,
                             tipo_movimiento: movimientos_tinta_tipo_movimiento.COMPRA,
                             fecha: new Date(),
                         }
@@ -91,30 +117,43 @@ export class PedidosController {
                     await tx.cartuchos.update({
                         where: { id: itemPedido.cartucho_id },
                         data: {
-                            stock_unidades: { increment: Number(rec.cantidad) },
+                            stock_unidades: { increment: cantidad },
                             updatedAt: new Date(),
                         }
                     });
                 }
+
+                // 4. Verificar si el pedido está completo para cambiar el estado
+                const allItems = await tx.pedidos_items.findMany({
+                    where: { pedido_id: pedidoId }
+                });
+
+                if (allItems.length === 0) {
+                    console.warn(`⚠️ No se encontraron items para el pedido ${pedidoId}`);
+                }
+
+                const isComplete = allItems.every(i => i.cantidad_recibida >= i.cantidad_pedida);
+                const isPartial = allItems.some(i => i.cantidad_recibida > 0);
+
+                let nuevoEstado: pedidos_estado = 'PENDIENTE';
+                if (isComplete) nuevoEstado = 'RECIBIDO';
+                else if (isPartial) nuevoEstado = 'PARCIAL';
+
+                console.log(`✅ Actualizando pedido ${pedidoId} a estado: ${nuevoEstado}`);
+
+                return await tx.pedidos.update({
+                    where: { id: pedidoId },
+                    data: { estado: nuevoEstado }
+                });
+            });
+        } catch (error) {
+            console.error('🚨 ERROR CRÍTICO EN recibirPedido:', error);
+            // Si el error es de Prisma (P2025), significa que no encontró el registro
+            if (error.code === 'P2025') {
+                throw new Error('No se encontró uno de los registros (Pedido o Item)');
             }
-
-            // 4. Verificar si el pedido está completo para cambiar el estado
-            const allItems = await tx.pedidos_items.findMany({
-                where: { pedido_id: Number(id) }
-            });
-
-            const isComplete = allItems.every(i => i.cantidad_recibida >= i.cantidad_pedida);
-            const isPartial = allItems.some(i => i.cantidad_recibida > 0);
-
-            let nuevoEstado: pedidos_estado = 'PENDIENTE';
-            if (isComplete) nuevoEstado = 'RECIBIDO';
-            else if (isPartial) nuevoEstado = 'PARCIAL';
-
-            return tx.pedidos.update({
-                where: { id: Number(id) },
-                data: { estado: nuevoEstado }
-            });
-        });
+            throw error;
+        }
     }
 
     @Put(':id/cancelar')

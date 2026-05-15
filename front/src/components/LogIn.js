@@ -157,9 +157,6 @@ const LogIn = () => {
                         <Button type="submit" fullWidth variant="contained" size="large" sx={{ mt: 4, mb: 2, py: 1.5, borderRadius: 2, fontWeight: 700 }}>
                             Entrar al Sistema
                         </Button>
-                        <Button fullWidth variant="text" onClick={() => navigate('/register')} sx={{ fontWeight: 600 }}>
-                            ¿No tienes cuenta? Regístrate
-                        </Button>
                     </Box>
                 </Paper>
             </Container>

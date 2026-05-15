@@ -179,6 +179,11 @@ export default function GestionPedidos() {
                 return;
             }
 
+            console.log("📤 Enviando recepción:", {
+                usuario_id: auth.id,
+                items_recibidos
+            });
+
             await api.post(`${URI}/pedidos/${selectedPedido.id}/recibir`, {
                 usuario_id: auth.id,
                 items_recibidos
