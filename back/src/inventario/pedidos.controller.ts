@@ -145,7 +145,8 @@ export class PedidosController {
                     where: { id: pedidoId },
                     data: { estado: nuevoEstado }
                 });
-            });
+            }, { timeout: 30000 }); // Aumentamos el timeout a 30 segundos
+
         } catch (error) {
             console.error('🚨 ERROR CRÍTICO EN recibirPedido:', error);
             // Si el error es de Prisma (P2025), significa que no encontró el registro
