@@ -1,4 +1,4 @@
-import api, { URI } from '../../config.js';
+import api, { URI, showLoading, showSuccess, showError } from '../../config.js';
 import React, { useState, useEffect } from 'react';
 import { 
     Container, Typography, Box, Button, Paper, Table, TableBody, TableCell, 
@@ -166,35 +166,29 @@ export default function GestionPedidos() {
     };
 
     const submitRecepcion = async () => {
-        setLoading(true);
+        const items_recibidos = Object.keys(recepcionData).map(id => ({
+            item_id: id,
+            cantidad: recepcionData[id]
+        })).filter(i => i.cantidad > 0);
+
+        if (items_recibidos.length === 0) {
+            showError("Atención", "Ingrese al menos una cantidad para recibir.");
+            return;
+        }
+
+        setRecibirDialogOpen(false);
+        showLoading("Procesando el ingreso a stock...");
+
         try {
-            const items_recibidos = Object.keys(recepcionData).map(id => ({
-                item_id: id,
-                cantidad: recepcionData[id]
-            })).filter(i => i.cantidad > 0);
-
-            if (items_recibidos.length === 0) {
-                alert("Ingrese al menos una cantidad para recibir.");
-                setLoading(false);
-                return;
-            }
-
-            console.log("📤 Enviando recepción:", {
-                usuario_id: auth.id,
-                items_recibidos
-            });
-
             await api.post(`${URI}/pedidos/${selectedPedido.id}/recibir`, {
                 usuario_id: auth.id,
                 items_recibidos
             });
 
-            setRecibirDialogOpen(false);
-            fetchPedidos();
+            await fetchPedidos();
+            showSuccess("Recepción Exitosa", "El stock de los insumos ha sido actualizado.");
         } catch (err) {
-            alert("Error al procesar la recepción.");
-        } finally {
-            setLoading(false);
+            showError("Error", "Ocurrió un problema al procesar la recepción.");
         }
     };
 
