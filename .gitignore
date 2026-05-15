@@ -35,3 +35,7 @@ nodeW/
 
 # Documentación de análisis
 ANALISIS_Y_MEJORAS.md
+
+# Scripts temporales de prueba
+test_*.ts
+test_*.js
