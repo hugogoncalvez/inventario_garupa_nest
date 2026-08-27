@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Controller('ordenes')
@@ -7,7 +7,7 @@ export class OrdenesController {
 
     @Get()
     async findAll() {
-        return this.prisma.ordendeservicios.findMany({ // Corregido segun schema.prisma (linea 130)
+        return this.prisma.ordendeservicios.findMany({
             orderBy: {
                 id: 'desc'
             }
@@ -30,48 +30,62 @@ export class OrdenesController {
 
     @Post()
     async create(@Body() data: any) {
-        const { id_equipo, problema_reportado, tecnico_asignado, trabajo_realizado, estado, repuestos } = data;
-        
-        return this.prisma.$transaction(async (tx) => {
-            // 1. Crear la orden
-            const orden = await tx.ordendeservicios.create({
-                data: {
-                    id_equipo: String(id_equipo),
-                    problema_reportado,
-                    tecnico_asignado,
-                    trabajo_realizado,
-                    estado,
-                    fecha_recepcion: new Date(),
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
-                },
-            });
+        try {
+            const { id_equipo, problema_reportado, tecnico_asignado, trabajo_realizado, estado, repuestos } = data;
 
-            // 2. Si hay repuestos, registrarlos y descontar stock
-            if (repuestos && Array.isArray(repuestos)) {
-                for (const r of repuestos) {
-                    await tx.ordenes_repuestos.create({
-                        data: {
-                            orden_id: orden.id,
-                            repuesto_id: r.id,
-                            cantidad: r.cantidad || 1,
-                            fecha: new Date()
-                        }
-                    });
-
-                    await tx.repuestos.update({
-                        where: { id: r.id },
-                        data: {
-                            stock_actual: {
-                                decrement: r.cantidad || 1
-                            }
-                        }
-                    });
-                }
+            if (!id_equipo) {
+                throw new HttpException('El ID del equipo es requerido', HttpStatus.BAD_REQUEST);
+            }
+            if (!problema_reportado) {
+                throw new HttpException('El problema reportado es requerido', HttpStatus.BAD_REQUEST);
             }
 
-            return orden;
-        });
+            return await this.prisma.$transaction(async (tx) => {
+                const orden = await tx.ordendeservicios.create({
+                    data: {
+                        id_equipo: String(id_equipo),
+                        problema_reportado: problema_reportado || null,
+                        tecnico_asignado: tecnico_asignado || null,
+                        trabajo_realizado: trabajo_realizado || null,
+                        estado: estado || 'Recibido',
+                        fecha_recepcion: new Date(),
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                    },
+                });
+
+                if (repuestos && Array.isArray(repuestos) && repuestos.length > 0) {
+                    for (const r of repuestos) {
+                        await tx.ordenes_repuestos.create({
+                            data: {
+                                orden_id: orden.id,
+                                repuesto_id: r.id,
+                                cantidad: r.cantidad || 1,
+                                fecha: new Date()
+                            }
+                        });
+
+                        await tx.repuestos.update({
+                            where: { id: r.id },
+                            data: {
+                                stock_actual: {
+                                    decrement: r.cantidad || 1
+                                }
+                            }
+                        });
+                    }
+                }
+
+                return orden;
+            });
+        } catch (error) {
+            if (error instanceof HttpException) throw error;
+            console.error('Error al crear orden:', error);
+            throw new HttpException(
+                error.message || 'Error al crear la orden de servicio',
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
     }
 
     @Put(':id')

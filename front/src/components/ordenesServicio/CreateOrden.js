@@ -1,4 +1,4 @@
-import api, { URI } from '../../config.js';
+import api, { URI, showError, showSuccess } from '../../config.js';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Grid from "@mui/material/Grid";
@@ -13,6 +13,7 @@ const CreateOrden = () => {
     const navigate = useNavigate();
     const [usuarios, setUsuarios] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
 
     const [form, setForm] = useState({
         id_equipo: '',
@@ -54,11 +55,20 @@ const CreateOrden = () => {
     const handleSubmit = async (event) => {
         event.preventDefault();
         if (validate()) {
-            await api.post(`${URI}/ordenes`, {
-                ...form,
-                fecha_recepcion: new Date(),
-            });
-            navigate('/ordenes');
+            setSubmitting(true);
+            try {
+                await api.post(`${URI}/ordenes`, {
+                    ...form,
+                    fecha_recepcion: new Date(),
+                });
+                await showSuccess('Orden creada', 'La orden de servicio se registró correctamente.');
+                navigate('/ordenes');
+            } catch (error) {
+                const msg = error.response?.data?.message || 'Error al crear la orden de servicio.';
+                showError('No se pudo crear la orden', Array.isArray(msg) ? msg.join('\n') : msg);
+            } finally {
+                setSubmitting(false);
+            }
         }
     };
 
@@ -95,6 +105,7 @@ const CreateOrden = () => {
                                 helperText={errors.id_equipo}
                                 fullWidth
                                 autoFocus
+                                inputProps={{ maxLength: 20 }}
                             />
                         </Grid>
                         <Grid size={{ xs: 12, sm: 6 }}>
@@ -119,6 +130,7 @@ const CreateOrden = () => {
                                 error={!!errors.problema_reportado}
                                 helperText={errors.problema_reportado}
                                 fullWidth
+                                inputProps={{ maxLength: 255 }}
                             />
                         </Grid>
 
@@ -151,6 +163,7 @@ const CreateOrden = () => {
                                     size="large" 
                                     onClick={() => navigate('/ordenes')}
                                     startIcon={<CancelIcon />}
+                                    disabled={submitting}
                                 >
                                     Cancelar
                                 </Button>
@@ -158,9 +171,10 @@ const CreateOrden = () => {
                                     type="submit" 
                                     variant="contained" 
                                     size="large" 
-                                    startIcon={<SaveOutlinedIcon />}
+                                    startIcon={submitting ? <CircularProgress size={20} color="inherit" /> : <SaveOutlinedIcon />}
+                                    disabled={submitting}
                                 >
-                                    Crear Orden
+                                    {submitting ? 'Creando...' : 'Crear Orden'}
                                 </Button>
                             </Stack>
                         </Grid>

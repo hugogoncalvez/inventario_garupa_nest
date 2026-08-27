@@ -104,8 +104,8 @@ export default function NavBar() {
     const mainNavItems = [
         { text: 'Panel de Control', path: '/dashboard', icon: <AnalyticsIcon /> },
         { text: 'Inventario', path: '/inventario', icon: <Inventory2OutlinedIcon /> },
-        { text: 'Órdenes de Servicio', path: '/ordenes', icon: <BuildIcon /> },
         { text: 'Control de Insumos', path: '/tintas/cartuchos', icon: <FactCheckIcon /> },
+        { text: 'Órdenes de Servicio', path: '/ordenes', icon: <BuildIcon /> },
         { text: 'Pedidos de Insumos', path: '/tintas/pedidos', icon: <AssignmentIcon /> },
         { text: 'Insumos a Granel', path: '/insumos-granel', icon: <LocalShippingIcon /> },
         { text: 'Repuestos / Stock', path: '/repuestos', icon: <SettingsInputComponentIcon /> },
@@ -127,7 +127,7 @@ export default function NavBar() {
         const isActive = location.pathname === item.path;
         return (
             <ListItem key={item.text} disablePadding>
-                <ListItemButton 
+                <ListItemButton
                     onClick={() => { navigate(item.path); setOpenDrawer(false); }}
                     selected={isActive}
                     sx={{
@@ -146,8 +146,8 @@ export default function NavBar() {
                     <ListItemIcon sx={{ minWidth: 40 }}>
                         {item.icon}
                     </ListItemIcon>
-                    <ListItemText 
-                        primary={item.text} 
+                    <ListItemText
+                        primary={item.text}
                         primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: isActive ? 600 : 500 }}
                     />
                 </ListItemButton>
@@ -157,9 +157,9 @@ export default function NavBar() {
 
     const list = () => (
         <Box sx={{ width: 280, pb: 2, display: 'flex', flexDirection: 'column', height: '100%' }} role="presentation">
-            <Box sx={{ 
-                p: 3, 
-                backgroundColor: 'var(--mui-palette-primary-main)', 
+            <Box sx={{
+                p: 3,
+                backgroundColor: 'var(--mui-palette-primary-main)',
                 color: 'var(--mui-palette-common-white)',
                 display: 'flex',
                 flexDirection: 'column',
@@ -192,9 +192,9 @@ export default function NavBar() {
             </Box>
 
             <Divider />
-            
+
             <Box sx={{ p: 2 }}>
-                <ListItemButton 
+                <ListItemButton
                     onClick={() => { setAuth(false); navigate('/'); }}
                     sx={{ borderRadius: 2, color: 'var(--mui-palette-error-main)' }}
                 >
@@ -209,13 +209,13 @@ export default function NavBar() {
 
     return (
         <Box sx={{ flexGrow: 1 }}>
-            <AppBar 
-                position="fixed" 
-                elevation={0} 
-                sx={{ 
+            <AppBar
+                position="fixed"
+                elevation={0}
+                sx={{
                     backgroundColor: 'var(--mui-palette-background-paper)',
                     color: 'var(--mui-palette-text-primary)',
-                    borderBottom: '1px solid var(--mui-palette-divider)' 
+                    borderBottom: '1px solid var(--mui-palette-divider)'
                 }}
             >
                 <Toolbar sx={{ justifyContent: "space-between" }}>
@@ -237,10 +237,10 @@ export default function NavBar() {
 
                     <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                         <Tooltip title={getBotStatusLabel()}>
-                            <IconButton 
-                                color="inherit" 
+                            <IconButton
+                                color="inherit"
                                 onClick={checkBotStatus}
-                                sx={{ 
+                                sx={{
                                     opacity: botStatus === 'ok' ? 1 : 0.7,
                                     animation: botStatus === 'connecting' ? 'pulse 2s infinite' : 'none',
                                     '@keyframes pulse': {
@@ -273,14 +273,14 @@ export default function NavBar() {
                     </Box>
                 </Toolbar>
             </AppBar>
-            
+
             <Drawer
                 anchor="left"
                 open={openDrawer}
                 onClose={toggleDrawer(false)}
                 PaperProps={{
-                    sx: { 
-                        border: 'none', 
+                    sx: {
+                        border: 'none',
                         boxShadow: 'var(--mui-shadows-12)',
                         backgroundColor: 'var(--mui-palette-background-paper)'
                     }
