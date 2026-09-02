@@ -261,10 +261,26 @@ export const ReportesTinta = () => {
         setPage(0);
     };
 
-    const handleSetUltimoMes = () => {
-        const hasta = new Date();
-        const desde = new Date();
-        desde.setMonth(desde.getMonth() - 1);
+    const handleSetMesAnterior = () => {
+        const ahora = new Date();
+        const desde = new Date(ahora.getFullYear(), ahora.getMonth() - 1, 1);
+        const hasta = new Date(ahora.getFullYear(), ahora.getMonth(), 0);
+
+        const formatYMD = (d) => {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+
+        setFechaDesde(formatYMD(desde));
+        setFechaHasta(formatYMD(hasta));
+    };
+
+    const handleSetMesActual = () => {
+        const ahora = new Date();
+        const desde = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+        const hasta = ahora;
 
         const formatYMD = (d) => {
             const year = d.getFullYear();
@@ -436,16 +452,28 @@ export const ReportesTinta = () => {
                             <FilterAltIcon color="primary" sx={{ mr: 1, fontSize: 20 }} />
                             <Typography variant="subtitle1" fontWeight="600">Rango de Fechas</Typography>
                         </Box>
-                        <Button 
-                            size="small" 
-                            variant="outlined" 
-                            color="primary"
-                            startIcon={<CalendarMonthIcon />}
-                            onClick={handleSetUltimoMes}
-                            sx={{ borderRadius: 2, fontWeight: 600, textTransform: 'none' }}
-                        >
-                            📅 Último Mes
-                        </Button>
+                        <Stack direction="row" spacing={1}>
+                            <Button 
+                                size="small" 
+                                variant="outlined" 
+                                color="primary"
+                                startIcon={<CalendarMonthIcon />}
+                                onClick={handleSetMesAnterior}
+                                sx={{ borderRadius: 2, fontWeight: 600, textTransform: 'none' }}
+                            >
+                                📅 Mes Anterior
+                            </Button>
+                            <Button 
+                                size="small" 
+                                variant="outlined" 
+                                color="secondary"
+                                startIcon={<CalendarMonthIcon />}
+                                onClick={handleSetMesActual}
+                                sx={{ borderRadius: 2, fontWeight: 600, textTransform: 'none' }}
+                            >
+                                📅 Mes Actual
+                            </Button>
+                        </Stack>
                     </Box>
                     <Grid container spacing={2} alignItems="center">
                         <Grid item xs={12} sm={4} md={3}>
