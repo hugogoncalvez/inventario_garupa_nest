@@ -17,6 +17,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
+import DashboardIcon from '@mui/icons-material/Dashboard';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import DesktopWindowsIcon from '@mui/icons-material/DesktopWindows';
 import TableChartIcon from '@mui/icons-material/TableChart';
@@ -102,7 +103,7 @@ export default function NavBar() {
     };
 
     const mainNavItems = [
-        { text: 'Panel de Control', path: '/dashboard', icon: <AnalyticsIcon /> },
+        { text: 'Dashboard / Panel de Control', path: '/dashboard', icon: <DashboardIcon /> },
         { text: 'Inventario', path: '/inventario', icon: <Inventory2OutlinedIcon /> },
         { text: 'Control de Insumos', path: '/tintas/cartuchos', icon: <FactCheckIcon /> },
         { text: 'Órdenes de Servicio', path: '/ordenes', icon: <BuildIcon /> },

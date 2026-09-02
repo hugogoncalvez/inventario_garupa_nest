@@ -158,7 +158,7 @@ const Dashboard = () => {
                 <Grid item xs={12} md={7}>
                     <Paper sx={{ p: 3, borderRadius: 3, height: { xs: 350, md: 420 }, display: 'flex', flexDirection: 'column' }}>
                         <Typography variant="h6" fontWeight="700" mb={3}>
-                            🏆 Top 5 Insumos más Usados (Total Entregas)
+                            🏆 Top 10 Insumos más Usados (Total Entregas)
                         </Typography>
                         <Box sx={{ height: { xs: 270, md: 340 } }}>
                             {isMounted && (
