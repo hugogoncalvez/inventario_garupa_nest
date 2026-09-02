@@ -1,10 +1,48 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { movimientos_tinta_tipo_movimiento } from '@prisma/client';
+import { WhatsAppService } from './whatsapp.service';
 
 @Controller('reportes')
 export class ReportesController {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly whatsappService: WhatsAppService
+    ) { }
+
+    @Post('whatsapp-resumen')
+    async sendReporteWhatsApp(@Body() body: any) {
+        const { fechaDesde, fechaHasta, reporteData } = body;
+
+        let msg = `📊 *REPORTE DE CONSUMO Y RECARGAS POR ÁREA*\n`;
+        msg += `📅 *Periodo:* ${fechaDesde || 'N/A'} al ${fechaHasta || 'N/A'}\n\n`;
+
+        if (!reporteData || reporteData.length === 0) {
+            msg += `_No se registraron movimientos en este período._`;
+        } else {
+            let totalEntregasGen = 0;
+            let totalRecargasGen = 0;
+
+            msg += `📍 *DESGLOSE POR ÁREA:*\n`;
+            reporteData.forEach((a: any) => {
+                totalEntregasGen += (a.totalEntregas || 0);
+                totalRecargasGen += (a.totalRecargasCartuchos || 0);
+
+                msg += `\n• *${a.area}*\n`;
+                if (a.totalEntregas > 0) msg += `  📦 Entregas: ${a.totalEntregas} un.\n`;
+                if (a.totalRecargasCartuchos > 0) msg += `  🧪 Recargas: ${a.totalRecargasCartuchos} un. (${a.totalRecargasInsumo} ${a.unidadMedida || 'g'})\n`;
+            });
+
+            msg += `\n📈 *TOTALES GENERALES:*`;
+            msg += `\n📦 Total Entregas Directas: *${totalEntregasGen} un.*`;
+            msg += `\n🧪 Total Cartuchos Recargados: *${totalRecargasGen} un.*`;
+        }
+
+        msg += `\n\n_Generado desde el Sistema de Inventario Garupá_`;
+
+        await this.whatsappService.sendMessage(msg);
+        return { success: true };
+    }
 
     @Get('compras')
     async getCompras(@Query('desde') desde: string, @Query('hasta') hasta: string) {

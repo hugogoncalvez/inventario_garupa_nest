@@ -1,4 +1,4 @@
-import api, { URI } from '../../config.js';
+import api, { URI, showLoading, showSuccess, showError } from '../../config.js';
 import React, { useState, useEffect } from 'react';
 import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
@@ -22,8 +22,10 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import PrintIcon from '@mui/icons-material/Print';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import Grid from '@mui/material/Grid';
-import { Card, CardContent, Chip, Tooltip, Tabs, Tab } from '@mui/material';
+import { Card, CardContent, Chip, Tooltip, Tabs, Tab, Stack } from '@mui/material';
 
 import ReporteConsumoTintas from '../../pdf/ReporteConsumoTintas';
 import ActaEntregaTintasPdf from '../../pdf/ActaEntregaTintas';
@@ -259,6 +261,22 @@ export const ReportesTinta = () => {
         setPage(0);
     };
 
+    const handleSetUltimoMes = () => {
+        const hasta = new Date();
+        const desde = new Date();
+        desde.setMonth(desde.getMonth() - 1);
+
+        const formatYMD = (d) => {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+
+        setFechaDesde(formatYMD(desde));
+        setFechaHasta(formatYMD(hasta));
+    };
+
     const handleGenerateReport = async () => {
         if (!fechaDesde || !fechaHasta) {
             setError("Por favor, seleccione ambas fechas.");
@@ -365,30 +383,69 @@ export const ReportesTinta = () => {
         ReporteConsumoTintas(reporteData, fechaDesde, fechaHasta);
     };
 
+    const handleSendWhatsApp = async () => {
+        if (reporteData.length === 0) return;
+        try {
+            showLoading("Enviando resumen por WhatsApp...");
+            await api.post(`${URI}/reportes/whatsapp-resumen`, {
+                fechaDesde,
+                fechaHasta,
+                reporteData
+            });
+            showSuccess("¡Enviado!", "El resumen del reporte se ha enviado al grupo de WhatsApp.");
+        } catch (err) {
+            showError("Error", "No se pudo enviar el resumen por WhatsApp.");
+        }
+    };
+
     return (
         <Container maxWidth="xl" sx={{ mt: 9, mb: 4 }}>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                 <Typography variant="h4" fontWeight="bold" color="primary">
                     Reporte de Consumo y Recargas por Área
                 </Typography>
-                <Button
-                    variant="contained"
-                    color="error"
-                    onClick={generatePdf}
-                    startIcon={<PictureAsPdfIcon />}
-                    disabled={reporteData.length === 0}
-                    sx={{ px: 4, borderRadius: 2 }}
-                >
-                    Generar PDF
-                </Button>
+                <Stack direction="row" spacing={1.5}>
+                    <Button
+                        variant="contained"
+                        color="success"
+                        onClick={handleSendWhatsApp}
+                        startIcon={<WhatsAppIcon />}
+                        disabled={reporteData.length === 0}
+                        sx={{ px: 3, borderRadius: 2, fontWeight: 700, bgcolor: '#25D366', '&:hover': { bgcolor: '#128C7E' } }}
+                    >
+                        WhatsApp
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="error"
+                        onClick={generatePdf}
+                        startIcon={<PictureAsPdfIcon />}
+                        disabled={reporteData.length === 0}
+                        sx={{ px: 3, borderRadius: 2, fontWeight: 700 }}
+                    >
+                        Generar PDF
+                    </Button>
+                </Stack>
             </Box>
 
             {/* Panel de Filtros */}
             <Card sx={{ mb: 4, borderRadius: 2, boxShadow: 1 }}>
                 <CardContent sx={{ p: 2 }}>
-                    <Box display="flex" alignItems="center" mb={2}>
-                        <FilterAltIcon color="primary" sx={{ mr: 1, fontSize: 20 }} />
-                        <Typography variant="subtitle1" fontWeight="600">Rango de Fechas</Typography>
+                    <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+                        <Box display="flex" alignItems="center">
+                            <FilterAltIcon color="primary" sx={{ mr: 1, fontSize: 20 }} />
+                            <Typography variant="subtitle1" fontWeight="600">Rango de Fechas</Typography>
+                        </Box>
+                        <Button 
+                            size="small" 
+                            variant="outlined" 
+                            color="primary"
+                            startIcon={<CalendarMonthIcon />}
+                            onClick={handleSetUltimoMes}
+                            sx={{ borderRadius: 2, fontWeight: 600, textTransform: 'none' }}
+                        >
+                            📅 Último Mes
+                        </Button>
                     </Box>
                     <Grid container spacing={2} alignItems="center">
                         <Grid item xs={12} sm={4} md={3}>
