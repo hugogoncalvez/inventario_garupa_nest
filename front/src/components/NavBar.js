@@ -113,8 +113,7 @@ export default function NavBar() {
     ];
 
     const reportItems = [
-        { text: 'Consumo por Área', path: '/tintas/reportes', icon: <AnalyticsIcon /> },
-        { text: 'Recargas Realizadas', path: '/tintas/reportes/recargas', icon: <AssignmentIcon /> },
+        { text: 'Consumo y Recargas por Área', path: '/tintas/reportes', icon: <AnalyticsIcon /> },
         { text: 'Historial de Compras', path: '/reportes/compras', icon: <SummarizeIcon /> }
     ];
 
