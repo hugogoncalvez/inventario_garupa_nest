@@ -56,7 +56,7 @@ export class DashboardController {
         const topInsumos = Array.from(insumoMap.entries())
             .map(([name, total]) => ({ name, total }))
             .sort((a, b) => b.total - a.total)
-            .slice(0, 5);
+            .slice(0, 10);
 
         // Procesar Consumo por Área
         const areaMap = new Map();
