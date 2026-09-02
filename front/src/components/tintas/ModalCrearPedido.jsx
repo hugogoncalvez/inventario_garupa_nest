@@ -142,6 +142,19 @@ export default function ModalCrearPedido({ open, onClose, onPedidoExitoso }) {
         setCantidad('');
     };
 
+    const handleCantidadChange = (rowId, nuevaCantidad) => {
+        const val = parseInt(nuevaCantidad);
+        setListaPedido(prev => prev.map(item => {
+            if (item.rowId === rowId) {
+                return {
+                    ...item,
+                    cantidad_pedida: isNaN(val) || val <= 0 ? 1 : val
+                };
+            }
+            return item;
+        }));
+    };
+
     const handleRemoveFromLista = (rowId) => {
         setListaPedido(prev => prev.filter(item => item.rowId !== rowId));
     };
@@ -338,7 +351,17 @@ export default function ModalCrearPedido({ open, onClose, onPedidoExitoso }) {
                                                 )}
                                             </Box>
                                         </TableCell>
-                                        <TableCell align="right"><Typography variant="body2" fontWeight="800">{item.cantidad_pedida}</Typography></TableCell>
+                                        <TableCell align="right" sx={{ width: 120 }}>
+                                            <TextField
+                                                type="number"
+                                                size="small"
+                                                value={item.cantidad_pedida}
+                                                onChange={(e) => handleCantidadChange(item.rowId, e.target.value)}
+                                                disabled={loading}
+                                                slotProps={{ input: { min: 1, style: { textAlign: 'right', fontWeight: 800 } } }}
+                                                sx={{ width: 85 }}
+                                            />
+                                        </TableCell>
                                         <TableCell align="center">
                                             <IconButton size="small" onClick={() => handleRemoveFromLista(item.rowId)} color="error" disabled={loading}><DeleteIcon fontSize="small" /></IconButton>
                                         </TableCell>
