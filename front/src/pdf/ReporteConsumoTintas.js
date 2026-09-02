@@ -30,7 +30,7 @@ const ReporteConsumoTintas = (reporteData, fechaDesde, fechaHasta) => {
 
         // Encabezado del Área
         content.push({
-            text: `📍 Área: ${areaData.area}`,
+            text: `Área: ${areaData.area}`,
             fontSize: 15,
             bold: true,
             margin: [0, 15, 0, 5],
@@ -40,7 +40,7 @@ const ReporteConsumoTintas = (reporteData, fechaDesde, fechaHasta) => {
         // 1. Tabla de Entregas
         if (hasEntregas) {
             content.push({
-                text: `📦 Entregas de Insumos Nuevos (Total: ${areaData.totalEntregas} un.)`,
+                text: `Entregas de Insumos Nuevos (Total: ${areaData.totalEntregas} un.)`,
                 fontSize: 12,
                 bold: true,
                 margin: [0, 5, 0, 3],
@@ -82,7 +82,7 @@ const ReporteConsumoTintas = (reporteData, fechaDesde, fechaHasta) => {
         // 2. Tabla de Recargas
         if (hasRecargas) {
             content.push({
-                text: `🧪 Recargas Realizadas (Total: ${areaData.totalRecargasCartuchos} un. / ${areaData.totalRecargasInsumo.toLocaleString()} ${areaData.unidadMedida || 'g'})`,
+                text: `Recargas Realizadas (Total: ${areaData.totalRecargasCartuchos} un. / ${areaData.totalRecargasInsumo.toLocaleString()} ${areaData.unidadMedida || 'g'})`,
                 fontSize: 12,
                 bold: true,
                 margin: [0, 8, 0, 3],
@@ -152,7 +152,7 @@ const ReporteConsumoTintas = (reporteData, fechaDesde, fechaHasta) => {
         });
 
         if (resumenEntregas.length > 0) {
-            content.push({ text: '📦 Total Entregas de Insumos Nuevos:', fontSize: 13, bold: true, margin: [0, 5, 0, 5], color: '#1e293b' });
+            content.push({ text: 'Total Entregas de Insumos Nuevos:', fontSize: 13, bold: true, margin: [0, 5, 0, 5], color: '#1e293b' });
             content.push({
                 style: 'tableSummary',
                 table: {
@@ -178,7 +178,7 @@ const ReporteConsumoTintas = (reporteData, fechaDesde, fechaHasta) => {
         }
 
         if (resumenRecargas.length > 0) {
-            content.push({ text: '🧪 Total Recargas con Insumos a Granel:', fontSize: 13, bold: true, margin: [0, 15, 0, 5], color: '#1e293b' });
+            content.push({ text: 'Total Recargas con Insumos a Granel:', fontSize: 13, bold: true, margin: [0, 15, 0, 5], color: '#1e293b' });
             content.push({
                 style: 'tableSummary',
                 table: {
