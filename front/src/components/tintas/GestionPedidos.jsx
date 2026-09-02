@@ -1,4 +1,4 @@
-import api, { URI, showLoading, showSuccess, showError } from '../../config.js';
+import api, { URI, showLoading, showSuccess, showError, MySwal } from '../../config.js';
 import React, { useState, useEffect } from 'react';
 import { 
     Container, Typography, Box, Button, Paper, Table, TableBody, TableCell, 
@@ -12,6 +12,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import DoneAllIcon from '@mui/icons-material/DoneAll';
 import useAuth from '../../hooks/useAuth';
 import ModalCrearPedido from './ModalCrearPedido';
 
@@ -161,6 +162,16 @@ export default function GestionPedidos() {
         setRecibirDialogOpen(true);
     };
 
+    const handleLlenarTodoCompleto = () => {
+        if (!selectedPedido) return;
+        const fullData = {};
+        selectedPedido.items.forEach(item => {
+            const pendiente = item.cantidad_pedida - item.cantidad_recibida;
+            fullData[item.id] = pendiente > 0 ? pendiente : 0;
+        });
+        setRecepcionData(fullData);
+    };
+
     const handleRecepcionChange = (itemId, val) => {
         setRecepcionData(prev => ({ ...prev, [itemId]: parseInt(val) || 0 }));
     };
@@ -180,13 +191,34 @@ export default function GestionPedidos() {
         showLoading("Procesando el ingreso a stock...");
 
         try {
-            await api.post(`${URI}/pedidos/${selectedPedido.id}/recibir`, {
+            const res = await api.post(`${URI}/pedidos/${selectedPedido.id}/recibir`, {
                 usuario_id: auth.id,
                 items_recibidos
             });
 
             await fetchPedidos();
-            showSuccess("Recepción Exitosa", "El stock de los insumos ha sido actualizado.");
+
+            const restablecidos = res.data?.restablecidos || [];
+            if (restablecidos.length > 0) {
+                const listaHtml = restablecidos.map(r => 
+                    `<div style="text-align: left; margin-bottom: 4px;">• <b>${r.modelo} (${r.color})</b>: ${r.stockAnterior} ➔ <span style="color:#10b981; font-weight:bold;">${r.stockNuevo} un.</span></div>`
+                ).join('');
+
+                MySwal().fire({
+                    icon: 'success',
+                    title: '¡Recepción Exitosa!',
+                    html: `
+                        <p style="margin-bottom: 12px;">El stock de los insumos ha sido actualizado correctamente.</p>
+                        <div style="background: rgba(16, 185, 129, 0.1); padding: 12px; border-radius: 8px; border: 1px solid #10b981;">
+                            <strong style="color: #10b981; display: block; margin-bottom: 6px;">🟢 Insumos Restablecidos (Fuera de Alerta):</strong>
+                            ${listaHtml}
+                        </div>
+                    `,
+                    confirmButtonText: 'Genial'
+                });
+            } else {
+                showSuccess("Recepción Exitosa", "El stock de los insumos ha sido actualizado.");
+            }
         } catch (err) {
             showError("Error", "Ocurrió un problema al procesar la recepción.");
         }
@@ -250,10 +282,22 @@ export default function GestionPedidos() {
             />
 
             {/* Diálogo de Recepción */}
-            <Dialog open={recibirDialogOpen} onClose={() => !loading && setRecibirDialogOpen(false)} maxWidth="sm" fullWidth>
-                <DialogTitle sx={{ fontWeight: 700, color: 'success.main' }}>Confirmar Recepción de Insumos</DialogTitle>
+            <Dialog open={recibirDialogOpen} onClose={() => !loading && setRecibirDialogOpen(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+                <DialogTitle sx={{ fontWeight: 700, color: 'success.main', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    Confirmar Recepción de Insumos
+                    <Button 
+                        size="small" 
+                        variant="outlined" 
+                        color="success" 
+                        startIcon={<DoneAllIcon />}
+                        onClick={handleLlenarTodoCompleto}
+                        sx={{ textTransform: 'none', fontWeight: 700 }}
+                    >
+                        Recibir Todo Completo
+                    </Button>
+                </DialogTitle>
                 <Divider />
-                <DialogContent>
+                <DialogContent sx={{ pt: 2.5 }}>
                     <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
                         Indique las cantidades que está recibiendo hoy para el pedido #{selectedPedido?.id}.
                     </Typography>
@@ -262,10 +306,12 @@ export default function GestionPedidos() {
                             const pendiente = item.cantidad_pedida - item.cantidad_recibida;
                             if (pendiente <= 0) return null;
                             return (
-                                <Box key={item.id} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
-                                    <Typography variant="subtitle2" fontWeight={700}>{item.cartuchos.modelo}</Typography>
+                                <Box key={item.id} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, bgcolor: 'background.paper' }}>
+                                    <Typography variant="subtitle2" fontWeight={700}>{item.cartuchos.modelo} ({item.cartuchos.color})</Typography>
                                     <Box display="flex" justifyContent="space-between" alignItems="center" mt={1}>
-                                        <Typography variant="caption">Pendiente: {pendiente}</Typography>
+                                        <Typography variant="caption" color="text.secondary">
+                                            Solicitado: {item.cantidad_pedida} | Recibido: {item.cantidad_recibida} | <strong>Pendiente: {pendiente}</strong>
+                                        </Typography>
                                         <TextField 
                                             size="small" 
                                             type="number" 
@@ -273,7 +319,7 @@ export default function GestionPedidos() {
                                             value={recepcionData[item.id] || 0}
                                             onChange={(e) => handleRecepcionChange(item.id, e.target.value)}
                                             slotProps={{ input: { min: 0, max: pendiente } }}
-                                            sx={{ width: 120 }}
+                                            sx={{ width: 130 }}
                                         />
                                     </Box>
                                 </Box>
@@ -281,14 +327,14 @@ export default function GestionPedidos() {
                         })}
                     </Stack>
                 </DialogContent>
-                <DialogActions sx={{ p: 2 }}>
+                <DialogActions sx={{ p: 2.5, bgcolor: 'var(--mui-palette-background-default)' }}>
                     <Button onClick={() => setRecibirDialogOpen(false)} disabled={loading}>Cancelar</Button>
                     <Button 
                         onClick={submitRecepcion} 
                         variant="contained" 
                         color="success" 
                         disabled={loading}
-                        sx={{ fontWeight: 700 }}
+                        sx={{ px: 3, fontWeight: 700, borderRadius: 2 }}
                     >
                         {loading ? 'Procesando...' : 'Confirmar Ingreso a Stock'}
                     </Button>
@@ -297,3 +343,4 @@ export default function GestionPedidos() {
         </Container>
     );
 }
+
