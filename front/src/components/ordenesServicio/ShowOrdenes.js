@@ -6,7 +6,7 @@ import Grid from "@mui/material/Grid";
 import {
     Typography, Table, TableBody, TableCell, tableCellClasses, TableContainer,
     TableHead, TableRow, Paper, Box, IconButton, Button, Tooltip,    TextField, MenuItem, Container, Card, CardContent, 
-    Stack, Chip, TablePagination 
+    Stack, Chip, TablePagination, CircularProgress
 } from '@mui/material';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
@@ -54,11 +54,13 @@ const ShowOrdenes = () => {
 
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
     const location = useLocation();
 
     useEffect(() => {
         const loadData = async () => {
+            setLoading(true);
             try {
                 const [resOrd, resEst] = await Promise.all([
                     api.get(`${URI}/ordenes`),
@@ -73,6 +75,8 @@ const ShowOrdenes = () => {
                 }
             } catch (error) {
                 console.error("Error cargando datos:", error);
+            } finally {
+                setLoading(false);
             }
         };
         loadData();
@@ -166,11 +170,16 @@ const ShowOrdenes = () => {
             </Card>
 
             <Paper sx={{ borderRadius: 3, overflow: 'hidden', border: '1px solid var(--mui-palette-divider)' }}>
+                {loading ? (
+                    <Box display="flex" justifyContent="center" alignItems="center" py={8}>
+                        <CircularProgress />
+                        <Typography variant="body1" sx={{ ml: 2, color: 'text.secondary' }}>Cargando órdenes...</Typography>
+                    </Box>
+                ) : (
                 <TableContainer sx={{ maxHeight: '60vh' }}>
                     <Table stickyHeader size="small">
                         <TableHead>
                             <TableRow>
-                                <StyledTableCell align='center'>ID</StyledTableCell>
                                 <StyledTableCell align='center'>Equipo</StyledTableCell>
                                 <StyledTableCell>Problema Reportado</StyledTableCell>
                                 <StyledTableCell>Técnico</StyledTableCell>
@@ -182,7 +191,6 @@ const ShowOrdenes = () => {
                         <TableBody>
                             {filteredOrdenes.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((orden) => (
                                 <StyledTableRow key={orden.id} hover>
-                                    <StyledTableCell align='center' sx={{ fontWeight: 700 }}>{orden.id}</StyledTableCell>
                                     <StyledTableCell align='center'>{orden.id_equipo}</StyledTableCell>
                                     <StyledTableCell sx={{ maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                         {orden.problema_reportado}
@@ -212,6 +220,7 @@ const ShowOrdenes = () => {
                         </TableBody>
                     </Table>
                 </TableContainer>
+                )}
                 <TablePagination
                     rowsPerPageOptions={[10, 25, 50]}
                     component="div"

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { 
     Container, Typography, Box, Button, Paper, Table, TableBody, TableCell, 
     TableContainer, TableHead, TableRow, Chip, IconButton, Collapse, TextField,
-    Dialog, DialogTitle, DialogContent, DialogActions, Divider, Stack
+    Dialog, DialogTitle, DialogContent, DialogActions, Divider, Stack, CircularProgress
 } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
@@ -57,9 +57,6 @@ function Row(props) {
                         {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                     </IconButton>
                 </TableCell>
-                <TableCell component="th" scope="row" sx={{ fontWeight: 700 }}>
-                    #{row.id}
-                </TableCell>
                 <TableCell>{new Date(row.fecha).toLocaleDateString()}</TableCell>
                 <TableCell>
                     <Chip label={row.estado} color={getEstadoColor(row.estado)} size="small" sx={{ fontWeight: 800 }} />
@@ -90,7 +87,7 @@ function Row(props) {
                 </TableCell>
             </TableRow>
             <TableRow>
-                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={5}>
                     <Collapse in={open} timeout="auto" unmountOnExit>
                         <Box sx={{ margin: 2 }}>
                             <Typography variant="subtitle2" gutterBottom component="div" fontWeight={700} color="text.secondary">
@@ -139,13 +136,17 @@ export default function GestionPedidos() {
     const [selectedPedido, setSelectedPedido] = useState(null);
     const [recepcionData, setRecepcionData] = useState({}); // { item_id: cantidad }
     const [loading, setLoading] = useState(false);
+    const [loadingData, setLoadingData] = useState(true);
 
     const fetchPedidos = async () => {
+        setLoadingData(true);
         try {
             const res = await api.get(`${URI}/pedidos`);
             setPedidos(res.data);
         } catch (err) {
             console.error(err);
+        } finally {
+            setLoadingData(false);
         }
     };
 
@@ -242,7 +243,7 @@ export default function GestionPedidos() {
                 </Typography>
                 <Button 
                     variant="contained" 
-                    color="secondary" 
+                    color="primary" 
                     startIcon={<AssignmentIcon />} 
                     onClick={() => setModalOpen(true)}
                     sx={{ px: 4, borderRadius: 2, fontWeight: 700 }}
@@ -252,11 +253,16 @@ export default function GestionPedidos() {
             </Box>
 
             <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: 3 }}>
+                {loadingData ? (
+                    <Box display="flex" justifyContent="center" alignItems="center" py={8}>
+                        <CircularProgress />
+                        <Typography variant="body1" sx={{ ml: 2, color: 'text.secondary' }}>Cargando pedidos...</Typography>
+                    </Box>
+                ) : (
                 <Table aria-label="collapsible table">
                     <TableHead>
                         <TableRow sx={{ bgcolor: 'secondary.main' }}>
                             <TableCell />
-                            <TableCell sx={{ color: '#fff', fontWeight: 700 }}>ID</TableCell>
                             <TableCell sx={{ color: '#fff', fontWeight: 700 }}>Fecha</TableCell>
                             <TableCell sx={{ color: '#fff', fontWeight: 700 }}>Estado</TableCell>
                             <TableCell sx={{ color: '#fff', fontWeight: 700 }}>Solicitante</TableCell>
@@ -265,7 +271,7 @@ export default function GestionPedidos() {
                     </TableHead>
                     <TableBody>
                         {pedidos.length === 0 ? (
-                            <TableRow><TableCell colSpan={6} align="center" sx={{ py: 5, color: 'text.secondary' }}>No hay pedidos registrados</TableCell></TableRow>
+                            <TableRow><TableCell colSpan={5} align="center" sx={{ py: 5, color: 'text.secondary' }}>No hay pedidos registrados</TableCell></TableRow>
                         ) : (
                             pedidos.map((pedido) => (
                                 <Row key={pedido.id} row={pedido} onRecibir={handleOpenRecibir} onCancelar={handleCancelar} />
@@ -273,6 +279,7 @@ export default function GestionPedidos() {
                         )}
                     </TableBody>
                 </Table>
+                )}
             </TableContainer>
 
             <ModalCrearPedido 

@@ -23,7 +23,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import PrintIcon from '@mui/icons-material/Print';
 import Grid from '@mui/material/Grid';
-import { Card, CardContent, Chip, Tooltip } from '@mui/material';
+import { Card, CardContent, Chip, Tooltip, CircularProgress } from '@mui/material';
 
 import ReporteRecargasGranelPdf from '../../pdf/ReporteRecargasGranelPdf';
 import ActaRecargaTinta from '../../pdf/ActaRecargaTinta';
@@ -189,6 +189,7 @@ export const ReportesRecargasGranel = () => {
     const [error, setError] = useState('');
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => { setPage(0); }, [reporteData.length]);
 
@@ -204,6 +205,7 @@ export const ReportesRecargasGranel = () => {
             return;
         }
 
+        setLoading(true);
         try {
             const res = await api.get(`${URI}/reportes/recargas-granel`, {
                 params: {
@@ -243,6 +245,8 @@ export const ReportesRecargasGranel = () => {
         } catch (err) {
             setError(err.response?.data?.message || "Error al generar el reporte.");
             setReporteData([]);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -297,6 +301,12 @@ export const ReportesRecargasGranel = () => {
             </Card>
 
             <Paper sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                {loading ? (
+                    <Box display="flex" justifyContent="center" alignItems="center" py={8}>
+                        <CircularProgress />
+                        <Typography variant="body1" sx={{ ml: 2, color: 'text.secondary' }}>Generando reporte...</Typography>
+                    </Box>
+                ) : (
                 <TableContainer sx={{ maxHeight: '60vh' }}>
                     <Table stickyHeader size="small">
                         <TableHead>
@@ -322,6 +332,7 @@ export const ReportesRecargasGranel = () => {
                         </TableBody>
                     </Table>
                 </TableContainer>
+                )}
                 <TablePagination
                     rowsPerPageOptions={[10, 25, 50]}
                     component="div"

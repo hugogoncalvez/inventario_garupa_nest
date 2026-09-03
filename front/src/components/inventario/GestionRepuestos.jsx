@@ -6,7 +6,7 @@ import {
     Typography, Table, TableBody, TableCell, tableCellClasses, TableContainer,
     TableHead, TableRow, Paper, Box, IconButton, Button, Tooltip, TextField, 
     MenuItem, FormControl, InputLabel, Select, Container, Card, CardContent, 
-    Stack, Chip, TablePagination, Dialog, DialogTitle, DialogContent, DialogActions, Grid, Divider
+    Stack, Chip, TablePagination, Dialog, DialogTitle, DialogContent, DialogActions, Grid, Divider, CircularProgress
 } from '@mui/material';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
@@ -198,6 +198,12 @@ const GestionRepuestos = () => {
             </Card>
 
             <Paper sx={{ borderRadius: 3, overflow: 'hidden' }}>
+                {loading ? (
+                    <Box display="flex" justifyContent="center" alignItems="center" py={8}>
+                        <CircularProgress />
+                        <Typography variant="body1" sx={{ ml: 2, color: 'text.secondary' }}>Cargando repuestos...</Typography>
+                    </Box>
+                ) : (
                 <TableContainer>
                     <Table size="small">
                         <TableHead>
@@ -242,6 +248,7 @@ const GestionRepuestos = () => {
                         </TableBody>
                     </Table>
                 </TableContainer>
+                )}
                 <TablePagination
                     component="div"
                     count={filteredRepuestos.length}

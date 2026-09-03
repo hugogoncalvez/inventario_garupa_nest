@@ -6,7 +6,7 @@ import Grid from "@mui/material/Grid";
 import {
     Typography, Table, TableBody, TableCell, tableCellClasses, TableContainer,
     TableHead, TableRow, Paper, Box, IconButton, Button, Tooltip,    TextField, MenuItem, Select, FormControl, InputLabel, 
-    Container, Card, CardContent, Stack, Chip, TablePagination 
+    Container, Card, CardContent, Stack, Chip, TablePagination, CircularProgress
 } from '@mui/material';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
@@ -60,6 +60,7 @@ const GestionCartuchos = () => {
 
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [loading, setLoading] = useState(true);
 
     const [filtroModelo, setFiltroModelo] = useState('');
     const [filtroTipo, setFiltroTipo] = useState('Todos');
@@ -94,11 +95,14 @@ const GestionCartuchos = () => {
     }, [cartuchos, filtroModelo, filtroTipo, filtroRecargable, filtroStock]);
 
     const getCartuchos = async () => {
+        setLoading(true);
         try {
             const res = await api.get(`${URI}/tintas/cartuchos`, { params: { includeInsumoGranel: 'true' } });
             setCartuchos(res.data);
         } catch (error) {
             console.error("Error al obtener los cartuchos:", error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -175,7 +179,7 @@ const GestionCartuchos = () => {
                 </Typography>
                 <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
                     <Button variant="contained" size="small" onClick={() => navigate('/tintas/cartuchos/create')} startIcon={<AddCircleOutlineIcon />}>Nuevo</Button>
-                    <Button variant="contained" size="small" color="success" onClick={() => setOpenCompraModal(true)} startIcon={<ShoppingCartIcon />}>Compra</Button>
+                    <Button variant="contained" size="small" color="primary" onClick={() => setOpenCompraModal(true)} startIcon={<ShoppingCartIcon />}>Compra</Button>
                     <Button variant="contained" size="small" color="info" onClick={() => setOpenEntregaModal(true)} startIcon={<SendIcon />}>Entrega</Button>
                     <Button variant="contained" size="small" color="warning" onClick={() => setOpenRecargaModal(true)} startIcon={<RecyclingIcon />}>Recarga</Button>
                     <Button variant="contained" size="small" color="success" onClick={handleSendStockSummary} startIcon={<WhatsAppIcon />} sx={{ bgcolor: '#25D366', '&:hover': { bgcolor: '#128C7E' } }}>WhatsApp</Button>
@@ -239,13 +243,19 @@ const GestionCartuchos = () => {
             <ModalRegistrarRecarga open={openRecargaModal} onClose={() => setOpenRecargaModal(false)} onRecargaExitosa={getCartuchos} />
 
             <Paper sx={{ borderRadius: 3, overflow: 'hidden', border: '1px solid var(--mui-palette-divider)' }}>
+                {loading ? (
+                    <Box display="flex" justifyContent="center" alignItems="center" py={8}>
+                        <CircularProgress />
+                        <Typography variant="body1" sx={{ ml: 2, color: 'text.secondary' }}>Cargando insumos...</Typography>
+                    </Box>
+                ) : (
                 <TableContainer sx={{ maxHeight: '60vh' }}>
                     <Table stickyHeader size="small">
                         <TableHead>
                             <TableRow>
                                 <StyledTableCell>Modelo</StyledTableCell>
-                                <StyledTableCell align='center'>Color</StyledTableCell>
                                 <StyledTableCell align='center'>Tipo</StyledTableCell>
+                                <StyledTableCell align='center'>Color</StyledTableCell>
                                 <StyledTableCell align='center'>Áreas de Uso</StyledTableCell>
                                 <StyledTableCell align='center'>Stock</StyledTableCell>
                                 <StyledTableCell align='center'>Mínimo</StyledTableCell>
@@ -256,6 +266,7 @@ const GestionCartuchos = () => {
                             {filteredCartuchos.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((cartucho) => (
                                 <StyledTableRow key={cartucho.id} hover>
                                     <StyledTableCell sx={{ fontWeight: 700 }}>{cartucho.modelo}</StyledTableCell>
+                                    <StyledTableCell align='center'>{cartucho.tipo}</StyledTableCell>
                                     <StyledTableCell align='center'>
                                         <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
                                             <Box sx={{ 
@@ -274,7 +285,6 @@ const GestionCartuchos = () => {
                                             <Typography variant="body2">{cartucho.color}</Typography>
                                         </Stack>
                                     </StyledTableCell>
-                                    <StyledTableCell align='center'>{cartucho.tipo}</StyledTableCell>
                                     <StyledTableCell align='center'>
                                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, justifyContent: 'center', maxWidth: 200, margin: '0 auto' }}>
                                             {cartucho.areas_uso?.length > 0 ? (
@@ -316,6 +326,7 @@ const GestionCartuchos = () => {
                         </TableBody>
                     </Table>
                 </TableContainer>
+                )}
                 <TablePagination
                     rowsPerPageOptions={[10, 25, 50]}
                     component="div"

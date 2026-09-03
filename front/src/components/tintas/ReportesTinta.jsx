@@ -25,7 +25,7 @@ import PrintIcon from '@mui/icons-material/Print';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import Grid from '@mui/material/Grid';
-import { Card, CardContent, Chip, Tooltip, Tabs, Tab, Stack } from '@mui/material';
+import { Card, CardContent, Chip, Tooltip, Tabs, Tab, Stack, CircularProgress } from '@mui/material';
 
 import ReporteConsumoTintas from '../../pdf/ReporteConsumoTintas';
 import ActaEntregaTintasPdf from '../../pdf/ActaEntregaTintas';
@@ -252,6 +252,7 @@ export const ReportesTinta = () => {
     const [error, setError] = useState('');
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => { setPage(0); }, [reporteData.length]);
 
@@ -299,6 +300,7 @@ export const ReportesTinta = () => {
             return;
         }
 
+        setLoading(true);
         try {
             const [resEntregas, resRecargas] = await Promise.all([
                 api.get(`${URI}/reportes/consumo-por-area`, {
@@ -391,6 +393,8 @@ export const ReportesTinta = () => {
         } catch (err) {
             setError(err.response?.data?.message || "Error al generar el reporte.");
             setReporteData([]);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -497,6 +501,12 @@ export const ReportesTinta = () => {
             </Card>
 
             <Paper sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                {loading ? (
+                    <Box display="flex" justifyContent="center" alignItems="center" py={8}>
+                        <CircularProgress />
+                        <Typography variant="body1" sx={{ ml: 2, color: 'text.secondary' }}>Generando reporte...</Typography>
+                    </Box>
+                ) : (
                 <TableContainer sx={{ maxHeight: '60vh' }}>
                     <Table stickyHeader size="small">
                         <TableHead>
@@ -522,6 +532,7 @@ export const ReportesTinta = () => {
                         </TableBody>
                     </Table>
                 </TableContainer>
+                )}
                 <TablePagination
                     rowsPerPageOptions={[10, 25, 50]}
                     component="div"

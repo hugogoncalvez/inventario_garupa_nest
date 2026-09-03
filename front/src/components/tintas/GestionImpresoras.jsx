@@ -5,7 +5,7 @@ import Grid from "@mui/material/Grid";
 import {
     Typography, Table, TableBody, TableCell, tableCellClasses, TableContainer,
     TableHead, TableRow, Paper, Box, IconButton, Button, Tooltip,    TextField, MenuItem, Container, Card, CardContent, 
-    Stack, TablePagination, Divider, Chip 
+    Stack, TablePagination, Divider, Chip, CircularProgress
 } from '@mui/material';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
@@ -46,8 +46,10 @@ export const GestionImpresoras = () => {
     const [filters, setFilters] = useState({ modelo: '', marca: '', areaName: '' });
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [loading, setLoading] = useState(true);
 
     const loadData = useCallback(async () => {
+        setLoading(true);
         try {
             const [resImp, resAreas] = await Promise.all([
                 api.get(`${URI}/tintas/impresoras`),
@@ -57,6 +59,8 @@ export const GestionImpresoras = () => {
             setAreas(resAreas.data);
         } catch (error) {
             console.error("Error cargando datos:", error);
+        } finally {
+            setLoading(false);
         }
     }, []);
 
@@ -231,6 +235,12 @@ export const GestionImpresoras = () => {
                     </Card>
 
                     <Paper sx={{ borderRadius: 3, overflow: 'hidden', border: '1px solid var(--mui-palette-divider)' }}>
+                        {loading ? (
+                            <Box display="flex" justifyContent="center" alignItems="center" py={8}>
+                                <CircularProgress />
+                                <Typography variant="body1" sx={{ ml: 2, color: 'text.secondary' }}>Cargando impresoras...</Typography>
+                            </Box>
+                        ) : (
                         <TableContainer sx={{ maxHeight: '60vh' }}>
                             <Table stickyHeader size="small">
                                 <TableHead>
@@ -266,6 +276,7 @@ export const GestionImpresoras = () => {
                                 </TableBody>
                             </Table>
                         </TableContainer>
+                        )}
                         <TablePagination
                             rowsPerPageOptions={[10, 25, 50]}
                             component="div"

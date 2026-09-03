@@ -17,7 +17,7 @@ import TablePagination from '@mui/material/TablePagination';
 import EventIcon from '@mui/icons-material/Event';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
-import { Card, CardContent, Grid, Chip } from '@mui/material';
+import { Card, CardContent, Grid, Chip, CircularProgress } from '@mui/material';
 
 import ReporteComprasPdf from '../../pdf/ReporteComprasPdf';
 
@@ -50,6 +50,7 @@ export const ReportesCompras = () => {
     const [error, setError] = useState('');
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => { setPage(0); }, [reporteData.length]);
 
@@ -65,6 +66,7 @@ export const ReportesCompras = () => {
             return;
         }
 
+        setLoading(true);
         try {
             const res = await api.get(`${URI}/reportes/compras`, {
                 params: {
@@ -77,6 +79,8 @@ export const ReportesCompras = () => {
         } catch (err) {
             setError(err.response?.data?.message || "Error al generar el reporte.");
             setReporteData([]);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -131,6 +135,12 @@ export const ReportesCompras = () => {
             </Card>
 
             <Paper sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                {loading ? (
+                    <Box display="flex" justifyContent="center" alignItems="center" py={8}>
+                        <CircularProgress />
+                        <Typography variant="body1" sx={{ ml: 2, color: 'text.secondary' }}>Generando reporte...</Typography>
+                    </Box>
+                ) : (
                 <TableContainer sx={{ maxHeight: '60vh' }}>
                     <Table stickyHeader size="small">
                         <TableHead>
@@ -189,6 +199,7 @@ export const ReportesCompras = () => {
                         </TableBody>
                     </Table>
                 </TableContainer>
+                )}
                 <TablePagination
                     rowsPerPageOptions={[10, 25, 50]}
                     component="div"

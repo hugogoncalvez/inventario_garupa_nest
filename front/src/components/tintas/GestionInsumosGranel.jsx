@@ -5,7 +5,7 @@ import Grid from "@mui/material/Grid";
 import {
     Typography, Table, TableBody, TableCell, tableCellClasses, TableContainer,
     TableHead, TableRow, Paper, Box, IconButton, Button, Tooltip, TextField, MenuItem, Container, Card, CardContent,
-    Stack, Chip, TablePagination, Divider
+    Stack, Chip, TablePagination, Divider, CircularProgress
 } from '@mui/material';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
@@ -58,17 +58,21 @@ export const GestionInsumosGranel = () => {
     const [openCompraModal, setOpenCompraModal] = useState(false);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         getInsumosGranel();
     }, []);
 
     const getInsumosGranel = async () => {
+        setLoading(true);
         try {
             const res = await api.get(`${URI}/insumos-granel`);
             setInsumosGranel(res.data);
         } catch (err) {
             console.error("Error al obtener insumos:", err);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -244,14 +248,20 @@ export const GestionInsumosGranel = () => {
 
                 <Grid size={{ xs: 12, md: 8 }}>
                     <Paper sx={{ borderRadius: 3, overflow: 'hidden', border: '1px solid var(--mui-palette-divider)' }}>
+                        {loading ? (
+                            <Box display="flex" justifyContent="center" alignItems="center" py={8}>
+                                <CircularProgress />
+                                <Typography variant="body1" sx={{ ml: 2, color: 'text.secondary' }}>Cargando insumos...</Typography>
+                            </Box>
+                        ) : (
                         <TableContainer sx={{ maxHeight: '65vh' }}>
                             <Table stickyHeader size="small">
                                 <TableHead>
                                     <TableRow>
                                         <StyledTableCell>Insumo</StyledTableCell>
-                                        <StyledTableCell align='center'>Unidad</StyledTableCell>
                                         <StyledTableCell align='center'>Áreas de Uso</StyledTableCell>
                                         <StyledTableCell align='center'>Stock Actual</StyledTableCell>
+                                        <StyledTableCell align='center'>Unidad</StyledTableCell>
                                         <StyledTableCell align='center'>Estado</StyledTableCell>
                                         <StyledTableCell align='center'>Acciones</StyledTableCell>
                                     </TableRow>
@@ -263,7 +273,6 @@ export const GestionInsumosGranel = () => {
                                                 <Typography variant="body2" fontWeight="700">{insumo.nombre}</Typography>
                                                 <Typography variant="caption" color="text.secondary">{insumo.sku || 'Sin SKU'}</Typography>
                                             </StyledTableCell>
-                                            <StyledTableCell align='center'>{insumo.unidad_medida}</StyledTableCell>
                                             <StyledTableCell align='center'>
                                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, justifyContent: 'center', maxWidth: 180, margin: '0 auto' }}>
                                                     {insumo.areas_uso?.length > 0 ? (
@@ -280,6 +289,7 @@ export const GestionInsumosGranel = () => {
                                                     {parseFloat(insumo.stock_actual).toLocaleString('es-AR')}
                                                 </Typography>
                                             </StyledTableCell>
+                                            <StyledTableCell align='center'>{insumo.unidad_medida}</StyledTableCell>
                                             <StyledTableCell align='center'>
                                                 <Chip
                                                     size="small"
@@ -303,6 +313,7 @@ export const GestionInsumosGranel = () => {
                                 </TableBody>
                             </Table>
                         </TableContainer>
+                        )}
                         <TablePagination
                             rowsPerPageOptions={[10, 25, 50]}
                             component="div"
