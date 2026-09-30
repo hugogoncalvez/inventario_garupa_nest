@@ -130,7 +130,6 @@ const CreateOrden = () => {
                                 error={!!errors.problema_reportado}
                                 helperText={errors.problema_reportado}
                                 fullWidth
-                                inputProps={{ maxLength: 255 }}
                             />
                         </Grid>
 

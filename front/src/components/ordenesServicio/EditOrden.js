@@ -1,4 +1,4 @@
-import api, { URI } from '../../config.js';
+import api, { URI, showError, showSuccess } from '../../config.js';
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Grid from "@mui/material/Grid";
@@ -15,6 +15,7 @@ const EditOrden = () => {
     const navigate = useNavigate();
     const { id } = useParams();
     const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
     const [usuarios, setUsuarios] = useState([]);
     const [repuestosDisponibles, setRepuestosDisponibles] = useState([]);
     const [repuestosSeleccionados, setRepuestosSeleccionados] = useState([]);
@@ -81,19 +82,31 @@ const EditOrden = () => {
         if (!form.problema_reportado) newErrors.problema_reportado = "Requerido";
         if (!form.tecnico_asignado) newErrors.tecnico_asignado = "Requerido";
         if (!form.estado) newErrors.estado = "Requerido";
+        if ((form.estado === 'Reparado' || form.estado === 'Entregado') && !form.trabajo_realizado?.trim()) {
+            newErrors.trabajo_realizado = "Describa el trabajo realizado para marcar como Reparado/Entregado";
+        }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        if (validate()) {
+        if (!validate()) return;
+        setSubmitting(true);
+        try {
             await api.put(`${URI}/ordenes/${id}`, {
                 ...form,
                 fecha_entrega: form.estado === 'Entregado' ? new Date() : null,
-                repuestos: repuestosSeleccionados // Enviamos los nuevos repuestos a descontar
+                repuestos: repuestosSeleccionados.map(r => ({ id: r.id, cantidad: r.cantidad || 1 }))
             });
+            await showSuccess('Orden actualizada', `La orden #${id} se guardó correctamente.`);
             navigate('/ordenes');
+        } catch (error) {
+            console.error("Error actualizando orden:", error);
+            const msg = error.response?.data?.message || 'No se pudo actualizar la orden. Intente nuevamente.';
+            showError('No se pudo actualizar la orden', Array.isArray(msg) ? msg.join('\n') : msg);
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -233,7 +246,8 @@ const EditOrden = () => {
                                 value={form.trabajo_realizado || ''}
                                 onChange={handleChange}
                                 fullWidth
-                                helperText="Explique qué se hizo para solucionar el problema"
+                                error={!!errors.trabajo_realizado}
+                                helperText={errors.trabajo_realizado || "Explique qué se hizo para solucionar el problema (sin límite de 255 caracteres)"}
                             />
                         </Grid>
 
@@ -265,6 +279,7 @@ const EditOrden = () => {
                                     size="large" 
                                     onClick={() => navigate('/ordenes')}
                                     startIcon={<CancelIcon />}
+                                    disabled={submitting}
                                 >
                                     Descartar
                                 </Button>
@@ -272,9 +287,10 @@ const EditOrden = () => {
                                     type="submit" 
                                     variant="contained" 
                                     size="large" 
-                                    startIcon={<SaveOutlinedIcon />}
+                                    startIcon={submitting ? <CircularProgress size={20} color="inherit" /> : <SaveOutlinedIcon />}
+                                    disabled={submitting}
                                 >
-                                    Actualizar Orden
+                                    {submitting ? 'Actualizando...' : 'Actualizar Orden'}
                                 </Button>
                             </Stack>
                         </Grid>

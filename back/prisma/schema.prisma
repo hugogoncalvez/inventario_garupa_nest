@@ -134,8 +134,8 @@ model ordendeservicios {
   id_equipo          String?             @db.VarChar(20)
   fecha_recepcion    DateTime?           @db.DateTime(0)
   fecha_entrega      DateTime?           @db.DateTime(0)
-  problema_reportado String?             @db.VarChar(255)
-  trabajo_realizado  String?             @db.VarChar(255)
+  problema_reportado String?             @db.Text
+  trabajo_realizado  String?             @db.Text
   tecnico_asignado   String?             @db.VarChar(255)
   estado             String?             @db.VarChar(255)
   createdAt          DateTime            @default(now()) @db.DateTime(0)

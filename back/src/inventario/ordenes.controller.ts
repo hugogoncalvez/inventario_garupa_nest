@@ -90,34 +90,66 @@ export class OrdenesController {
 
     @Put(':id')
     async update(@Param('id') id: string, @Body() data: any) {
-        const { problema_reportado, tecnico_asignado, trabajo_realizado, estado, fecha_entrega, repuestos } = data;
-        
-        return this.prisma.$transaction(async (tx) => {
-            // 1. Actualizar la orden
-            const orden = await tx.ordendeservicios.update({
-                where: { id: Number(id) },
-                data: {
-                    problema_reportado,
-                    tecnico_asignado,
-                    trabajo_realizado,
-                    estado,
-                    fecha_entrega: fecha_entrega ? new Date(fecha_entrega) : null,
-                    updatedAt: new Date(),
-                },
-            });
+        try {
+            const { problema_reportado, tecnico_asignado, trabajo_realizado, estado, fecha_entrega, repuestos } = data;
 
-            // 2. Gestionar repuestos nuevos (si se envían)
-            // Nota: Por simplicidad, aquí solo agregamos nuevos repuestos. 
-            // Si el repuesto ya existía en la orden, se podría mejorar la lógica para evitar duplicados.
-            if (repuestos && Array.isArray(repuestos)) {
+            const ordenId = Number(id);
+            if (!Number.isInteger(ordenId)) {
+                throw new HttpException('ID de orden inválido', HttpStatus.BAD_REQUEST);
+            }
+
+            // Normalizar strings: '' -> null para columnas nullable, recortar espacios
+            const norm = (v: any) => (typeof v === 'string' ? (v.trim() === '' ? null : v) : (v ?? null));
+
+            let fechaEntregaParsed: Date | null = null;
+            if (fecha_entrega) {
+                const d = new Date(fecha_entrega);
+                if (isNaN(d.getTime())) {
+                    throw new HttpException('fecha_entrega inválida', HttpStatus.BAD_REQUEST);
+                }
+                fechaEntregaParsed = d;
+            }
+
+            // Validar repuestos nuevos antes de la transacción para dar 400 claro
+            const repuestosValidados: { id: number; cantidad: number }[] = [];
+            if (repuestos !== undefined && repuestos !== null) {
+                if (!Array.isArray(repuestos)) {
+                    throw new HttpException('repuestos debe ser un arreglo', HttpStatus.BAD_REQUEST);
+                }
                 for (const r of repuestos) {
-                    // Solo procesar si es un repuesto nuevo (no estaba ya en la orden)
-                    // Esto se puede refinar según la UI, pero por ahora permitimos añadir más.
+                    const repuestoId = Number(r?.id);
+                    const cantidad = Number(r?.cantidad ?? 1);
+                    if (!Number.isInteger(repuestoId)) {
+                        throw new HttpException('Cada repuesto debe tener un id válido', HttpStatus.BAD_REQUEST);
+                    }
+                    if (!Number.isInteger(cantidad) || cantidad <= 0) {
+                        throw new HttpException('La cantidad de cada repuesto debe ser un entero mayor a 0', HttpStatus.BAD_REQUEST);
+                    }
+                    repuestosValidados.push({ id: repuestoId, cantidad });
+                }
+            }
+
+            return await this.prisma.$transaction(async (tx) => {
+                // 1. Actualizar la orden
+                const orden = await tx.ordendeservicios.update({
+                    where: { id: ordenId },
+                    data: {
+                        problema_reportado: norm(problema_reportado),
+                        tecnico_asignado: norm(tecnico_asignado),
+                        trabajo_realizado: norm(trabajo_realizado),
+                        estado: norm(estado),
+                        fecha_entrega: fechaEntregaParsed,
+                        updatedAt: new Date(),
+                    },
+                });
+
+                // 2. Gestionar repuestos nuevos (si se envían)
+                for (const r of repuestosValidados) {
                     await tx.ordenes_repuestos.create({
                         data: {
-                            orden_id: Number(id),
+                            orden_id: ordenId,
                             repuesto_id: r.id,
-                            cantidad: r.cantidad || 1,
+                            cantidad: r.cantidad,
                             fecha: new Date()
                         }
                     });
@@ -126,15 +158,33 @@ export class OrdenesController {
                         where: { id: r.id },
                         data: {
                             stock_actual: {
-                                decrement: r.cantidad || 1
+                                decrement: r.cantidad
                             }
                         }
                     });
                 }
-            }
 
-            return orden;
-        });
+                return orden;
+            });
+        } catch (error) {
+            if (error instanceof HttpException) throw error;
+            console.error(`Error al actualizar orden ${id}:`, error);
+            // Prisma: registro no encontrado
+            if (error?.code === 'P2025') {
+                throw new HttpException('Orden no encontrada', HttpStatus.NOT_FOUND);
+            }
+            // Prisma: FK fallida (repuesto inexistente) u otro constraint
+            if (error?.code === 'P2003') {
+                throw new HttpException(
+                    'No se pudo agregar un repuesto: el repuesto no existe o la referencia es inválida',
+                    HttpStatus.BAD_REQUEST,
+                );
+            }
+            throw new HttpException(
+                error?.message || 'Error al actualizar la orden de servicio',
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
     }
 
     @Delete(':id')
