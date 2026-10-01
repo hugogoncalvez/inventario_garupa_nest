@@ -506,4 +506,47 @@ export class TintasController {
             );
         }
     }
+
+    @Delete('movimientos/:id')
+    async deleteMovimiento(@Param('id') id: string) {
+        try {
+            const movId = Number(id);
+            if (!Number.isInteger(movId)) {
+                throw new HttpException('ID de movimiento inválido', HttpStatus.BAD_REQUEST);
+            }
+
+            const actual = await this.prisma.movimientos_tinta.findUnique({
+                where: { id: movId },
+            });
+            if (!actual) {
+                throw new HttpException('Movimiento no encontrado', HttpStatus.NOT_FOUND);
+            }
+            if (actual.tipo_movimiento !== movimientos_tinta_tipo_movimiento.ENTREGA_A__REA) {
+                throw new HttpException('Solo se pueden borrar entregas a área', HttpStatus.BAD_REQUEST);
+            }
+
+            return await this.prisma.$transaction(async (tx) => {
+                await tx.movimientos_tinta.delete({ where: { id: movId } });
+                // Devolver la cantidad al stock del cartucho
+                await tx.cartuchos.update({
+                    where: { id: actual.cartucho_id },
+                    data: {
+                        stock_unidades: { increment: actual.cantidad },
+                        updatedAt: new Date(),
+                    },
+                });
+                return { success: true };
+            });
+        } catch (error) {
+            if (error instanceof HttpException) throw error;
+            console.error(`Error al borrar movimiento ${id}:`, error);
+            if (error?.code === 'P2025') {
+                throw new HttpException('Movimiento no encontrado', HttpStatus.NOT_FOUND);
+            }
+            throw new HttpException(
+                error?.message || 'Error al borrar la entrega',
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
 }

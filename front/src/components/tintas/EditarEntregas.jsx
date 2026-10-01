@@ -1,4 +1,4 @@
-import api, { URI, showSuccess, showError } from '../../config.js';
+import api, { URI, showSuccess, showError, showLoading, MySwal } from '../../config.js';
 import { useState, useEffect } from 'react';
 import {
     Typography, Table, TableBody, TableCell, TableContainer,
@@ -7,6 +7,7 @@ import {
     DialogContent, DialogTitle, CircularProgress
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import useAuth from '../../hooks/useAuth';
 
 export const ADMIN_EMAIL = 'hugogoncalvez@gmail.com';
@@ -44,7 +45,29 @@ export const EditarEntregas = () => {
     }, [isAdmin]);
 
     if (!isAdmin) {
-        return (
+    const handleDelete = (row) => {
+        MySwal().fire({
+            title: '¿Borrar entrega?',
+            text: `Se eliminará la entrega de ${row.cantidad} x ${row.cartuchos?.modelo} y se devolverá el stock.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, borrar',
+            cancelButtonText: 'Cancelar'
+        }).then(async (result) => {
+            if (!result.isConfirmed) return;
+            showLoading('Borrando entrega...');
+            try {
+                await api.delete(`${URI}/tintas/movimientos/${row.id}`);
+                await getEntregas();
+                showSuccess('Entrega borrada', 'El movimiento se eliminó y el stock se devolvió.');
+            } catch (error) {
+                const msg = error.response?.data?.message || 'No se pudo borrar la entrega.';
+                showError('No se pudo borrar', Array.isArray(msg) ? msg.join('\n') : msg);
+            }
+        });
+    };
+
+    return (
             <Container maxWidth="sm" sx={{ mt: 12 }}>
                 <Paper sx={{ p: 4, textAlign: 'center' }}>
                     <Typography variant="h6" fontWeight={700}>Sin acceso</Typography>
@@ -110,7 +133,7 @@ export const EditarEntregas = () => {
                             <TableCell align="center" sx={{ fontWeight: 700 }}>Cantidad</TableCell>
                             <TableCell sx={{ fontWeight: 700 }}>Impresora / Área</TableCell>
                             <TableCell sx={{ fontWeight: 700 }}>Registrado por</TableCell>
-                            <TableCell align="center" sx={{ fontWeight: 700 }}>Editar</TableCell>
+                            <TableCell align="center" sx={{ fontWeight: 700 }}>Acciones</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -143,6 +166,11 @@ export const EditarEntregas = () => {
                                     <Tooltip title="Editar entrega">
                                         <IconButton size="small" color="primary" onClick={() => openEdit(row)}>
                                             <EditIcon fontSize="small" />
+                                        </IconButton>
+                                    </Tooltip>
+                                    <Tooltip title="Borrar entrega y devolver stock">
+                                        <IconButton size="small" color="error" onClick={() => handleDelete(row)}>
+                                            <DeleteIcon fontSize="small" />
                                         </IconButton>
                                     </Tooltip>
                                 </TableCell>
