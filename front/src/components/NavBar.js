@@ -40,7 +40,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 export default function NavBar() {
     const navigate = useNavigate();
     const location = useLocation();
-    const { setAuth } = useAuth();
+    const { auth, setAuth } = useAuth();
+    const isAdmin = (auth?.usuario || '').toLowerCase() === 'hugogoncalvez@gmail.com';
     const [openDrawer, setOpenDrawer] = useState(false);
     const { mode, setMode } = useColorScheme();
     const [botStatus, setBotStatus] = useState('loading'); // loading, ok, error, connecting
@@ -114,7 +115,8 @@ export default function NavBar() {
 
     const reportItems = [
         { text: 'Consumo y Recargas por Área', path: '/tintas/reportes', icon: <AnalyticsIcon /> },
-        { text: 'Historial de Compras', path: '/reportes/compras', icon: <SummarizeIcon /> }
+        { text: 'Historial de Compras', path: '/reportes/compras', icon: <SummarizeIcon /> },
+        ...(isAdmin ? [{ text: 'Editar Entregas (Admin)', path: '/tintas/entregas/editar', icon: <FactCheckIcon /> }] : [])
     ];
 
     const configItems = [

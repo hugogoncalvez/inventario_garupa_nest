@@ -35,6 +35,7 @@ const EditCartucho = lazy(() => import('./components/tintas/EditCartucho').then(
 const GestionInsumosGranel = lazy(() => import('./components/tintas/GestionInsumosGranel').then(module => ({ default: module.GestionInsumosGranel })));
 const ReportesCompras = lazy(() => import('./components/tintas/ReportesCompras').then(module => ({ default: module.ReportesCompras })));
 const GestionPedidos = lazy(() => import('./components/tintas/GestionPedidos'));
+const EditarEntregas = lazy(() => import('./components/tintas/EditarEntregas'));
 const GestionRepuestos = lazy(() => import('./components/inventario/GestionRepuestos'));
 
 const LoadingFallback = () => (
@@ -136,6 +137,7 @@ function App() {
                   <Route path='/tintas/reportes' element={<ReportesTinta />} />
                   <Route path='/tintas/reportes/recargas' element={<ReportesRecargasGranel />} />
                   <Route path='/tintas/pedidos' element={<GestionPedidos />} />
+                  <Route path='/tintas/entregas/editar' element={<EditarEntregas />} />
                   <Route path='/reportes/compras' element={<ReportesCompras />} />
                   <Route path='/insumos-granel' element={<GestionInsumosGranel />} />
                   <Route path='/repuestos' element={<GestionRepuestos />} />

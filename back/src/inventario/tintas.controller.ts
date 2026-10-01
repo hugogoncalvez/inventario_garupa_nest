@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, Query, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { movimientos_tinta_tipo_movimiento } from '@prisma/client';
 import { WhatsAppService } from './whatsapp.service';
@@ -413,5 +413,97 @@ export class TintasController {
             },
             orderBy: { fecha: 'desc' },
         });
+    }
+
+    // --- Edición de entregas (uso restringido desde el front) ---
+    @Get('movimientos/entregas')
+    async getEntregas(@Query('limite') limite?: string) {
+        const take = Math.min(Math.max(Number(limite) || 100, 1), 500);
+        return this.prisma.movimientos_tinta.findMany({
+            where: { tipo_movimiento: movimientos_tinta_tipo_movimiento.ENTREGA_A__REA },
+            include: {
+                cartuchos: true,
+                impresoras: { include: { areas: true } },
+                usuarios: true,
+            },
+            orderBy: { fecha: 'desc' },
+            take,
+        });
+    }
+
+    @Put('movimientos/:id')
+    async updateMovimiento(@Param('id') id: string, @Body() body: any) {
+        try {
+            const movId = Number(id);
+            if (!Number.isInteger(movId)) {
+                throw new HttpException('ID de movimiento inválido', HttpStatus.BAD_REQUEST);
+            }
+            const { cantidad, fecha, impresora_id } = body;
+
+            const actual = await this.prisma.movimientos_tinta.findUnique({
+                where: { id: movId },
+            });
+            if (!actual) {
+                throw new HttpException('Movimiento no encontrado', HttpStatus.NOT_FOUND);
+            }
+            if (actual.tipo_movimiento !== movimientos_tinta_tipo_movimiento.ENTREGA_A__REA) {
+                throw new HttpException('Solo se pueden editar entregas a área', HttpStatus.BAD_REQUEST);
+            }
+
+            const data: any = { updatedAt: new Date() };
+            let diffCantidad = 0;
+
+            if (cantidad !== undefined) {
+                const nueva = Number(cantidad);
+                if (!Number.isInteger(nueva) || nueva <= 0) {
+                    throw new HttpException('La cantidad debe ser un entero mayor a 0', HttpStatus.BAD_REQUEST);
+                }
+                diffCantidad = nueva - actual.cantidad;
+                data.cantidad = nueva;
+            }
+            if (fecha !== undefined) {
+                const d = new Date(fecha);
+                if (isNaN(d.getTime())) {
+                    throw new HttpException('Fecha inválida', HttpStatus.BAD_REQUEST);
+                }
+                data.fecha = d;
+            }
+            if (impresora_id !== undefined) {
+                data.impresora_id = impresora_id ? Number(impresora_id) : null;
+                if (data.impresora_id !== null && !Number.isInteger(data.impresora_id)) {
+                    throw new HttpException('Impresora inválida', HttpStatus.BAD_REQUEST);
+                }
+            }
+
+            return await this.prisma.$transaction(async (tx) => {
+                const mov = await tx.movimientos_tinta.update({
+                    where: { id: movId },
+                    data,
+                });
+                // Reajustar stock del cartucho según la diferencia de cantidad
+                if (diffCantidad !== 0) {
+                    await tx.cartuchos.update({
+                        where: { id: actual.cartucho_id },
+                        data: {
+                            stock_unidades: diffCantidad > 0
+                                ? { decrement: diffCantidad }
+                                : { increment: -diffCantidad },
+                            updatedAt: new Date(),
+                        },
+                    });
+                }
+                return mov;
+            });
+        } catch (error) {
+            if (error instanceof HttpException) throw error;
+            console.error(`Error al actualizar movimiento ${id}:`, error);
+            if (error?.code === 'P2025') {
+                throw new HttpException('Movimiento no encontrado', HttpStatus.NOT_FOUND);
+            }
+            throw new HttpException(
+                error?.message || 'Error al actualizar la entrega',
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
     }
 }
