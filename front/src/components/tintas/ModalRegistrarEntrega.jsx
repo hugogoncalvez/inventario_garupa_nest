@@ -178,23 +178,23 @@ export default function ModalRegistrarEntrega({ open, onClose, onEntregaExitosa 
             fullWidth
             PaperProps={{ sx: { borderRadius: 3 } }}
         >
-            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, fontWeight: 700, color: 'info.main' }}>
-                <SendIcon /> Registrar Entrega de Insumos
+            <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, fontWeight: 700, color: 'info.main' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <SendIcon /> Registrar Entrega de Insumos
+                </Box>
+                <TextField
+                    label="Fecha de entrega"
+                    type="date"
+                    value={fechaEntrega}
+                    onChange={(e) => setFechaEntrega(e.target.value)}
+                    size="small"
+                    disabled={loading}
+                    InputLabelProps={{ shrink: true }}
+                    sx={{ maxWidth: 180 }}
+                />
             </DialogTitle>
             <Divider />
             <DialogContent sx={{ pt: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                    <TextField
-                        label="Fecha de entrega"
-                        type="date"
-                        value={fechaEntrega}
-                        onChange={(e) => setFechaEntrega(e.target.value)}
-                        size="small"
-                        disabled={loading}
-                        InputLabelProps={{ shrink: true }}
-                        helperText="Puede cargar una entrega pasada (ej. 17-09)"
-                    />
-                </Box>
                 <Box sx={{ p: 2.5, bgcolor: 'var(--mui-palette-action-hover)', borderRadius: 2, border: '1px solid var(--mui-palette-divider)', mb: 2 }}>
                     <Grid container spacing={2} alignItems="center">
                         <Grid size={{ xs: 12, md: 3 }}>
