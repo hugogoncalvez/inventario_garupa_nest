@@ -257,7 +257,16 @@ export class TintasController {
 
     @Post('movimientos/entrega')
     async registerEntrega(@Body() body: any) {
-        const { usuario_id, items } = body;
+        const { usuario_id, items, fecha } = body;
+
+        let fechaEntrega = new Date();
+        if (fecha) {
+            const d = new Date(fecha);
+            if (isNaN(d.getTime())) {
+                throw new HttpException('Fecha de entrega inválida', HttpStatus.BAD_REQUEST);
+            }
+            fechaEntrega = d;
+        }
 
         // Validación anti-duplicados: Buscar si ya existe un movimiento idéntico en los últimos 5 segundos
         const fiveSecondsAgo = new Date(Date.now() - 5000);
@@ -290,7 +299,7 @@ export class TintasController {
                         cantidad: Number(item.cantidad),
                         usuario_id: Number(usuario_id),
                         tipo_movimiento: movimientos_tinta_tipo_movimiento.ENTREGA_A__REA,
-                        fecha: new Date(),
+                        fecha: fechaEntrega,
                         createdAt: new Date(),
                         updatedAt: new Date(),
                     }

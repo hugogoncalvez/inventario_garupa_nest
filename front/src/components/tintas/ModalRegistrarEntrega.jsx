@@ -21,6 +21,10 @@ export default function ModalRegistrarEntrega({ open, onClose, onEntregaExitosa 
 
     const [stagedEntrega, setStagedEntrega] = useState({ impresoraId: '', insumoId: '', cantidad: 1 });
     const [selectedAreaId, setSelectedAreaId] = useState('');
+    const [fechaEntrega, setFechaEntrega] = useState(() => {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    });
     const [filteredImpresoras, setFilteredImpresoras] = useState([]);
     const [showAllInsumos, setShowAllInsumos] = useState(false);
     const [listaEntregas, setListaEntregas] = useState([]);
@@ -46,6 +50,8 @@ export default function ModalRegistrarEntrega({ open, onClose, onEntregaExitosa 
             fetchData();
             setListaEntregas([]);
             setSelectedAreaId('');
+            const hoy = new Date();
+            setFechaEntrega(`${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`);
             setShowAllInsumos(false);
             setStagedEntrega({ impresoraId: '', insumoId: '', cantidad: 1 });
             setError('');
@@ -132,6 +138,7 @@ export default function ModalRegistrarEntrega({ open, onClose, onEntregaExitosa 
         try {
             const payload = {
                 usuario_id: auth.id,
+                fecha: fechaEntrega ? new Date(fechaEntrega + 'T12:00:00') : undefined,
                 items: listaEntregas.map(({ cartucho_id, impresora_id, cantidad }) => ({
                     cartucho_id,
                     impresora_id,
@@ -152,7 +159,7 @@ export default function ModalRegistrarEntrega({ open, onClose, onEntregaExitosa 
                 items: itemsParaPdf,
                 area: area,
                 usuario: auth,
-                fechaEntrega: new Date()
+                fechaEntrega: fechaEntrega ? new Date(fechaEntrega + 'T12:00:00') : new Date()
             });
 
             onEntregaExitosa();
@@ -176,6 +183,18 @@ export default function ModalRegistrarEntrega({ open, onClose, onEntregaExitosa 
             </DialogTitle>
             <Divider />
             <DialogContent sx={{ pt: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                    <TextField
+                        label="Fecha de entrega"
+                        type="date"
+                        value={fechaEntrega}
+                        onChange={(e) => setFechaEntrega(e.target.value)}
+                        size="small"
+                        disabled={loading}
+                        InputLabelProps={{ shrink: true }}
+                        helperText="Puede cargar una entrega pasada (ej. 17-09)"
+                    />
+                </Box>
                 <Box sx={{ p: 2.5, bgcolor: 'var(--mui-palette-action-hover)', borderRadius: 2, border: '1px solid var(--mui-palette-divider)', mb: 2 }}>
                     <Grid container spacing={2} alignItems="center">
                         <Grid size={{ xs: 12, md: 3 }}>
